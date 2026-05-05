@@ -71,12 +71,20 @@ in variance between policy event days and control days to construct
 instruments for the endogenous variables.
 }
 \references{
+Burri, M. and Kaufmann, D. (2026). Multiple monetary policy shocks from
+daily data: A heteroskedasticity IV approach. IRENE Working Paper 26-06,
+IRENE Institute of Economic Research. (Multi-dimensional shock identification
+via recursive heteroscedasticity ordering, i.e. \code{E > 1}.)
+
 Jordà, Ò. (2005). Estimation and Inference of Impulse Responses by Local
 Projections. \emph{American Economic Review}, 95(1), 161–182.
 
-Lewis, D. J. (2022). Identifying Shocks via Time-Varying Volatility.
-\emph{Review of Economic Studies}, 89(6), 2893–2937.
+Lewis, D. J. (2022). Robust Inference in Models Identified via
+Heteroskedasticity. \emph{Review of Economics and Statistics}, 104(3), 510–524.
 
 Rigobon, R. (2003). Identification Through Heteroskedasticity.
 \emph{Review of Economics and Statistics}, 85(4), 777–792.
+
+Rigobon, R. and Sack, B. (2004). The impact of monetary policy on asset
+prices. \emph{Journal of Monetary Economics}, 51(8), 1553–1575.
 }

@@ -1,0 +1,14 @@
+Package: hetpxyiv
+Title: Heteroskedasticity and Proxy-Based IV Methods
+Version: 0.1.0
+Authors@R:
+    c(person("Daniel", "Kaufmann", email = "info@dankaufmann.com", role = c("aut", "cre")),
+      person("Marc", "Burri", role = "aut"),
+      person("Valentin", "Grob", role = "aut"))
+Description: Tools for measuring and identifying monetary policy shocks using
+    heteroskedasticity- and proxy-based instrumental variable methods and daily
+    financial market data.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.0.0

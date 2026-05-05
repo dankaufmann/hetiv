@@ -21,6 +21,7 @@ remotes::install_github("dankaufmann/hetpxyiv")
 |---|---|
 | `normalize()` | Standardizes a time series to zero mean and unit standard deviation |
 | `estimLPHet()` | Estimates impulse response functions via heteroscedasticity-based IV local projections |
+| `extractShocksKF()` | Extracts structural monetary policy shocks from reduced-form residuals via Kalman filter |
 
 ## Usage
 

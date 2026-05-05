@@ -4,6 +4,8 @@ An R package with tools for measuring and identifying monetary policy shocks usi
 
 **Authors**: Daniel Kaufmann, Marc Burri, Valentin Grob
 
+**Notes**: This is work in progress. Installation and use at own risk
+
 ## Installation
 
 You can install the development version from GitHub:
@@ -18,6 +20,7 @@ remotes::install_github("dankaufmann/hetpxyiv")
 | Function | Description |
 |---|---|
 | `normalize()` | Standardizes a time series to zero mean and unit standard deviation |
+| `estimLPHet()` | Estimates impulse response functions via heteroscedasticity-based IV local projections |
 
 ## Usage
 

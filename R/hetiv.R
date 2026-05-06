@@ -13,6 +13,8 @@
 #'   and for recursive ordering to identify multiple dimensions.
 #' @param O Numeric matrix of information set variables (T x M). May be
 #'   identical to `y`. Included as lags 1 through `P`.
+#' @param X Numeric matrix of deterministic variables (T x K). May include a constant, 
+#'   time trend, seasonal dummies or other deterministic controls. Included as is (no lags).
 #' @param Ind Integer vector of length T, event indicator:
 #'   \itemize{
 #'     \item `0` Control day (no event)
@@ -83,7 +85,7 @@
 #' @importFrom sandwich vcovHC
 #'
 #' @export
-hetiv <- function(y, O, Ind, P, H, E = 1, norm = 1, interact = FALSE, cum = FALSE, Hstep = 1, details = FALSE){
+hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, cum = FALSE, Hstep = 1, details = FALSE){
 
   # Collect various properties of the data and observations to be used
   Nobs <- dim(y)[1]     # Number of observations in y
@@ -91,6 +93,7 @@ hetiv <- function(y, O, Ind, P, H, E = 1, norm = 1, interact = FALSE, cum = FALS
   end  <- Nobs - H+1    # End of the sample
   N    <- dim(y)[2]     # Number of variables in y
   M    <- dim(O)[2]     # Number of variables in O
+  K    <- dim(X)[2]     # Number of deterministic variables in X
 
   if(sum(is.na(y))>0){
     warning("Missing values in y")
@@ -100,6 +103,9 @@ hetiv <- function(y, O, Ind, P, H, E = 1, norm = 1, interact = FALSE, cum = FALS
   }
   if(sum(is.na(Ind))>0){
     warning("Missing values in Ind")
+  }
+  if(sum(is.na(X))>0){
+    warning("Missing values in X")
   }
 
   # Modify cumulation indicator if only one provided
@@ -112,8 +118,13 @@ hetiv <- function(y, O, Ind, P, H, E = 1, norm = 1, interact = FALSE, cum = FALS
   HNum    <- length(HSeries)
 
   # Set up data set and and objects to save results
-  DataM     <- data.frame(y, O, Ind)
-  colnames(DataM) <- c(paste0("y", 1:N), paste0("o", 1:M), "Ind")
+  if(is.null(X)){
+    DataM     <- data.frame(y, O, Ind)
+    colnames(DataM) <- c(paste0("y", 1:N), paste0("o", 1:M), "Ind")
+  }else{
+    DataM     <- data.frame(y, O, X, Ind)
+    colnames(DataM) <- c(paste0("y", 1:N), paste0("o", 1:M), paste0("x", 1:K), "Ind")
+  }
   irfest    <- array(NA, dim = c(HNum, N, E))
   irfse     <- array(NA, dim = c(HNum, N, E))
   IVRes     <- list()
@@ -154,6 +165,14 @@ hetiv <- function(y, O, Ind, P, H, E = 1, norm = 1, interact = FALSE, cum = FALS
       }
     }else{
       infoVars <- "1"
+    }
+  }
+
+  # Add deterministic variables
+  if(!is.null(X)){
+    for(k in 1:K){
+      DataM[, paste0("x", k)] <- DataM[, paste0("x", k)]
+      infoVars <- c(infoVars, paste0("x", k))
     }
   }
 

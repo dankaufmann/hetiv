@@ -35,9 +35,15 @@ library(hetpxyiv)
 
 # y:   T x N matrix of outcome variables
 # O:   T x M matrix of information set variables
+# X:   T x K matrix of deterministic variables (optional; e.g. constant, trend, dummies)
 # Ind: event indicator (0 = control day, 1 = policy day, 2 = contaminated)
 
+# Without deterministic terms
 res <- hetiv(y = y, O = O, Ind = Ind, P = 1, H = 20, E = 1, norm = 1, details = TRUE)
+
+# With a linear time trend as deterministic term
+X <- matrix(seq_len(nrow(y)), ncol = 1)
+res <- hetiv(y = y, O = O, X = X, Ind = Ind, P = 1, H = 20, E = 1, norm = 1, details = TRUE)
 ```
 
 ### Plot impulse responses

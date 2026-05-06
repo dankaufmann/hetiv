@@ -7,6 +7,7 @@
 hetiv(
   y,
   O,
+  X = NULL,
   Ind,
   P,
   H,
@@ -26,6 +27,10 @@ and for recursive ordering to identify multiple dimensions.}
 
 \item{O}{Numeric matrix of information set variables (T x M). May be
 identical to \code{y}. Included as lags 1 through \code{P}.}
+
+\item{X}{Numeric matrix of deterministic variables (T x K). May include a constant,
+time trend, seasonal dummies or other deterministic controls. Included as is (no lags).
+Default is \code{NULL} (no additional deterministic terms).}
 
 \item{Ind}{Integer vector of length T, event indicator:
 \itemize{

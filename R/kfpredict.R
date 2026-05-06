@@ -27,13 +27,13 @@
 #'
 #' @references
 #' Burri, M. and Kaufmann, D. (2024). Measuring monetary policy shocks.
-#' IRENE Working Paper 24-03, IRENE Institute of Economic Research.
+#' IRENE Working Paper 24-03, IRENE Institute of Economic Research, University of Neuchâtel.
 #'
 #' @importFrom MASS ginv
 #' @importFrom matrixcalc vec
 #'
 #' @export
-extractShocksKF <- function(Sig, SigR, Psi, et, tol, scale = TRUE){
+kfpredict <- function(Sig, SigR, Psi, et, tol, scale = TRUE){
 
   # Clip tolerance from below to avoid numerical issues in ginv
   tol <- max(sqrt(.Machine$double.eps), tol)

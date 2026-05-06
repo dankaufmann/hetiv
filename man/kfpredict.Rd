@@ -8,7 +8,7 @@ kfpredict(Sig, SigR, Psi, et, tol, scale = TRUE)
 }
 \arguments{
 \item{Sig}{Numeric matrix (N x N). Covariance matrix of reduced-form
-residuals on policy event days (e.g. \code{et} from \code{\link[=estimLPHet]{estimLPHet()}}).}
+residuals on policy event days (e.g. \code{et} from \code{\link[=hetiv]{hetiv()}}).}
 
 \item{SigR}{Numeric matrix (N x N). Covariance matrix of reduced-form
 residuals on control (non-event) days. Used to back out the implied
@@ -16,10 +16,10 @@ shock variances when \code{scale = TRUE}.}
 
 \item{Psi}{Numeric matrix (N x E). Impact matrix, i.e. the contemporaneous
 responses of all N variables to the E structural shocks (e.g. \code{Psi} from
-\code{\link[=estimLPHet]{estimLPHet()}}).}
+\code{\link[=hetiv]{hetiv()}}).}
 
 \item{et}{Numeric matrix or data frame (T x N). Reduced-form residuals on
-event days (e.g. \code{et} from \code{\link[=estimLPHet]{estimLPHet()}}). Rows correspond to time
+event days (e.g. \code{et} from \code{\link[=hetiv]{hetiv()}}). Rows correspond to time
 periods, columns to variables.}
 
 \item{tol}{Numeric scalar. Tolerance for the generalized inverse

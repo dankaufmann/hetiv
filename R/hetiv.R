@@ -117,6 +117,8 @@ hetiv <- function(y, O, Ind, P, H, E = 1, norm = 1, interact = FALSE, cum = FALS
   irfest    <- array(NA, dim = c(HNum, N, E))
   irfse     <- array(NA, dim = c(HNum, N, E))
   IVRes     <- list()
+  OLSRes    <- list()
+  ORTHRes   <- list()
 
   # Compute lagged variables included in information set O(t-1)...O(t-P)
   infoVars  <- c()
@@ -302,6 +304,12 @@ hetiv <- function(y, O, Ind, P, H, E = 1, norm = 1, interact = FALSE, cum = FALS
         # Save IV results for every variable and every horizon
         if(details == TRUE){
           IVRes[[paste0("IV.h", h, ".n", i, ".e", e)]] <- IV.mod
+
+          if(h == 1){
+            # Save OLS and orthogonalization results for horizon 1 only to save memory
+            OLSRes[[paste0("OLS.h", h, ".n", i, ".e", e)]] <- OLS.mod
+            ORTHRes[[paste0("ORTH.h", h, ".n", i, ".e", e)]] <- orthModel
+          }
         }  
       }
 
@@ -348,7 +356,7 @@ hetiv <- function(y, O, Ind, P, H, E = 1, norm = 1, interact = FALSE, cum = FALS
   if(details == TRUE){
 
     return(list(irf = irfest, se = irfse,
-              IVRes = IVRes,
+              IVRes = IVRes, OLSRes = OLSRes, ORTHRes = ORTHRes,
               Obs = Obs, Method = Method,
               et = et, Sig = Sig, SigR = SigR, Psi = Psi, WeakData = WeakData))
 

@@ -6,15 +6,15 @@
 #' shocks for each observation. Optionally rescales shocks to unit variance.
 #'
 #' @param Sig Numeric matrix (N x N). Covariance matrix of reduced-form
-#'   residuals on policy event days (e.g. `et` from [estimLPHet()]).
+#'   residuals on policy event days (e.g. `et` from [hetiv()]).
 #' @param SigR Numeric matrix (N x N). Covariance matrix of reduced-form
 #'   residuals on control (non-event) days. Used to back out the implied
 #'   shock variances when `scale = TRUE`.
 #' @param Psi Numeric matrix (N x E). Impact matrix, i.e. the contemporaneous
 #'   responses of all N variables to the E structural shocks (e.g. `Psi` from
-#'   [estimLPHet()]).
+#'   [hetiv()]).
 #' @param et Numeric matrix or data frame (T x N). Reduced-form residuals on
-#'   event days (e.g. `et` from [estimLPHet()]). Rows correspond to time
+#'   event days (e.g. `et` from [hetiv()]). Rows correspond to time
 #'   periods, columns to variables.
 #' @param tol Numeric scalar. Tolerance for the generalized inverse
 #'   ([MASS::ginv()]). Clipped from below at `sqrt(.Machine$double.eps)`.

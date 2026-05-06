@@ -61,9 +61,13 @@
 #'   }
 #'
 #' @references
-#' Burri, M. and Kaufmann, D. (2026). Multiple monetary policy shocks from
-#' daily data: A heteroskedasticity IV approach. IRENE Working Paper 24-06,
-#' IRENE Institute of Economic Research, University of Neuchâtel
+#' Burri, M. and D. Kaufmann (2026). Measuring monetary policy shocks.
+#' IRENE Working Papers 24-03, IRENE Institute of Economic Research,
+#' University of Neuchâtel.
+#'
+#' Burri, M. and D. Kaufmann (2026). Multiple monetary policy shocks from
+#' daily data: A heteroskedasticity IV approach. IRENE Working Papers 26-06,
+#' IRENE Institute of Economic Research, University of Neuchâtel.
 #'
 #' Jordà, Ò. (2005). Estimation and Inference of Impulse Responses by Local
 #' Projections. *American Economic Review*, 95(1), 161–182.

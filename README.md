@@ -29,6 +29,7 @@ remotes::install_github("dankaufmann/hetiv")
 | `filllinear()` | Linearly interpolates short gaps of missing values in a data frame |
 | `plotirf()` | Plots IRFs with confidence bands for a single estimation approach |
 | `plot2irf()` | Plots and compares IRFs from two estimation approaches |
+| `plotpval()` | Plots p-values of IRF coefficients across horizons with significance reference lines |
 | `simulatedata()` | Simulates VAR data with heteroskedastic event shocks |
 
 ## Usage

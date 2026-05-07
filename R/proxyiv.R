@@ -164,13 +164,6 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
     # Instrument: the e-th column of user-provided Z
     DataM$Ze <- DataM[, paste0("z", e)]
 
-    # Handle missing instruments:
-    # On control days (Ind == 0), a missing instrument means the observation
-    # cannot be used for estimation → mark as contaminated (Ind == 2).
-    # On policy days (Ind == 1), keep the observation even if Z is missing,
-    # as it can still be used for shock prediction.
-    DataM$Ind[is.na(DataM$Ze) & DataM$Ind == 0] <- 2
-
     # Recursive ordering: for shock e > 1, add variables and instruments from
     # previously identified dimensions as additional controls
     recVars <- c()
@@ -250,7 +243,7 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
           eti[DataMSub$Event != 1] <- NA
 
           vti <- residuals(OLS.mod)
-          vti[IndOrig[beg:end] != 0] <- NA
+          vti[DataMSub$NoEvent != 1] <- NA
 
           # Pad residuals back to full sample length for consistent indexing
           DataM$eti <- NA

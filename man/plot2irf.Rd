@@ -4,16 +4,7 @@
 \alias{plot2irf}
 \title{Plot and compare impulse responses from two estimation approaches}
 \usage{
-plot2irf(
-  IRF1,
-  IRF1se,
-  IRF2,
-  IRF2se,
-  HTick,
-  Labels,
-  shockLabels = NULL,
-  ci = 0.9
-)
+plot2irf(IRF1, IRF1se, IRF2, IRF2se, HTick, Labels, ci = 0.9)
 }
 \arguments{
 \item{IRF1}{Array (H x N x E) of impulse responses for the first approach.
@@ -28,9 +19,6 @@ Dimnames on the first dimension must be the horizon labels (numeric).}
 \item{HTick}{Integer. Step size for x-axis tick marks.}
 
 \item{Labels}{Character vector of length N. Variable names used as panel titles.}
-
-\item{shockLabels}{Character vector of length E. Shock names. If \code{NULL},
-defaults to \code{"shock 1"}, \code{"shock 2"}, etc.}
 
 \item{ci}{Numeric scalar in (0, 1). Confidence level for the shaded bands.
 Defaults to \code{0.90} (90\% CI).}

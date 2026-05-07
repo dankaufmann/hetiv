@@ -4,14 +4,7 @@
 \alias{plotirf}
 \title{Plot impulse responses from a single estimation approach}
 \usage{
-plotirf(
-  IRFest,
-  IRFse = NULL,
-  HTick,
-  Labels,
-  shockLabels = NULL,
-  ci = c(0.9, 0.95)
-)
+plotirf(IRFest, IRFse = NULL, HTick, Labels, ci = c(0.9, 0.95))
 }
 \arguments{
 \item{IRFest}{Array (H x N x E) of impulse response point estimates.
@@ -23,9 +16,6 @@ confidence bands.}
 \item{HTick}{Integer. Step size for x-axis tick marks.}
 
 \item{Labels}{Character vector of length N. Variable names used as panel titles.}
-
-\item{shockLabels}{Character vector of length E. Shock names. If \code{NULL},
-defaults to \code{"shock 1"}, \code{"shock 2"}, etc.}
 
 \item{ci}{Numeric vector of confidence levels in (0, 1). One shaded band is
 drawn per level, with wider bands rendered at lower opacity. Defaults to

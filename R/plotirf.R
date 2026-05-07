@@ -11,8 +11,6 @@
 #'   confidence bands.
 #' @param HTick Integer. Step size for x-axis tick marks.
 #' @param Labels Character vector of length N. Variable names used as panel titles.
-#' @param shockLabels Character vector of length E. Shock names. If `NULL`,
-#'   defaults to `"shock 1"`, `"shock 2"`, etc.
 #' @param ci Numeric vector of confidence levels in (0, 1). One shaded band is
 #'   drawn per level, with wider bands rendered at lower opacity. Defaults to
 #'   `c(0.90, 0.95)`.
@@ -23,7 +21,7 @@
 #' @importFrom ggplot2 ggplot aes geom_line geom_ribbon geom_hline scale_x_continuous theme_minimal theme element_text element_rect element_blank unit xlab ylab ggtitle element_line
 #'
 #' @export
-plotirf <- function(IRFest, IRFse = NULL, HTick, Labels, shockLabels = NULL, ci = c(0.90, 0.95)){
+plotirf <- function(IRFest, IRFse = NULL, HTick, Labels, ci = c(0.90, 0.95)){
 
   myGraphs <- list()
   noDims   <- length(dim(IRFest))
@@ -39,10 +37,6 @@ plotirf <- function(IRFest, IRFse = NULL, HTick, Labels, shockLabels = NULL, ci 
   }else{
     E <- 1
     dim(IRFest) <- c(HNum, N, 1)
-  }
-
-  if(is.null(shockLabels)){
-    shockLabels <- paste0("shock ", 1:E)
   }
 
   # Compute confidence bands for each level in ci (sorted widest first for layering)

@@ -12,8 +12,6 @@
 #' @param IRF2se Array (H x N x E) of standard errors for the second approach.
 #' @param HTick Integer. Step size for x-axis tick marks.
 #' @param Labels Character vector of length N. Variable names used as panel titles.
-#' @param shockLabels Character vector of length E. Shock names. If `NULL`,
-#'   defaults to `"shock 1"`, `"shock 2"`, etc.
 #' @param ci Numeric scalar in (0, 1). Confidence level for the shaded bands.
 #'   Defaults to `0.90` (90% CI).
 #'
@@ -23,7 +21,7 @@
 #' @importFrom ggplot2 ggplot aes geom_line geom_ribbon geom_hline scale_x_continuous theme_minimal theme element_text element_rect element_blank unit xlab ylab ggtitle element_line
 #'
 #' @export
-plot2irf <- function(IRF1, IRF1se, IRF2, IRF2se, HTick, Labels, shockLabels = NULL, ci = 0.90){
+plot2irf <- function(IRF1, IRF1se, IRF2, IRF2se, HTick, Labels, ci = 0.90){
 
   myGraphs <- list()
   noDims   <- length(dim(IRF1))
@@ -42,10 +40,6 @@ plot2irf <- function(IRF1, IRF1se, IRF2, IRF2se, HTick, Labels, shockLabels = NU
     dim(IRF2)   <- c(HNum, N, 1)
     dim(IRF1se) <- c(HNum, N, 1)
     dim(IRF2se) <- c(HNum, N, 1)
-  }
-
-  if(is.null(shockLabels)){
-    shockLabels <- paste0("shock ", 1:E)
   }
 
   z         <- qnorm((1 + ci) / 2)

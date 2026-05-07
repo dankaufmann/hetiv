@@ -152,6 +152,9 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
     }
   }
 
+  # Save original Ind before any per-shock reclassification of missing-instrument days
+  IndOrig <- DataM$Ind
+
   # Estimate proxy-IV impulse responses separately for every shock dimension
   for (e in 1:E) {
 
@@ -247,7 +250,7 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
           eti[DataMSub$Event != 1] <- NA
 
           vti <- residuals(OLS.mod)
-          vti[DataMSub$NoEvent != 1] <- NA
+          vti[IndOrig[beg:end] != 0] <- NA
 
           # Pad residuals back to full sample length for consistent indexing
           DataM$eti <- NA

@@ -20,15 +20,20 @@ remotes::install_github("dankaufmann/hetiv")
 | Function | Description |
 |---|---|
 | `hetiv()` | Estimates impulse response functions via heteroskedasticity-based IV local projections |
+| `proxyiv()` | Estimates impulse response functions via proxy-IV local projections |
 | `kfpredict()` | Extracts structural shocks from reduced-form residuals via Kalman filter |
+| `computeirf()` | Recursively computes IRFs from an impact matrix and VAR coefficients |
 | `normalize()` | Standardizes a time series to zero mean and unit standard deviation |
+| `logdiff()` | Computes the log-difference of a time series |
+| `firstdiff()` | Computes the first difference of a time series |
+| `filllinear()` | Linearly interpolates short gaps of missing values in a data frame |
 | `plotirf()` | Plots IRFs with confidence bands for a single estimation approach |
 | `plot2irf()` | Plots and compares IRFs from two estimation approaches |
 | `simulatedata()` | Simulates VAR data with heteroskedastic event shocks |
 
 ## Usage
 
-### Estimate impulse responses
+### Estimate impulse responses via heteroskedasticity-IV
 
 ```r
 library(hetiv)
@@ -38,12 +43,23 @@ library(hetiv)
 # X:   T x K matrix of deterministic variables (optional; e.g. constant, trend, dummies)
 # Ind: event indicator (0 = control day, 1 = policy day, 2 = contaminated)
 
-# Without deterministic terms
 res <- hetiv(y = y, O = O, Ind = Ind, P = 1, H = 20, E = 1, norm = 1, details = TRUE)
 
-# With a linear time trend as deterministic term
+# With a linear time trend
 X <- matrix(seq_len(nrow(y)), ncol = 1)
 res <- hetiv(y = y, O = O, X = X, Ind = Ind, P = 1, H = 20, E = 1, norm = 1, details = TRUE)
+```
+
+### Estimate impulse responses via proxy-IV
+
+```r
+# Z: T x E matrix of external instruments (proxies)
+
+res <- proxyiv(y = y, O = O, Z = Z, Ind = Ind, P = 1, H = 20, E = 1, norm = 1, details = TRUE)
+
+# With recursive zero restrictions across shock dimensions
+res <- proxyiv(y = y, O = O, Z = Z, Ind = Ind, P = 1, H = 20, E = 2,
+               norm = 1, recursive = TRUE, details = TRUE)
 ```
 
 ### Plot impulse responses
@@ -79,7 +95,13 @@ Jordà, Ò. (2005). Estimation and Inference of Impulse Responses by Local Proje
 
 Lewis, D. J. (2022). Robust Inference in Models Identified via Heteroskedasticity. *Review of Economics and Statistics*, 104(3), 510–524.
 
+Lewis, D. J. and Mertens, K. (2025). A Robust Test for Weak Instruments for 2SLS with Multiple Endogenous Regressors. *The Review of Economic Studies*, DOI: 10.1093/restud/rdaf103.
+
+Mertens, K. and Ravn, M. O. (2013). The Dynamic Effects of Personal and Corporate Income Tax Changes in the United States. *American Economic Review*, 103(4), 1212–1247.
+
 Rigobon, R. (2003). Identification Through Heteroskedasticity. *Review of Economics and Statistics*, 85(4), 777–792.
+
+Stock, J. H. and Watson, M. W. (2018). Identification and Estimation of Dynamic Causal Effects in Macroeconomics Using External Instruments. *Economic Journal*, 128(610), 917–948.
 
 ## License
 

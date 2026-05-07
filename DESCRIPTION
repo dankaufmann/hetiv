@@ -18,4 +18,5 @@ Imports:
     ivreg,
     MASS,
     matrixcalc,
-    sandwich
+    sandwich,
+    zoo

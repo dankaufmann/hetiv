@@ -146,9 +146,11 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
             DataM[, paste0("Event", e, ".o", j, ".l", p)] <- dplyr::lag(DataM[, paste0("o", j)], p) * (Ind == e)
             infoVars <- c(infoVars, paste0("Event", e, ".o", j, ".l", p))
 
-            # Include interacted constant
-            DataM[, paste0("Event", e)] <- (Ind == e)
-            infoVars <- c(infoVars, paste0("Event", e))
+            # Include interacted constant (only for e == 1 to avoid perfect multicollinearity)
+            if(p == 1 & e == 1){
+              DataM[, paste0("Event", e)] <- (Ind == e)
+              infoVars <- c(infoVars, paste0("Event", e))
+            }
           }
         }else{
           # Compute lags of variables
@@ -162,11 +164,10 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
   # Otherwise, only regress on a constant
   if(P == 0){
     if(interact == TRUE){
-      for(e in 0:1){
-        # Include interacted constant
-        DataM[, paste0("Event", e)] <- (Ind == e)
-        infoVars <- c(infoVars, paste0("Event", e))
-      }
+      # Include interacted constant (only for e == 1 to avoid perfect multicollinearity)
+      DataM[, paste0("Event", 1)] <- (Ind == 1)
+      infoVars <- c(infoVars, paste0("Event", 1))
+    
     }else{
       infoVars <- "1"
     }
@@ -315,12 +316,6 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
         }
 
         # Normalizes IRFs to a specific value. Because initial response
-        # normalized to unity, just multiply by NormFac
-        #IRF[h, "irf"]   <- IV.mod$coefficients["shockVar"]
-        #IRF[h, "se"]    <- IV.se["shockVar"]
-        #irfest[h, i, e] <- IRF[h, "irf"]*NormFac
-        #irfse[h, i, e]  <- IRF[h, "se"]*NormFac
-
         irfest[h, i, e] <- IV.mod$coefficients["shockVar"]*norm
         irfse[h, i, e]  <- IV.se["shockVar"]*norm
 
@@ -331,7 +326,10 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
           if(h == 1){
             # Save OLS and orthogonalization results for horizon 1 only to save memory
             OLSRes[[paste0("OLS.h", h, ".n", i, ".e", e)]] <- OLS.mod
-            ORTHRes[[paste0("ORTH.h", h, ".n", i, ".e", e)]] <- orthModel
+            
+            if(i == e){
+              ORTHRes[[paste0("ORTH.h", h, ".n", i, ".e", e)]] <- orthModel
+            }
           }
         }  
       }

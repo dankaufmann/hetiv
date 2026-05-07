@@ -1,4 +1,4 @@
-# hetpxyiv
+# hetiv
 
 An R package for measuring and identifying structural shocks using heteroskedasticity- and proxy-based instrumental variable (IV) methods with daily financial market data.
 
@@ -12,7 +12,7 @@ You can install the development version from GitHub:
 
 ```r
 # install.packages("remotes")
-remotes::install_github("dankaufmann/hetpxyiv")
+remotes::install_github("dankaufmann/hetiv")
 ```
 
 ## Functions
@@ -31,7 +31,7 @@ remotes::install_github("dankaufmann/hetpxyiv")
 ### Estimate impulse responses
 
 ```r
-library(hetpxyiv)
+library(hetiv)
 
 # y:   T x N matrix of outcome variables
 # O:   T x M matrix of information set variables

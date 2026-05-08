@@ -4,7 +4,7 @@
 \alias{kfpredict}
 \title{Extract monetary policy shocks via Kalman filter}
 \usage{
-kfpredict(Sig, SigR, Psi, et, tol, scale = TRUE)
+kfpredict(Sig, SigR, Psi, et, tol = sqrt(.Machine$double.eps), scale = TRUE)
 }
 \arguments{
 \item{Sig}{Numeric matrix (N x N). Covariance matrix of reduced-form

@@ -30,18 +30,13 @@
 #' IRENE Working Paper 24-03, IRENE Institute of Economic Research, University of Neuchâtel.
 #'
 #' @importFrom MASS ginv
-#' @importFrom matrixcalc vec
 #'
 #' @export
-kfpredict <- function(Sig, SigR, Psi, et, tol, scale = TRUE){
+kfpredict <- function(Sig, SigR, Psi, et, tol = sqrt(.Machine$double.eps), scale = TRUE){
 
-  # Clip tolerance from below to avoid numerical issues in ginv
-  tol <- max(sqrt(.Machine$double.eps), tol)
-  if(is.na(tol)){
-    tol <- sqrt(.Machine$double.eps)
-  }
+  tol <- max(tol, sqrt(.Machine$double.eps))
 
-  eps <- as.matrix(et[, 1:dim(Psi)[2]])
+  eps <- as.matrix(et[, seq_len(ncol(Psi))])
   eps[, ] <- NA
 
   if(scale == TRUE){
@@ -49,32 +44,25 @@ kfpredict <- function(Sig, SigR, Psi, et, tol, scale = TRUE){
     # between event and control days (Sig - SigR = Psi * SigEps * Psi')
     # Unit impact normalization on Psi means we need to recover the scale of
     # the shocks to renormalize them to unit variance
-    q      <- matrixcalc::vec(Sig - SigR)
-    A      <- sapply(1:ncol(Psi), function(i) c(Psi[, i] %*% t(Psi[, i])))
+    q      <- as.vector(Sig - SigR)
+    A      <- sapply(seq_len(ncol(Psi)), function(i) c(Psi[, i] %*% t(Psi[, i])))
     sig    <- c(MASS::ginv(A) %*% q)
 
     if(length(sig) > 1){
-      SigEps   <- diag(sig)
-      myScale  <- solve(diag(sqrt(1/sig)))
-      if(any(is.na(myScale))){
-        myScale <- diag(abs(sig))
-      }
+      myScale <- diag(sqrt(sig))
     }else{
-      SigEps  <- sig
-      myScale <- 1/sqrt(1/sig)
-      if(any(is.na(myScale))){
-        myScale <- abs(sig)
-      }
+      myScale <- sqrt(sig)
     }
 
   }else{
     myScale <- 1
   }
 
-  # Kalman filter projection: eps_t = scale * Psi' * Sig^{-1} * e_t
-  for(t in 1:dim(eps)[1]){
-    eps[t, ] <- myScale %*% t(Psi) %*% MASS::ginv(Sig, tol = tol) %*% as.matrix(et[t, ])
-  }
+  # Pre-compute projection matrix: scale * Psi' * Sig^{-1}
+  proj <- myScale %*% t(Psi) %*% MASS::ginv(Sig, tol = tol)
+
+  # Kalman filter projection: eps_t = proj * e_t  (vectorised over T)
+  eps <- t(proj %*% t(as.matrix(et)))
 
   return(eps)
 }

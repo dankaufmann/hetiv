@@ -1,0 +1,52 @@
+url: https://dankaufmann.github.io/hetiv/
+
+home:
+  title: hetiv
+  description: Heteroskedasticity and Proxy-Based IV Methods
+
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left:  [intro, reference, articles]
+    right: [github]
+  components:
+    github:
+      icon: fab fa-github
+      href: https://github.com/dankaufmann/hetiv
+
+reference:
+  - title: Estimation
+    desc: Estimate impulse response functions via IV local projections
+    contents:
+      - hetiv
+      - proxyiv
+  - title: Weak instrument test
+    desc: Test for weak instruments (Lewis-Mertens 2025)
+    contents:
+      - gweaktest
+  - title: Shock extraction and IRF computation
+    contents:
+      - kfpredict
+      - computeirf
+  - title: Plotting
+    contents:
+      - plotirf
+      - plot2irf
+      - plotpval
+  - title: Simulation
+    contents:
+      - simulatedata
+  - title: Utilities
+    contents:
+      - normalize
+      - logdiff
+      - firstdiff
+      - filllinear
+
+articles:
+  - title: Vignettes
+    navbar: ~
+    contents:
+      - hetiv-introduction

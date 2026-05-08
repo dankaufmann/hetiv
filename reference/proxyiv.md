@@ -4,8 +4,8 @@ Estimates impulse response functions (IRFs) using user-provided external
 instruments (proxies) combined with local projections (Jordà, 2005). The
 proxy variables serve directly as instruments for the endogenous shock
 variables. Optionally imposes recursive zero restrictions across shock
-dimensions and supports deterministic controls and interaction terms,
-following the same conventions as
+dimensions and supports deterministic controls following the same
+conventions as
 [`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md).
 
 ## Usage

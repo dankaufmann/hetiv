@@ -1,10 +1,10 @@
 # Plot and compare impulse responses from two estimation approaches
 
 Produces a panel of IRF plots comparing two sets of impulse responses
-side-by-side. Each panel shows the point estimates and 90% confidence
-bands for both approaches. Returns a list of `ggplot` objects (one per
-variable-shock combination) that can be arranged with e.g.
-`gridExtra::grid.arrange()`.
+side-by-side. Each panel shows the point estimates and confidence bands
+at level `ci` for both approaches. Returns a list of `ggplot` objects
+(one per variable-shock combination) that can be arranged with e.g.
+[`cowplot::plot_grid()`](https://wilkelab.org/cowplot/reference/plot_grid.html).
 
 ## Usage
 

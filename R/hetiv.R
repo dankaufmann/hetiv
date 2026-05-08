@@ -272,7 +272,6 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
 
         IV.mod  <- ivreg::ivreg(as.formula(myFormula), data = subset(DataMSub, Ind < 2))
         IV.se   <- sqrt(diag(sandwich::vcovHC(IV.mod, type = "HC0")))
-        IV.sum  <- summary(IV.mod, vcov = function(x) sandwich::vcovHC(x, type = "HC0"), df = Inf, diagnostics = TRUE)
 
         
         if(details == TRUE){

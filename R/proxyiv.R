@@ -229,7 +229,6 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
 
         IV.mod <- ivreg::ivreg(as.formula(myFormula), data = subset(DataMSub, Ind < 2))
         IV.se  <- sqrt(diag(sandwich::vcovHC(IV.mod, type = "HC0")))
-        IV.sum <- summary(IV.mod, vcov = function(x) sandwich::vcovHC(x, type = "HC0"), df = Inf, diagnostics = TRUE)
 
         # Compute OLS residuals for covariance estimation (once per outcome variable, at e=1, h=1)
         if (details == TRUE && e == 1 && h == 1) {

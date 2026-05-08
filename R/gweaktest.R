@@ -227,7 +227,7 @@ gweaktest_critical_values <- function(W, K,
   }
 
   if (K == N) {
-    message("Model is just-identified: test is for median bias.")
+   #message("Model is just-identified: test is for median bias.")
     if (N == 1L) tau <- tau / 0.455
   }
 

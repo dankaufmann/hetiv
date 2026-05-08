@@ -200,14 +200,14 @@ specifications against the true `PsiE`. At first sight, the differences are smal
 still some differences in terms of the accuracy of the estimates, the predicted shocks, and the strength of the instruments.
 
 ```{r impact-matrices}
-var_labels <- paste0("Var ", 1:N)
+var_labels <- paste0("Variable ", 1:N)
 
 tab_1 <- round(data.frame(True = PsiE[, 1], HET_IV = res_het$Psi[, 1], HET_IV_X = res_het_X$Psi[, 1],
                           Proxy_IV = res_proxy$Psi[, 1], Proxy_IV_rec = res_proxy_rec$Psi[, 1]), 2)
 
 knitr::kable(
   tab_1,
-  col.names = c("True", "Missspec.", "HET-IV with controls", "Proxy-IV with controls", "Proxy-IV with recursive restriction"),
+  col.names = c("True", "HET-IV without controls", "HET-IV with controls", "Proxy-IV with controls", "Proxy-IV with recursive restriction"),
   caption   = "Impact matrix estimates (Psi) for shock 1 across different specifications"
 )
 
@@ -216,7 +216,7 @@ tab_2 <- round(data.frame(True = PsiE[, 2], HET_IV = res_het$Psi[, 2], HET_IV_X 
 
 knitr::kable(
   tab_2,
-  col.names = c("True", "Missspec.", "HET-IV with controls", "Proxy-IV with controls", "Proxy-IV with recursive restriction"),
+  col.names = c("True", "HET-IV without controls", "HET-IV with controls", "Proxy-IV with controls", "Proxy-IV with recursive restriction"),
   caption   = "Impact matrix estimates (Psi) for shock 2 across different specifications"
 )
 
@@ -305,7 +305,7 @@ for (j in seq_len(E)) {
 
 
 ### HET-IV versus Proxy-IV
-We can also compare the HET-IV estimates to the Proxy-IV estimates. The confidence intervals are wider for the HET-IV approach, which is expected given that the proxy is highly correlated with the true shocks. This may not be the case if the proxy is more noisy and therefore weakly correlated with the endogenous variable. However, the point estimates are quite similar across the two approaches.
+We can also compare the HET-IV estimates to the Proxy-IV estimates. The confidence intervals are slightly wider for the HET-IV approach, which is expected given that the proxy is highly correlated with the true shocks. This may not be the case if the proxy is more noisy and therefore weakly correlated with the endogenous variable. However, the point estimates are quite similar across the two approaches.
 
 ```{r plot2irf-het-proxy, fig.height = 7}
 plots_vs_proxy <- plot2irf(
@@ -332,7 +332,7 @@ for (j in seq_len(E)) {
 ## Shock extraction
 
 `kfpredict()` recovers structural shocks from reduced-form residuals via a
-Kalman filter projection. It requires the estimated impact matrix `Psi`, the
+Kalman filter prediction. It requires the estimated impact matrix `Psi`, the
 residual covariance matrices on event and control days (`Sig`, `SigR`), and the
 residuals `et`.
 
@@ -348,57 +348,79 @@ shocks_het_X <- kfpredict(Sig = res_het_X$Sig, SigR = res_het_X$SigR,
 shocks_proxy <- kfpredict(Sig = res_proxy$Sig, SigR = res_proxy$SigR,
                            Psi = res_proxy$Psi, et   = res_proxy$et,
                            tol = 1e-4, scale = TRUE)
+
+shocks_proxy_rec <- kfpredict(Sig = res_proxy_rec$Sig, SigR = res_proxy_rec$SigR,
+                           Psi = res_proxy_rec$Psi, et   = res_proxy_rec$et,
+                           tol = 1e-4, scale = TRUE)
 ```
 
-We assess quality by correlating the estimated shocks with the true event shocks
-from the DGP.
+We assess the accuracy of the prediction comparing them to the true event shocksfrom the DGP.
 
 ```{r shock-correlation}
 true_shocks <- sim$eE[(Nbin + 1):(Nobs + Nbin), ]
 
-for (j in seq_len(E)) {
-  cor_df <- data.frame(
-    True       = true_shocks[, j],
-    Proxy      = e_proxy[, j],
-    HET_IV     = shocks_het[, j],
-    HET_IV_X   = shocks_het_X[, j],
-    Proxy_IV_X = shocks_proxy[, j]
-  )
-  cat(sprintf("\nCorrelations with true Shock %d:\n", j))
-  print(round(cor(cor_df, use = "pairwise.complete.obs")[, 1], 2))
-}
+cor_df1<- data.frame(
+    True       = true_shocks[, 1],
+    Proxy      = e_proxy[, 1],
+    HET_IV     = shocks_het[, 1],
+    HET_IV_X   = shocks_het_X[, 1],
+    Proxy_IV_X = shocks_proxy[, 1],
+    Proxy_IV_Rec = shocks_proxy_rec[, 1]
+)
+
+cor_df2<- data.frame(
+    True       = true_shocks[, 2],
+    Proxy      = e_proxy[, 2],
+    HET_IV     = shocks_het[, 2],
+    HET_IV_X   = shocks_het_X[, 2],
+    Proxy_IV_X = shocks_proxy[, 2],
+    Proxy_IV_Rec = shocks_proxy_rec[, 2]
+)
+
+knitr::kable(
+    data.frame(cor(cor_df1, use = "complete.obs"))[1, ],
+    col.names = c("True", "Proxy", "HET-IV without controls", "HET-IV with controls", "Proxy-IV with controls", "Proxy-IV with recursive restriction"),
+    caption   = paste0("Correlation of predicted shocks with true shocks for shock ", j)
+)
+
+
+knitr::kable(
+    data.frame(cor(cor_df2, use = "complete.obs"))[1, ],
+    col.names = c("True", "Proxy","HET-IV without controls", "HET-IV with controls", "Proxy-IV with controls", "Proxy-IV with recursive restriction"),
+    caption   = paste0("Correlation of predicted shocks with true shocks for shock ", j)
+)
+
+
 ```
 
-Adding controls and lags substantially increases the correlation between
-estimated and true shocks, confirming the importance of accounting for
-deterministic variation.
+The correlation between the true shocks and the proxy is lower than one due to an attenuation bias (see Burri and Kaufmann, 2026a). The correlation of the prediction is even lower if we use a misspecified model. However, if we use the correct model, the correlation is larger than 0.99 (0.94 for Shock 2). Proxy-IV with controls also well. Note that it works also almost equally well imposing the recursive restriction. This is what we would expect given that the restriction is true in the DGP. 
 
 ## Weak instrument test
 
 `gweaktest()` implements the generalised minimum eigenvalue test of Lewis and
-Mertens (2025), which is robust to heteroskedasticity and serial correlation.
-It nests the classical Stock-Yogo (2005) test as a special case. Instruments
-are strong when the test statistic exceeds the critical value.
+Mertens (2025), which is robust to heteroskedasticity and serial correlation and applicable to multiple endogenous regressors and multiple instruments.
+Note that classical Stock-Yogo (2005) test is applicable only for the homoskedastic case.
 
 Both `hetiv()` and `proxyiv()` return a `WeakData` element when `details =
 TRUE`. This data frame contains the outcome and instrument columns in the form
 expected by `gweaktest()`, along with any lagged and deterministic controls used
-in estimation.
+in estimation. The code below extracts the relevant columns from the `WeakData` data frame and runs the weak instrument test for each of the four specifications. The results are then compiled into a table for easy comparison.
 
 ```{r gweaktest}
 # Helper: extract y, Y, X, Z from WeakData and run gweaktest
 run_weaktest <- function(weakdata, E) {
   # y: outcome variable E+1 (not used as endogenous regressor)
-  y <- weakdata[, paste0("y", E + 1), drop = FALSE]
+  y <- weakdata[, paste0("y", E + 1)]
   # Y: first E outcome variables (endogenous regressors)
-  Y <- weakdata[, paste0("y", seq_len(E)), drop = FALSE]
+  Y <- weakdata[, paste0("y", 1:E)]
   # Z: the E instruments
-  Z <- weakdata[, paste0("Z", seq_len(E)), drop = FALSE]
-  # X: lagged ("o*") and deterministic ("x*") control columns
+  Z <- weakdata[, paste0("Z", 1:E),]
+  # X: lagged ("o*") and deterministic ("x*") control columns. In any case, add a constant term as well.
+  # Note that gweaktest() adds a constant term if missing
   ctrl  <- startsWith(colnames(weakdata), "o") | startsWith(colnames(weakdata), "x")
-  X     <- if (any(ctrl)) weakdata[, ctrl, drop = FALSE] else matrix(numeric(0), nrow(weakdata), 0)
-  # points = 200 for fast vignette build; use the default 1000 in practice
-  gweaktest(y, Y, X, Z, cov_type = "NW", points = 200)
+  X     <- if (any(ctrl)) cbind(weakdata[, ctrl], matrix(1, nrow(weakdata), 1)) else matrix(numeric(0), nrow(weakdata), 0)
+   
+  gweaktest(y, Y, X, Z, cov_type = "NW")
 }
 
 specs <- list(
@@ -433,10 +455,8 @@ knitr::kable(
 )
 ```
 
-The specification without controls typically flags weak instruments, while
-adding lags and deterministic controls substantially strengthens identification.
-The proxy IV approach benefits from the high correlation between the external
-proxy and the true shocks.
+The specification without controls is affected by a weak-instrument problem. THe other specification pass the weak instrument tests. Note that the critical values are typically much higher than the common rule of thumb for the Stock and Yogo (2005) test, but also, higher than in the HAR test for the univariate case by Montiel Olea and Pfluger (XXX), which is around 23.
+
 
 ## References
 
@@ -461,6 +481,11 @@ DOI: 10.1093/restud/rdaf103.
 Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and
 corporate income tax changes in the United States. *American Economic Review*,
 103(4), 1212–1247.
+
+Montiel Olea, J. L. and Pflueger, C. E. (2013). A robust test for weak instruments. 
+*Journal of Business & Economic Statistics*, 31(3), 358-369.
+
+Montiel Olea, J. L., M. Plagborg-Møller, E. Qian, C. K. Wolf (2025). _Local projections or VARs? A primer for macroeconomists_. NBER Macroeconomics Annual 2025, vol. 40, pp. 1-64, National Bureau of Economic Research.
 
 Rigobon, R. (2003). Identification through heteroskedasticity. *Review of
 Economics and Statistics*, 85(4), 777–792.

@@ -442,7 +442,7 @@ gweaktest <- function(y, Y, X, Z,
   # Partial out exogenous regressors
   Zo  <- Z - X %*% qr.solve(X, Z)
   Zo  <- sweep(Zo, 2, colMeans(Zo), "-")
-  Zo  <- Zo %*% .mat_pow(crossprod(Zo) / T, -0.5)   # normalise: Zo'Zo/T = I_K
+  Zo  <- Zo %*% .mat_pow(crossprod(Zo) / Tobs, -0.5)   # normalise: Zo'Zo/Tobs = I_K
 
   Yo  <- Y - X %*% qr.solve(X, Y)
   yo  <- y - X %*% qr.solve(X, y)

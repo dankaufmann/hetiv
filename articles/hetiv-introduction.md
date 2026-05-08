@@ -578,10 +578,10 @@ knitr::kable(
 
 | Specification | Statistic | LM critical value | SY critical value | Strong instruments? |
 |:---|---:|---:|---:|:---|
-| HET-IV, no controls | 13123.73 | 99.22 | NaN | Yes |
-| HET-IV, with controls | 68289.08 | 60.47 | NaN | Yes |
-| Proxy-IV, with controls | 1370.99 | 43.80 | NaN | Yes |
-| Proxy-IV, with controls + recursive restriction | 1370.99 | 43.80 | NaN | Yes |
+| HET-IV, no controls | 27.28 | 99.22 | NaN | No |
+| HET-IV, with controls | 142.57 | 60.47 | NaN | Yes |
+| Proxy-IV, with controls | 28.56 | 43.80 | NaN | No |
+| Proxy-IV, with controls + recursive restriction | 28.56 | 43.80 | NaN | No |
 
 Weak instrument test results (Lewis-Mertens generalised minimum
 eigenvalue test) {.table}

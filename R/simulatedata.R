@@ -113,7 +113,7 @@ simulatedata <- function(Phi, SigE, PsiE, PsiR, Nobs, Nbin, N, R, E, Nevn, P, eD
     }
 
     # Add shocks for periods with an event (if set to 0, then no heteroskedasticity)
-    if(t %% Nevn == 0 & Nevn != 0){
+    if(Nevn != 0 && t %% Nevn == 0){
       e[t, ]  <-  PsiR %*% eR[t, ] + PsiE %*% eE[t, ]
       y[t, ]  <-  y[t, ] + e[t, ]
       IndE[t] <- 1

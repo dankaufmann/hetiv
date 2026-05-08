@@ -48,10 +48,14 @@ kfpredict <- function(Sig, SigR, Psi, et, tol = sqrt(.Machine$double.eps), scale
     A      <- sapply(seq_len(ncol(Psi)), function(i) c(Psi[, i] %*% t(Psi[, i])))
     sig    <- c(MASS::ginv(A) %*% q)
 
+    if(any(sig < 0))
+      warning("Some estimated shock variances are negative (weak heteroskedasticity); ",
+              "using absolute values for scaling.")
+
     if(length(sig) > 1){
-      myScale <- diag(sqrt(sig))
+      myScale <- diag(sqrt(abs(sig)))
     }else{
-      myScale <- sqrt(sig)
+      myScale <- sqrt(abs(sig))
     }
 
   }else{

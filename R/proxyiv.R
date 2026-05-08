@@ -38,8 +38,10 @@
 #' @param cum Logical scalar or vector of length N. If `TRUE` for variable `i`,
 #'   the cumulative IRF is reported. A single value is recycled to all
 #'   variables. Default `FALSE`.
-#' @param Hstep Integer. Step size between estimated horizons. If `> 1`, only
-#'   every `Hstep`-th horizon is estimated starting from `H = 1`. Default `1`.
+#' @param Hstep Integer. Step size between horizons. The default `1` estimates
+#'   all horizons 0 through H - 1. Values greater than 1 are intended only for
+#'   fast testing; they are only safe when `Hstep >= H` (a single horizon is
+#'   stored). For complete IRF estimation always use `Hstep = 1`. Default `1`.
 #' @param recursive Logical. If `TRUE`, imposes recursive zero restrictions
 #'   across shock dimensions: for shock `e > 1`, the variables and instruments
 #'   from dimensions `1, ..., e-1` are added as controls. Default `FALSE`.
@@ -67,7 +69,10 @@
 #'     \item{`Sig`}{Covariance matrix of residuals on event days.}
 #'     \item{`SigR`}{Covariance matrix of residuals on control days, or `NA`
 #'       if unavailable.}
-#'     \item{`Psi`}{Impact matrix (N x E), i.e. `irf[1, , ]`.}
+#'     \item{`Psi`}{Impact matrix (N x E), equal to `irf[1, , ]`. By the
+#'       package's indexing convention `HSeries` starts at 1, so the first LP
+#'       uses `lead(y, 0)` (the contemporaneous value) and is labelled horizon
+#'       0; `irf[1, , ]` is therefore always the impact response.}
 #'     \item{`WeakData`}{Data frame of endogenous variables and instruments for
 #'       the Lewis-Mertens (2025) weak instrument test.}
 #'   }

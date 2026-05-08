@@ -34,8 +34,10 @@
 #' @param cum Logical vector of length N. For each variable in `y`, whether
 #'   to report the cumulative impulse response instead of the level response.
 #'   If only one provided, applied to all impulse responses.
-#' @param Hstep Integer. Step size between horizons. If `> 1`, only every
-#'   `Hstep`-th horizon is estimated starting from `H = 0`.
+#' @param Hstep Integer. Step size between horizons. The default `1` estimates
+#'   all horizons 0 through H - 1. Values greater than 1 are intended only for
+#'   fast testing; they are only safe when `Hstep >= H` (a single horizon is
+#'   stored). For complete IRF estimation always use `Hstep = 1`.
 #' @param details Logical. If `TRUE`, code saves detailed IV results, which is slower.
 #'   if set to `FALSE`, returns only impulse response and standard error (e.g. for bootstrap)
 #'
@@ -55,7 +57,10 @@
 #'       shock extraction).}
 #'     \item{`SigR`}{Covariance matrix of residuals on control days, or `NA`
 #'       if unavailable (used for shock extraction).}
-#'     \item{`Psi`}{Impact matrix (N x E), i.e. `irf[1, , ]`.}
+#'     \item{`Psi`}{Impact matrix (N x E), equal to `irf[1, , ]`. By the
+#'       package's indexing convention `HSeries` starts at 1, so the first LP
+#'       uses `lead(y, 0)` (the contemporaneous value) and is labelled horizon
+#'       0; `irf[1, , ]` is therefore always the impact response.}
 #'     \item{`WeakData`}{Data frame of endogenous variables and instruments for
 #'       the Lewis-Mertens (2025) weak instrument test.}
 #'   }
@@ -342,7 +347,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
     }else{
       SigR <- NA
     }
-    Psi  <- irfest[1 , ,]
+    Psi  <- irfest[1,,]
   
     # Save data for weak instruments test by Lewis-Mertens (2025)
     if(controls.info[1] != "1"){

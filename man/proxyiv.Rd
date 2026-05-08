@@ -62,8 +62,10 @@ variable to this value. Set to \code{1} for standard unit-effect normalization.}
 the cumulative IRF is reported. A single value is recycled to all
 variables. Default \code{FALSE}.}
 
-\item{Hstep}{Integer. Step size between estimated horizons. If \verb{> 1}, only
-every \code{Hstep}-th horizon is estimated starting from \code{H = 1}. Default \code{1}.}
+\item{Hstep}{Integer. Step size between horizons. The default \code{1} estimates
+all horizons 0 through H - 1. Values greater than 1 are intended only for
+fast testing; they are only safe when \code{Hstep >= H} (a single horizon is
+stored). For complete IRF estimation always use \code{Hstep = 1}. Default \code{1}.}
 
 \item{recursive}{Logical. If \code{TRUE}, imposes recursive zero restrictions
 across shock dimensions: for shock \code{e > 1}, the variables and instruments
@@ -94,7 +96,10 @@ covariance estimation, one per outcome variable.}
 \item{\code{Sig}}{Covariance matrix of residuals on event days.}
 \item{\code{SigR}}{Covariance matrix of residuals on control days, or \code{NA}
 if unavailable.}
-\item{\code{Psi}}{Impact matrix (N x E), i.e. \code{irf[1, , ]}.}
+\item{\code{Psi}}{Impact matrix (N x E), equal to \code{irf[1, , ]}. By the
+package's indexing convention \code{HSeries} starts at 1, so the first LP
+uses \code{lead(y, 0)} (the contemporaneous value) and is labelled horizon
+0; \code{irf[1, , ]} is therefore always the impact response.}
 \item{\code{WeakData}}{Data frame of endogenous variables and instruments for
 the Lewis-Mertens (2025) weak instrument test.}
 }

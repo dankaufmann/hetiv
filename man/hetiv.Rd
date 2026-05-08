@@ -57,8 +57,10 @@ interacted with event/non-event dummies.}
 to report the cumulative impulse response instead of the level response.
 If only one provided, applied to all impulse responses.}
 
-\item{Hstep}{Integer. Step size between horizons. If \verb{> 1}, only every
-\code{Hstep}-th horizon is estimated starting from \code{H = 0}.}
+\item{Hstep}{Integer. Step size between horizons. The default \code{1} estimates
+all horizons 0 through H - 1. Values greater than 1 are intended only for
+fast testing; they are only safe when \code{Hstep >= H} (a single horizon is
+stored). For complete IRF estimation always use \code{Hstep = 1}.}
 
 \item{details}{Logical. If \code{TRUE}, code saves detailed IV results, which is slower.
 if set to \code{FALSE}, returns only impulse response and standard error (e.g. for bootstrap)}
@@ -80,7 +82,10 @@ covariance estimation and shock extraction).}
 shock extraction).}
 \item{\code{SigR}}{Covariance matrix of residuals on control days, or \code{NA}
 if unavailable (used for shock extraction).}
-\item{\code{Psi}}{Impact matrix (N x E), i.e. \code{irf[1, , ]}.}
+\item{\code{Psi}}{Impact matrix (N x E), equal to \code{irf[1, , ]}. By the
+package's indexing convention \code{HSeries} starts at 1, so the first LP
+uses \code{lead(y, 0)} (the contemporaneous value) and is labelled horizon
+0; \code{irf[1, , ]} is therefore always the impact response.}
 \item{\code{WeakData}}{Data frame of endogenous variables and instruments for
 the Lewis-Mertens (2025) weak instrument test.}
 }

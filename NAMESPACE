@@ -3,6 +3,7 @@
 export(computeirf)
 export(filllinear)
 export(firstdiff)
+export(gweaktest)
 export(hetiv)
 export(kfpredict)
 export(logdiff)

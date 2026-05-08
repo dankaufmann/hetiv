@@ -354,9 +354,9 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
   
     # Save data for weak instruments test by Lewis-Mertens (2025)
     if(controls.info[1] != "1"){
-      WeakData <- data.frame(DataM[, paste0("y", 1:E)], DataM[, paste0("Z", 1:E)], DataM[, controls.info])
+      WeakData <- data.frame(DataM[, paste0("y", 1:N)], DataM[, paste0("Z", 1:E)], DataM[, controls.info])
     }else{
-      WeakData <- data.frame(DataM[, paste0("y", 1:E)], DataM[, paste0("Z", 1:E)])
+      WeakData <- data.frame(DataM[, paste0("y", 1:N)], DataM[, paste0("Z", 1:E)])
     }
     if(E == 1){
       if(controls.info[1] != "1"){
@@ -379,7 +379,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
     return(list(irf = irfest, se = irfse,
               IVRes = IVRes, OLSRes = OLSRes, ORTHRes = ORTHRes,
               Obs = Obs, Method = Method,
-              et = et, Sig = Sig, SigR = SigR, Psi = Psi, WeakData = WeakData))
+              et = as.matrix(et), Sig = Sig, SigR = SigR, Psi = Psi, WeakData = WeakData))
 
   }else{
     return(list(irf = irfest, se = irfse, Method = Method))

@@ -21,6 +21,7 @@ remotes::install_github("dankaufmann/hetiv")
 |---|---|
 | `hetiv()` | Estimates impulse response functions via heteroskedasticity-based IV local projections |
 | `proxyiv()` | Estimates impulse response functions via proxy-IV local projections |
+| `gweaktest()` | Tests for weak instruments using the generalised minimum eigenvalue statistic of Lewis and Mertens (2025) |
 | `kfpredict()` | Extracts structural shocks from reduced-form residuals via Kalman filter |
 | `computeirf()` | Recursively computes IRFs from an impact matrix and VAR coefficients |
 | `normalize()` | Standardizes a time series to zero mean and unit standard deviation |
@@ -69,6 +70,37 @@ res <- proxyiv(y = y, O = O, Z = Z, Ind = Ind, P = 1, H = 20, E = 2,
 plots <- plotirf(IRFest = res$irf, IRFse = res$se,
                  HTick = 5, Labels = c("Var 1", "Var 2"))
 cowplot::plot_grid(plotlist = plots)
+```
+
+### Test for weak instruments (Lewis-Mertens, 2025)
+
+```r
+# y: T x 1 regressand
+# Y: T x N matrix of endogenous regressors
+# X: T x Nx matrix of exogenous controls
+# Z: T x K matrix of instruments (requires K >= N)
+
+wt <- gweaktest(y = y, Y = Y, X = X, Z = Z)
+
+# Inspect test statistics and critical values
+wt$gmin_generalized                            # generalised min-eigenvalue statistic
+wt$gmin_generalized_critical_value             # Lewis-Mertens sharp critical value (Stiefel)
+wt$gmin_generalized_critical_value_simplified  # conservative closed-form bound
+wt$stock_yogo_test_statistic                   # Stock-Yogo statistic (Nagar approximation)
+wt$stock_yogo_critical_value_nagar             # Stock-Yogo critical value
+
+# With Newey-West HAR standard errors and custom bias tolerance
+wt <- gweaktest(y = y, Y = Y, X = X, Z = Z, cov_type = "NW", tau = 0.10)
+
+# hetiv() and proxyiv() return WeakData when details = TRUE,
+# which contains the outcome and instrument columns needed for gweaktest()
+res     <- hetiv(y = y, O = O, Ind = Ind, P = 1, H = 20, E = 1, details = TRUE)
+z_cols  <- grep("^Z", names(res$WeakData))
+y_cols  <- grep("^y", names(res$WeakData))
+wt      <- gweaktest(y = res$WeakData[, y_cols[1], drop = FALSE],
+                     Y = res$WeakData[, y_cols[-1], drop = FALSE],
+                     X = matrix(numeric(0), nrow(res$WeakData), 0),
+                     Z = res$WeakData[, z_cols, drop = FALSE])
 ```
 
 ### Extract structural shocks

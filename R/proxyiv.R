@@ -287,9 +287,9 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
 
     # Data for Lewis-Mertens (2025) weak instrument test
     if (controls.info[1] != "1") {
-      WeakData <- data.frame(DataM[, paste0("y", 1:E)], DataM[, paste0("Z", 1:E)], DataM[, controls.info])
+      WeakData <- data.frame(DataM[, paste0("y", 1:N)], DataM[, paste0("Z", 1:E)], DataM[, controls.info])
     } else {
-      WeakData <- data.frame(DataM[, paste0("y", 1:E)], DataM[, paste0("Z", 1:E)])
+      WeakData <- data.frame(DataM[, paste0("y", 1:N)], DataM[, paste0("Z", 1:E)])
     }
     if (E == 1) {
       colnames(WeakData) <- if (controls.info[1] != "1") c("y1", "Z1", controls.info) else c("y1", "Z1")
@@ -301,7 +301,7 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
     return(list(irf = irfest, se = irfse,
                 IVRes = IVRes, OLSRes = OLSRes,
                 Obs = Obs, Method = Method,
-                et = et, Sig = Sig, SigR = SigR, Psi = Psi,
+                et = as.matrix(et), Sig = Sig, SigR = SigR, Psi = Psi,
                 WeakData = WeakData))
   } else {
     return(list(irf = irfest, se = irfse, Method = Method))

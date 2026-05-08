@@ -468,7 +468,7 @@ cor_df2<- data.frame(
 )
 
 knitr::kable(
-    data.frame(cor(cor_df1, use = "complete.obs"))[1, ],
+    data.frame(round(cor(cor_df1, use = "complete.obs"), 2))[1, ],
     col.names = c("True", "Proxy", "HET-IV without controls", "HET-IV with controls", "Proxy-IV with controls", "Proxy-IV with recursive restriction"),
     caption   = paste0("Correlation of predicted shocks with true shocks for shock ", j)
 )
@@ -476,16 +476,15 @@ knitr::kable(
 
 |  | True | Proxy | HET-IV without controls | HET-IV with controls | Proxy-IV with controls | Proxy-IV with recursive restriction |
 |:---|---:|---:|---:|---:|---:|---:|
-| True | 1 | 0.9122798 | 0.8636473 | 0.9958312 | 0.9963113 | 0.9963113 |
+| True | 1 | 0.91 | 0.86 | 1 | 1 | 1 |
 
 Correlation of predicted shocks with true shocks for shock 2 {.table}
 
 ``` r
 
 
-
 knitr::kable(
-    data.frame(cor(cor_df2, use = "complete.obs"))[1, ],
+    data.frame(round(cor(cor_df2, use = "complete.obs"), 2))[1, ],
     col.names = c("True", "Proxy","HET-IV without controls", "HET-IV with controls", "Proxy-IV with controls", "Proxy-IV with recursive restriction"),
     caption   = paste0("Correlation of predicted shocks with true shocks for shock ", j)
 )
@@ -493,7 +492,7 @@ knitr::kable(
 
 |  | True | Proxy | HET-IV without controls | HET-IV with controls | Proxy-IV with controls | Proxy-IV with recursive restriction |
 |:---|---:|---:|---:|---:|---:|---:|
-| True | 1 | 0.8000439 | 0.5552849 | 0.940662 | 0.9630172 | 0.9562004 |
+| True | 1 | 0.8 | 0.56 | 0.94 | 0.96 | 0.96 |
 
 Correlation of predicted shocks with true shocks for shock 2 {.table}
 
@@ -591,8 +590,8 @@ The specification without controls is affected by a weak-instrument
 problem. THe other specification pass the weak instrument tests. Note
 that the critical values are typically much higher than the common rule
 of thumb for the Stock and Yogo (2005) test, but also, higher than in
-the HAR test for the univariate case by Montiel Olea and Pfluger (XXX),
-which is around 23.
+the HAR test for the univariate case by Montiel Olea and Pflueger
+(2013), which is around 23.
 
 ## References
 

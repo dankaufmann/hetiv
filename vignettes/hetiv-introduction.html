@@ -831,7 +831,7 @@ event shocksfrom the DGP.</p>
 <span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a>)</span>
 <span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a></span>
 <span id="cb14-21"><a href="#cb14-21" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
-<span id="cb14-22"><a href="#cb14-22" tabindex="-1"></a>    <span class="fu">data.frame</span>(<span class="fu">cor</span>(cor_df1, <span class="at">use =</span> <span class="st">&quot;complete.obs&quot;</span>))[<span class="dv">1</span>, ],</span>
+<span id="cb14-22"><a href="#cb14-22" tabindex="-1"></a>    <span class="fu">data.frame</span>(<span class="fu">round</span>(<span class="fu">cor</span>(cor_df1, <span class="at">use =</span> <span class="st">&quot;complete.obs&quot;</span>), <span class="dv">2</span>))[<span class="dv">1</span>, ],</span>
 <span id="cb14-23"><a href="#cb14-23" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;True&quot;</span>, <span class="st">&quot;Proxy&quot;</span>, <span class="st">&quot;HET-IV without controls&quot;</span>, <span class="st">&quot;HET-IV with controls&quot;</span>, <span class="st">&quot;Proxy-IV with controls&quot;</span>, <span class="st">&quot;Proxy-IV with recursive restriction&quot;</span>),</span>
 <span id="cb14-24"><a href="#cb14-24" tabindex="-1"></a>    <span class="at">caption   =</span> <span class="fu">paste0</span>(<span class="st">&quot;Correlation of predicted shocks with true shocks for shock &quot;</span>, j)</span>
 <span id="cb14-25"><a href="#cb14-25" tabindex="-1"></a>)</span></code></pre></div>
@@ -841,11 +841,11 @@ event shocksfrom the DGP.</p>
 <colgroup>
 <col width="4%" />
 <col width="4%" />
-<col width="8%" />
+<col width="5%" />
+<col width="20%" />
+<col width="17%" />
 <col width="19%" />
-<col width="16%" />
-<col width="18%" />
-<col width="29%" />
+<col width="30%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -862,32 +862,31 @@ event shocksfrom the DGP.</p>
 <tr class="odd">
 <td align="left">True</td>
 <td align="right">1</td>
-<td align="right">0.9122798</td>
-<td align="right">0.8636473</td>
-<td align="right">0.9958312</td>
-<td align="right">0.9963113</td>
-<td align="right">0.9963113</td>
+<td align="right">0.91</td>
+<td align="right">0.86</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">1</td>
 </tr>
 </tbody>
 </table>
 <div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a></span>
-<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a></span>
-<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
-<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>    <span class="fu">data.frame</span>(<span class="fu">cor</span>(cor_df2, <span class="at">use =</span> <span class="st">&quot;complete.obs&quot;</span>))[<span class="dv">1</span>, ],</span>
-<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;True&quot;</span>, <span class="st">&quot;Proxy&quot;</span>,<span class="st">&quot;HET-IV without controls&quot;</span>, <span class="st">&quot;HET-IV with controls&quot;</span>, <span class="st">&quot;Proxy-IV with controls&quot;</span>, <span class="st">&quot;Proxy-IV with recursive restriction&quot;</span>),</span>
-<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>    <span class="at">caption   =</span> <span class="fu">paste0</span>(<span class="st">&quot;Correlation of predicted shocks with true shocks for shock &quot;</span>, j)</span>
-<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>)</span></code></pre></div>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>    <span class="fu">data.frame</span>(<span class="fu">round</span>(<span class="fu">cor</span>(cor_df2, <span class="at">use =</span> <span class="st">&quot;complete.obs&quot;</span>), <span class="dv">2</span>))[<span class="dv">1</span>, ],</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;True&quot;</span>, <span class="st">&quot;Proxy&quot;</span>,<span class="st">&quot;HET-IV without controls&quot;</span>, <span class="st">&quot;HET-IV with controls&quot;</span>, <span class="st">&quot;Proxy-IV with controls&quot;</span>, <span class="st">&quot;Proxy-IV with recursive restriction&quot;</span>),</span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>    <span class="at">caption   =</span> <span class="fu">paste0</span>(<span class="st">&quot;Correlation of predicted shocks with true shocks for shock &quot;</span>, j)</span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>)</span></code></pre></div>
 <table>
 <caption>Correlation of predicted shocks with true shocks for shock
 2</caption>
 <colgroup>
 <col width="4%" />
 <col width="4%" />
-<col width="8%" />
+<col width="5%" />
+<col width="20%" />
+<col width="17%" />
 <col width="19%" />
-<col width="16%" />
-<col width="18%" />
-<col width="29%" />
+<col width="30%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -904,11 +903,11 @@ event shocksfrom the DGP.</p>
 <tr class="odd">
 <td align="left">True</td>
 <td align="right">1</td>
-<td align="right">0.8000439</td>
-<td align="right">0.5552849</td>
-<td align="right">0.940662</td>
-<td align="right">0.9630172</td>
-<td align="right">0.9562004</td>
+<td align="right">0.8</td>
+<td align="right">0.56</td>
+<td align="right">0.94</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
 </tr>
 </tbody>
 </table>
@@ -1034,8 +1033,8 @@ eigenvalue test)</caption>
 problem. THe other specification pass the weak instrument tests. Note
 that the critical values are typically much higher than the common rule
 of thumb for the Stock and Yogo (2005) test, but also, higher than in
-the HAR test for the univariate case by Montiel Olea and Pfluger (XXX),
-which is around 23.</p>
+the HAR test for the univariate case by Montiel Olea and Pflueger
+(2013), which is around 23.</p>
 </div>
 <div id="references" class="section level2">
 <h2>References</h2>

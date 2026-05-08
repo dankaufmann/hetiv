@@ -11,5 +11,7 @@
 #'
 #' @export
 logdiff <- function(TS) {
+  if (any(TS <= 0, na.rm = TRUE))
+    warning("Non-positive values in TS; log-differences will contain NaN.")
   log(TS) - dplyr::lag(log(TS), 1)
 }

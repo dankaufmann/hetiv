@@ -4,8 +4,8 @@
 #' instruments (proxies) combined with local projections (Jordà, 2005). The
 #' proxy variables serve directly as instruments for the endogenous shock
 #' variables. Optionally imposes recursive zero restrictions across shock
-#' dimensions and supports deterministic controls and interaction terms,
-#' following the same conventions as [hetiv()].
+#' dimensions and supports deterministic controls following the same
+#' conventions as [hetiv()].
 #'
 #' @param y Numeric matrix of stationary outcome variables (T x N). The effect
 #'   on the first variable in each dimension is normalized to `norm` at horizon
@@ -229,7 +229,13 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
                             " | Z + ",
                             paste(controls.iv, collapse = "+"))
 
-        IV.mod <- suppressWarnings(ivreg::ivreg(as.formula(myFormula), data = subset(DataMSub, Ind < 2)))
+        # suppressWarnings only for recursive ordering, where collinearity between
+        # instruments and prior-shock controls is expected and harmless
+        if (recursive == TRUE) {
+          IV.mod <- suppressWarnings(ivreg::ivreg(as.formula(myFormula), data = subset(DataMSub, Ind < 2)))
+        } else {
+          IV.mod <- ivreg::ivreg(as.formula(myFormula), data = subset(DataMSub, Ind < 2))
+        }
         IV.se  <- sqrt(diag(sandwich::vcovHC(IV.mod, type = "HC0")))
 
         # Compute OLS residuals for covariance estimation (once per outcome variable, at e=1, h=1)
@@ -293,9 +299,9 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
     } else {
       WeakData <- data.frame(DataM[, paste0("y", 1:N)], DataM[, paste0("Z", 1:E)])
     }
-    if (E == 1) {
-      colnames(WeakData) <- if (controls.info[1] != "1") c("y1", "Z1", controls.info) else c("y1", "Z1")
-    }
+    wk_names <- c(paste0("y", seq_len(N)), paste0("Z", seq_len(E)))
+    if(controls.info[1] != "1") wk_names <- c(wk_names, controls.info)
+    colnames(WeakData) <- wk_names
     WeakData[DataM$Ind == 2, ] <- NA
 
     Obs <- data.frame(Tp = Te, Tc = Tn, To = To, Tt = Tt)

@@ -18,7 +18,8 @@
 #' @return A list of `ggplot` objects, one per variable-shock combination,
 #'   ordered by shock (outer loop) then variable (inner loop).
 #'
-#' @importFrom ggplot2 ggplot aes geom_line geom_ribbon geom_hline scale_x_continuous theme_minimal theme element_text element_rect element_blank unit xlab ylab ggtitle element_line
+#' @importFrom ggplot2 ggplot aes geom_line geom_ribbon geom_hline scale_x_continuous theme_minimal theme element_text element_rect element_blank xlab ylab ggtitle element_line
+#' @importFrom grid unit
 #'
 #' @export
 plotirf <- function(IRFest, IRFse = NULL, HTick, Labels, ci = c(0.90, 0.95)){
@@ -43,10 +44,11 @@ plotirf <- function(IRFest, IRFse = NULL, HTick, Labels, ci = c(0.90, 0.95)){
   has_se <- is.array(IRFse)
   ci     <- sort(ci, decreasing = TRUE)   # widest band drawn first (behind)
   if(has_se){
-    if(noDims != 3) dim(IRFse) <- c(HNum, N, 1)
+    IRFse_loc <- IRFse
+    if(noDims != 3) dim(IRFse_loc) <- c(HNum, N, 1)
     bands <- lapply(ci, function(level){
       z <- qnorm((1 + level) / 2)
-      list(upper = IRFest + z * IRFse, lower = IRFest - z * IRFse)
+      list(upper = IRFest + z * IRFse_loc, lower = IRFest - z * IRFse_loc)
     })
   }
 
@@ -74,7 +76,7 @@ plotirf <- function(IRFest, IRFse = NULL, HTick, Labels, ci = c(0.90, 0.95)){
 
       if(has_se){
         # Alpha decreases for wider bands so narrower bands appear more opaque
-        alphas <- seq(0.15, 0.10, length.out = length(ci))
+        alphas <- seq(0.30, 0.10, length.out = length(ci))
         for(k in seq_along(ci)){
           g1 <- g1 + ggplot2::geom_ribbon(
             ggplot2::aes(ymin = .data[[paste0("lower", k)]], ymax = .data[[paste0("upper", k)]]),
@@ -89,7 +91,7 @@ plotirf <- function(IRFest, IRFse = NULL, HTick, Labels, ci = c(0.90, 0.95)){
           panel.grid.minor = ggplot2::element_blank(),
           panel.border     = ggplot2::element_rect(color = "black", fill = NA, linewidth = 0.2, linetype = "solid")
         ) +
-        ggplot2::theme(plot.margin = ggplot2::unit(c(0.1, 0.1, 0.1, 0.1), "cm"))
+        ggplot2::theme(plot.margin = grid::unit(c(0.1, 0.1, 0.1, 0.1), "cm"))
 
       myGraphs[[n]] <- g1
       n <- n + 1

@@ -109,8 +109,8 @@ Estimates impulse response functions (IRFs) using user-provided external
 instruments (proxies) combined with local projections (Jordà, 2005). The
 proxy variables serve directly as instruments for the endogenous shock
 variables. Optionally imposes recursive zero restrictions across shock
-dimensions and supports deterministic controls and interaction terms,
-following the same conventions as \code{\link[=hetiv]{hetiv()}}.
+dimensions and supports deterministic controls following the same
+conventions as \code{\link[=hetiv]{hetiv()}}.
 }
 \references{
 Jordà, Ò. (2005). Estimation and Inference of Impulse Responses by Local

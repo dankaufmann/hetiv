@@ -322,7 +322,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
 
           if(h == 1){
             # Save OLS and orthogonalization results for horizon 1 only to save memory
-            OLSRes[[paste0("OLS.h", h, ".n", i, ".e", e)]] <- OLS.mod
+            OLSRes[[paste0("OLS.n", i)]] <- OLS.mod
             
             if(i == e){
               ORTHRes[[paste0("ORTH.h", h, ".n", i, ".e", e)]] <- orthModel
@@ -355,13 +355,9 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
     }else{
       WeakData <- data.frame(DataM[, paste0("y", 1:N)], DataM[, paste0("Z", 1:E)])
     }
-    if(E == 1){
-      if(controls.info[1] != "1"){
-        colnames(WeakData) <- c("y1", "Z1", controls.info)
-      }else{
-        colnames(WeakData) <- c("y1", "Z1")
-      }
-    }
+    wk_names <- c(paste0("y", seq_len(N)), paste0("Z", seq_len(E)))
+    if(controls.info[1] != "1") wk_names <- c(wk_names, controls.info)
+    colnames(WeakData) <- wk_names
 
     # Set data to missing if indicator is equal to 2
     WeakData[DataM$Ind == 2, ] <- NA
@@ -369,7 +365,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
     Obs <- data.frame(Tp = Te, Tc = Tn, To = To, Tt = Tt)
   }
   
-  Method = "Heteroscedasticity-IV"
+  Method <- "Heteroscedasticity-IV"
   
   if(details == TRUE){
 

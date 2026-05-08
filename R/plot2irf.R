@@ -1,9 +1,10 @@
 #' Plot and compare impulse responses from two estimation approaches
 #'
 #' Produces a panel of IRF plots comparing two sets of impulse responses
-#' side-by-side. Each panel shows the point estimates and 90% confidence
-#' bands for both approaches. Returns a list of `ggplot` objects (one per
-#' variable-shock combination) that can be arranged with e.g. `gridExtra::grid.arrange()`.
+#' side-by-side. Each panel shows the point estimates and confidence bands
+#' at level `ci` for both approaches. Returns a list of `ggplot` objects
+#' (one per variable-shock combination) that can be arranged with e.g.
+#' `cowplot::plot_grid()`.
 #'
 #' @param IRF1 Array (H x N x E) of impulse responses for the first approach.
 #'   Dimnames on the first dimension must be the horizon labels (numeric).
@@ -18,7 +19,8 @@
 #' @return A list of `ggplot` objects, one per variable-shock combination,
 #'   ordered by shock (outer loop) then variable (inner loop).
 #'
-#' @importFrom ggplot2 ggplot aes geom_line geom_ribbon geom_hline scale_x_continuous theme_minimal theme element_text element_rect element_blank unit xlab ylab ggtitle element_line
+#' @importFrom ggplot2 ggplot aes geom_line geom_ribbon geom_hline scale_x_continuous scale_colour_manual scale_linetype_manual theme_minimal theme element_text element_rect element_blank xlab ylab ggtitle element_line labs
+#' @importFrom grid unit
 #'
 #' @export
 plot2irf <- function(IRF1, IRF1se, IRF2, IRF2se, HTick, Labels, ci = 0.90){
@@ -69,17 +71,20 @@ plot2irf <- function(IRF1, IRF1se, IRF2, IRF2se, HTick, Labels, ci = 0.90){
         ggplot2::theme(plot.title = ggplot2::element_text(size = 10)) +
         ggplot2::scale_x_continuous(breaks = seq(HSeries[1], max(HSeries), HTick)) +
         ggplot2::geom_hline(yintercept = 0, linewidth = 0.2) +
-        ggplot2::theme(legend.position = "none") +
-        ggplot2::geom_line(ggplot2::aes(y = IRF1), colour = "steelblue", linewidth = 0.7) +
-        ggplot2::geom_line(ggplot2::aes(y = IRF2), colour = "darkred",   linewidth = 0.7, linetype = "dotted") +
+        ggplot2::geom_line(ggplot2::aes(y = IRF1, colour = "Approach 1", linetype = "Approach 1"), linewidth = 0.7) +
+        ggplot2::geom_line(ggplot2::aes(y = IRF2, colour = "Approach 2", linetype = "Approach 2"), linewidth = 0.7) +
         ggplot2::geom_ribbon(ggplot2::aes(ymin = lower1, ymax = upper1), fill = "steelblue", alpha = 0.1) +
         ggplot2::geom_ribbon(ggplot2::aes(ymin = lower2, ymax = upper2), fill = "darkred",   alpha = 0.1) +
+        ggplot2::scale_colour_manual(values = c("Approach 1" = "steelblue", "Approach 2" = "darkred")) +
+        ggplot2::scale_linetype_manual(values = c("Approach 1" = "solid",   "Approach 2" = "dotted")) +
+        ggplot2::labs(colour = NULL, linetype = NULL) +
         ggplot2::theme(
+          legend.position  = "bottom",
           panel.grid       = ggplot2::element_line(color = "gray", linewidth = 0.2, linetype = "dotted"),
           panel.grid.minor = ggplot2::element_blank(),
           panel.border     = ggplot2::element_rect(color = "black", fill = NA, linewidth = 0.2, linetype = "solid")
         ) +
-        ggplot2::theme(plot.margin = ggplot2::unit(c(0.1, 0.1, 0.1, 0.1), "cm"))
+        ggplot2::theme(plot.margin = grid::unit(c(0.1, 0.1, 0.1, 0.1), "cm"))
 
       myGraphs[[n]] <- g1
       n <- n + 1

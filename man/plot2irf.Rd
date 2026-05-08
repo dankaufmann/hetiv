@@ -29,7 +29,8 @@ ordered by shock (outer loop) then variable (inner loop).
 }
 \description{
 Produces a panel of IRF plots comparing two sets of impulse responses
-side-by-side. Each panel shows the point estimates and 90\% confidence
-bands for both approaches. Returns a list of \code{ggplot} objects (one per
-variable-shock combination) that can be arranged with e.g. \code{gridExtra::grid.arrange()}.
+side-by-side. Each panel shows the point estimates and confidence bands
+at level \code{ci} for both approaches. Returns a list of \code{ggplot} objects
+(one per variable-shock combination) that can be arranged with e.g.
+\code{cowplot::plot_grid()}.
 }

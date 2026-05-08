@@ -67,6 +67,7 @@ simulatedata <- function(Phi, SigE, PsiE, PsiR, Nobs, Nbin, N, R, E, Nevn, P, eD
     }
   }else{
     # GARCH(1,1) shocks: eDist = c(alpha, beta)
+    if (E > 1) stop("GARCH shocks (eDist = c(alpha, beta)) are only supported for E = 1.")
     omega <- 0.1          # constant term
     alpha <- eDist[1]     # ARCH effect (impact of past shocks)
     beta  <- eDist[2]     # GARCH effect (persistence of volatility)

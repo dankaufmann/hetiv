@@ -9,7 +9,7 @@ unit variance.
 ## Usage
 
 ``` r
-kfpredict(Sig, SigR, Psi, et, tol, scale = TRUE)
+kfpredict(Sig, SigR, Psi, et, tol = sqrt(.Machine$double.eps), scale = TRUE)
 ```
 
 ## Arguments

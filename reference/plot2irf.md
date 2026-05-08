@@ -4,7 +4,7 @@ Produces a panel of IRF plots comparing two sets of impulse responses
 side-by-side. Each panel shows the point estimates and 90% confidence
 bands for both approaches. Returns a list of `ggplot` objects (one per
 variable-shock combination) that can be arranged with e.g.
-[`gridExtra::grid.arrange()`](https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html).
+`gridExtra::grid.arrange()`.
 
 ## Usage
 

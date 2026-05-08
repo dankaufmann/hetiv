@@ -8,6 +8,15 @@ with daily financial market data.
 
 **Note**: This is work in progress. Installation and use at own risk.
 
+## Documentation
+
+Full documentation and a worked example are available at the package
+website: **<https://dankaufmann.github.io/hetiv/>**
+
+The introductory vignette — covering data simulation, HET-IV, Proxy-IV,
+IRF plots, shock extraction, and weak instrument testing — is at:
+**<https://dankaufmann.github.io/hetiv/articles/hetiv-introduction.html>**
+
 ## Installation
 
 You can install the development version from GitHub:

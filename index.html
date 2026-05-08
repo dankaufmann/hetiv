@@ -55,12 +55,18 @@
 <p><strong>Authors</strong>: Daniel Kaufmann, Marc Burri, Valentin Grob</p>
 <p><strong>Note</strong>: This is work in progress. Installation and use at own risk.</p>
 <div class="section level2">
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+</h2>
+<p>Full documentation and a worked example are available at the package website: <strong><a href="https://dankaufmann.github.io/hetiv/" class="uri">https://dankaufmann.github.io/hetiv/</a></strong></p>
+<p>The introductory vignette — covering data simulation, HET-IV, Proxy-IV, IRF plots, shock extraction, and weak instrument testing — is at: <strong><a href="https://dankaufmann.github.io/hetiv/articles/hetiv-introduction.html" class="uri">https://dankaufmann.github.io/hetiv/articles/hetiv-introduction.html</a></strong></p>
+</div>
+<div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p>You can install the development version from GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"dankaufmann/hetiv"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"dankaufmann/hetiv"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a>
@@ -137,7 +143,7 @@
 <h3 id="estimate-impulse-responses-via-heteroskedasticity-iv">Estimate impulse responses via heteroskedasticity-IV<a class="anchor" aria-label="anchor" href="#estimate-impulse-responses-via-heteroskedasticity-iv"></a>
 </h3>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">hetiv</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dankaufmann.github.io/hetiv/">hetiv</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># y:   T x N matrix of outcome variables</span></span>
 <span><span class="co"># O:   T x M matrix of information set variables</span></span>

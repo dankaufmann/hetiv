@@ -58,7 +58,7 @@ Kaufmann, Marc Burri, Valentin Grob</h4>
             
             <h4 data-toc-skip class="date">2026-05-08</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/dankaufmann/hetiv/blob/HEAD/vignettes/hetiv-introduction.Rmd" class="external-link"><code>vignettes/hetiv-introduction.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/dankaufmann/hetiv/blob/main/vignettes/hetiv-introduction.Rmd" class="external-link"><code>vignettes/hetiv-introduction.Rmd</code></a></small>
       <div class="d-none name"><code>hetiv-introduction.Rmd</code></div>
     </div>
 
@@ -121,7 +121,7 @@ patterns are added to variables 3 and 4 to illustrate the role of
 controls. The event indicator <code>Ind</code> equals 1 on policy event
 days and 0 on control days.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">hetiv</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dankaufmann.github.io/hetiv/">hetiv</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Dimensions</span></span>
 <span><span class="va">N</span>  <span class="op">&lt;-</span> <span class="fl">4</span>   <span class="co"># variables</span></span>
@@ -583,7 +583,7 @@ event shocksfrom the DGP.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">cor_df1</span>, use <span class="op">=</span> <span class="st">"complete.obs"</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">cor_df1</span>, use <span class="op">=</span> <span class="st">"complete.obs"</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>,</span>
 <span>    col.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"True"</span>, <span class="st">"Proxy"</span>, <span class="st">"HET-IV without controls"</span>, <span class="st">"HET-IV with controls"</span>, <span class="st">"Proxy-IV with controls"</span>, <span class="st">"Proxy-IV with recursive restriction"</span><span class="op">)</span>,</span>
 <span>    caption   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Correlation of predicted shocks with true shocks for shock "</span>, <span class="va">j</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -593,11 +593,11 @@ event shocksfrom the DGP.</p>
 <colgroup>
 <col width="4%">
 <col width="4%">
-<col width="5%">
-<col width="20%">
-<col width="17%">
+<col width="8%">
 <col width="19%">
-<col width="30%">
+<col width="16%">
+<col width="18%">
+<col width="29%">
 </colgroup>
 <thead><tr class="header">
 <th align="left"></th>
@@ -611,17 +611,18 @@ event shocksfrom the DGP.</p>
 <tbody><tr class="odd">
 <td align="left">True</td>
 <td align="right">1</td>
-<td align="right">0.91</td>
-<td align="right">0.86</td>
-<td align="right">1</td>
-<td align="right">1</td>
-<td align="right">1</td>
+<td align="right">0.9122798</td>
+<td align="right">0.8636473</td>
+<td align="right">0.9958312</td>
+<td align="right">0.9963113</td>
+<td align="right">0.9963113</td>
 </tr></tbody>
 </table>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
+<span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">cor_df2</span>, use <span class="op">=</span> <span class="st">"complete.obs"</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">cor_df2</span>, use <span class="op">=</span> <span class="st">"complete.obs"</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>,</span>
 <span>    col.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"True"</span>, <span class="st">"Proxy"</span>,<span class="st">"HET-IV without controls"</span>, <span class="st">"HET-IV with controls"</span>, <span class="st">"Proxy-IV with controls"</span>, <span class="st">"Proxy-IV with recursive restriction"</span><span class="op">)</span>,</span>
 <span>    caption   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Correlation of predicted shocks with true shocks for shock "</span>, <span class="va">j</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -631,11 +632,11 @@ event shocksfrom the DGP.</p>
 <colgroup>
 <col width="4%">
 <col width="4%">
-<col width="5%">
-<col width="20%">
-<col width="17%">
+<col width="8%">
 <col width="19%">
-<col width="30%">
+<col width="16%">
+<col width="18%">
+<col width="29%">
 </colgroup>
 <thead><tr class="header">
 <th align="left"></th>
@@ -649,11 +650,11 @@ event shocksfrom the DGP.</p>
 <tbody><tr class="odd">
 <td align="left">True</td>
 <td align="right">1</td>
-<td align="right">0.8</td>
-<td align="right">0.56</td>
-<td align="right">0.94</td>
-<td align="right">0.96</td>
-<td align="right">0.96</td>
+<td align="right">0.8000439</td>
+<td align="right">0.5552849</td>
+<td align="right">0.940662</td>
+<td align="right">0.9630172</td>
+<td align="right">0.9562004</td>
 </tr></tbody>
 </table>
 <p>The correlation between the true shocks and the proxy is lower than
@@ -779,8 +780,8 @@ eigenvalue test)</caption>
 problem. THe other specification pass the weak instrument tests. Note
 that the critical values are typically much higher than the common rule
 of thumb for the Stock and Yogo (2005) test, but also, higher than in
-the HAR test for the univariate case by Montiel Olea and Pflueger
-(2013), which is around 23.</p>
+the HAR test for the univariate case by Montiel Olea and Pfluger (XXX),
+which is around 23.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>

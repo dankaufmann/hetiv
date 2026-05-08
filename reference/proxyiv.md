@@ -93,8 +93,11 @@ proxyiv(
 
 - Hstep:
 
-  Integer. Step size between estimated horizons. If `> 1`, only every
-  `Hstep`-th horizon is estimated starting from `H = 1`. Default `1`.
+  Integer. Step size between horizons. The default `1` estimates all
+  horizons 0 through H - 1. Values greater than 1 are intended only for
+  fast testing; they are only safe when `Hstep >= H` (a single horizon
+  is stored). For complete IRF estimation always use `Hstep = 1`.
+  Default `1`.
 
 - recursive:
 
@@ -157,7 +160,10 @@ With `details = TRUE`, additionally contains:
 
 - `Psi`:
 
-  Impact matrix (N x E), i.e. `irf[1, , ]`.
+  Impact matrix (N x E), equal to `irf[1, , ]`. By the package's
+  indexing convention `HSeries` starts at 1, so the first LP uses
+  `lead(y, 0)` (the contemporaneous value) and is labelled horizon 0;
+  `irf[1, , ]` is therefore always the impact response.
 
 - `WeakData`:
 

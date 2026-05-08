@@ -136,8 +136,10 @@ variables. Default <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-hstep">Hstep<a class="anchor" aria-label="anchor" href="#arg-hstep"></a></dt>
-<dd><p>Integer. Step size between estimated horizons. If <code>&gt; 1</code>, only
-every <code>Hstep</code>-th horizon is estimated starting from <code>H = 1</code>. Default <code>1</code>.</p></dd>
+<dd><p>Integer. Step size between horizons. The default <code>1</code> estimates
+all horizons 0 through H - 1. Values greater than 1 are intended only for
+fast testing; they are only safe when <code>Hstep &gt;= H</code> (a single horizon is
+stored). For complete IRF estimation always use <code>Hstep = 1</code>. Default <code>1</code>.</p></dd>
 
 
 <dt id="arg-recursive">recursive<a class="anchor" aria-label="anchor" href="#arg-recursive"></a></dt>
@@ -189,7 +191,10 @@ covariance estimation, one per outcome variable.</p></dd>
 if unavailable.</p></dd>
 
 <dt><code>Psi</code></dt>
-<dd><p>Impact matrix (N x E), i.e. <code>irf[1, , ]</code>.</p></dd>
+<dd><p>Impact matrix (N x E), equal to <code>irf[1, , ]</code>. By the
+package's indexing convention <code>HSeries</code> starts at 1, so the first LP
+uses <code>lead(y, 0)</code> (the contemporaneous value) and is labelled horizon
+0; <code>irf[1, , ]</code> is therefore always the impact response.</p></dd>
 
 <dt><code>WeakData</code></dt>
 <dd><p>Data frame of endogenous variables and instruments for

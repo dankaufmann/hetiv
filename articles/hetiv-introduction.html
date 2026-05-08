@@ -162,9 +162,8 @@ days and 0 on control days.</p>
 <span>  Nevn <span class="op">=</span> <span class="fl">10</span>, P <span class="op">=</span> <span class="va">P</span>, eDist <span class="op">=</span> <span class="fl">0</span>, seed <span class="op">=</span> <span class="fl">42</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Trim burn-in</span></span>
-<span><span class="va">y_data</span> <span class="op">&lt;-</span> <span class="va">sim</span><span class="op">$</span><span class="va">y</span><span class="op">[</span><span class="op">(</span><span class="va">Nbin</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="op">(</span><span class="va">Nobs</span> <span class="op">+</span> <span class="va">Nbin</span><span class="op">)</span>, <span class="op">]</span></span>
-<span><span class="va">Ind</span>    <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">IndE</span><span class="op">[</span><span class="op">(</span><span class="va">Nbin</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="op">(</span><span class="va">Nobs</span> <span class="op">+</span> <span class="va">Nbin</span><span class="op">)</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">y_data</span> <span class="op">&lt;-</span> <span class="va">sim</span><span class="op">$</span><span class="va">y</span></span>
+<span><span class="va">Ind</span>    <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">IndE</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Inject deterministic weekday variation into variables 3 and 4</span></span>
 <span><span class="va">y_data</span><span class="op">[</span>, <span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">y_data</span><span class="op">[</span>, <span class="fl">3</span><span class="op">]</span> <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">Nobs</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span> <span class="fl">5</span></span>
@@ -178,9 +177,9 @@ high-frequency surprises are only observed on policy announcement
 days.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># RNG state after simulatedata(seed = 42) is deterministic, so no extra seed needed</span></span>
-<span><span class="va">e_proxy</span>       <span class="op">&lt;-</span> <span class="va">sim</span><span class="op">$</span><span class="va">eE</span><span class="op">[</span><span class="op">(</span><span class="va">Nbin</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="op">(</span><span class="va">Nobs</span> <span class="op">+</span> <span class="va">Nbin</span><span class="op">)</span>, <span class="op">]</span></span>
-<span><span class="va">e_proxy</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>  <span class="op">&lt;-</span> <span class="va">e_proxy</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">Nobs</span>, sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">e_proxy</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span>  <span class="op">&lt;-</span> <span class="va">e_proxy</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">Nobs</span>, sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">e_proxy</span>       <span class="op">&lt;-</span> <span class="va">sim</span><span class="op">$</span><span class="va">eE</span></span>
+<span><span class="va">e_proxy</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>  <span class="op">&lt;-</span> <span class="va">e_proxy</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">Nobs</span>, sd <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span>
+<span><span class="va">e_proxy</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span>  <span class="op">&lt;-</span> <span class="va">e_proxy</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">Nobs</span>, sd <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span>
 <span><span class="va">e_proxy</span><span class="op">[</span><span class="va">Ind</span> <span class="op">==</span> <span class="fl">0</span>, <span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -332,22 +331,22 @@ specifications</caption>
 <td align="right">0.5</td>
 <td align="right">0.53</td>
 <td align="right">0.46</td>
-<td align="right">0.53</td>
-<td align="right">0.53</td>
+<td align="right">0.55</td>
+<td align="right">0.55</td>
 </tr>
 <tr class="odd">
 <td align="right">0.3</td>
 <td align="right">0.46</td>
 <td align="right">0.29</td>
-<td align="right">0.28</td>
-<td align="right">0.28</td>
+<td align="right">0.29</td>
+<td align="right">0.29</td>
 </tr>
 <tr class="even">
 <td align="right">0.2</td>
 <td align="right">0.19</td>
 <td align="right">0.19</td>
-<td align="right">0.22</td>
-<td align="right">0.22</td>
+<td align="right">0.23</td>
+<td align="right">0.23</td>
 </tr>
 </tbody>
 </table>
@@ -397,15 +396,15 @@ specifications</caption>
 <td align="right">0.4</td>
 <td align="right">0.13</td>
 <td align="right">0.25</td>
-<td align="right">0.31</td>
-<td align="right">0.32</td>
+<td align="right">0.33</td>
+<td align="right">0.34</td>
 </tr>
 <tr class="even">
 <td align="right">0.3</td>
 <td align="right">0.27</td>
 <td align="right">0.31</td>
 <td align="right">0.28</td>
-<td align="right">0.28</td>
+<td align="right">0.29</td>
 </tr>
 </tbody>
 </table>
@@ -562,7 +561,7 @@ residuals <code>et</code>.</p>
 <p>We assess the accuracy of the prediction comparing them to the true
 event shocksfrom the DGP.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">true_shocks</span> <span class="op">&lt;-</span> <span class="va">sim</span><span class="op">$</span><span class="va">eE</span><span class="op">[</span><span class="op">(</span><span class="va">Nbin</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="op">(</span><span class="va">Nobs</span> <span class="op">+</span> <span class="va">Nbin</span><span class="op">)</span>, <span class="op">]</span></span>
+<code class="sourceCode R"><span><span class="va">true_shocks</span> <span class="op">&lt;-</span> <span class="va">sim</span><span class="op">$</span><span class="va">eE</span></span>
 <span></span>
 <span><span class="va">cor_df1</span><span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    True       <span class="op">=</span> <span class="va">true_shocks</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>,</span>
@@ -611,11 +610,11 @@ event shocksfrom the DGP.</p>
 <tbody><tr class="odd">
 <td align="left">True</td>
 <td align="right">1</td>
-<td align="right">0.91</td>
+<td align="right">0.99</td>
 <td align="right">0.86</td>
 <td align="right">1</td>
-<td align="right">1</td>
-<td align="right">1</td>
+<td align="right">0.99</td>
+<td align="right">0.99</td>
 </tr></tbody>
 </table>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
@@ -649,11 +648,11 @@ event shocksfrom the DGP.</p>
 <tbody><tr class="odd">
 <td align="left">True</td>
 <td align="right">1</td>
-<td align="right">0.8</td>
+<td align="right">0.98</td>
 <td align="right">0.56</td>
 <td align="right">0.94</td>
-<td align="right">0.96</td>
-<td align="right">0.96</td>
+<td align="right">0.99</td>
+<td align="right">0.98</td>
 </tr></tbody>
 </table>
 <p>The correlation between the true shocks and the proxy is lower than
@@ -681,7 +680,10 @@ expected by <code><a href="../reference/gweaktest.html">gweaktest()</a></code>, 
 deterministic controls used in estimation. The code below extracts the
 relevant columns from the <code>WeakData</code> data frame and runs the
 weak instrument test for each of the four specifications. The results
-are then compiled into a table for easy comparison.</p>
+are then compiled into a table for easy comparison. Note that we use EHW
+instead of Newey-West standard errors, because, conditional on the
+covariates, we know that the shocks are serially uncorrelated. If in
+doubt, use NW option.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Helper: extract y, Y, X, Z from WeakData and run gweaktest</span></span>
 <span><span class="va">run_weaktest</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">weakdata</span>, <span class="va">E</span><span class="op">)</span> <span class="op">{</span></span>
@@ -696,7 +698,7 @@ are then compiled into a table for easy comparison.</p>
 <span>  <span class="va">ctrl</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"o"</span><span class="op">)</span> <span class="op">|</span> <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"x"</span><span class="op">)</span></span>
 <span>  <span class="va">X</span>     <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="va">ctrl</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">[</span>, <span class="va">ctrl</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="fl">0</span><span class="op">)</span></span>
 <span>   </span>
-<span>  <span class="fu"><a href="../reference/gweaktest.html">gweaktest</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">Y</span>, <span class="va">X</span>, <span class="va">Z</span>, cov_type <span class="op">=</span> <span class="st">"NW"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/gweaktest.html">gweaktest</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">Y</span>, <span class="va">X</span>, <span class="va">Z</span>, cov_type <span class="op">=</span> <span class="st">"EHW"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">specs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -747,31 +749,31 @@ eigenvalue test)</caption>
 <tbody>
 <tr class="odd">
 <td align="left">HET-IV, no controls</td>
-<td align="right">27.28</td>
-<td align="right">99.22</td>
+<td align="right">15.94</td>
+<td align="right">37.11</td>
 <td align="right">NaN</td>
 <td align="left">No</td>
 </tr>
 <tr class="even">
 <td align="left">HET-IV, with controls</td>
-<td align="right">142.57</td>
-<td align="right">60.47</td>
+<td align="right">89.08</td>
+<td align="right">47.62</td>
 <td align="right">NaN</td>
 <td align="left">Yes</td>
 </tr>
 <tr class="odd">
 <td align="left">Proxy-IV, with controls</td>
-<td align="right">28.56</td>
-<td align="right">43.80</td>
+<td align="right">30.57</td>
+<td align="right">21.77</td>
 <td align="right">NaN</td>
-<td align="left">No</td>
+<td align="left">Yes</td>
 </tr>
 <tr class="even">
 <td align="left">Proxy-IV, with controls + recursive restriction</td>
-<td align="right">28.56</td>
-<td align="right">43.80</td>
+<td align="right">30.57</td>
+<td align="right">21.77</td>
 <td align="right">NaN</td>
-<td align="left">No</td>
+<td align="left">Yes</td>
 </tr>
 </tbody>
 </table>

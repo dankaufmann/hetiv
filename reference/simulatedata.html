@@ -70,11 +70,13 @@ periods). The shock distribution can be normal, Student-t, or GARCH(1,1).</p>
 
 
 <dt id="arg-nobs">Nobs<a class="anchor" aria-label="anchor" href="#arg-nobs"></a></dt>
-<dd><p>Number of observations to retain (after burn-in).</p></dd>
+<dd><p>Number of observations to retain after burn-in. The returned
+data have exactly <code>Nobs</code> rows.</p></dd>
 
 
 <dt id="arg-nbin">Nbin<a class="anchor" aria-label="anchor" href="#arg-nbin"></a></dt>
-<dd><p>Number of burn-in observations discarded at the start.</p></dd>
+<dd><p>Number of burn-in observations. These are simulated to
+initialise the VAR but are discarded before returning.</p></dd>
 
 
 <dt id="arg-n">N<a class="anchor" aria-label="anchor" href="#arg-n"></a></dt>
@@ -113,19 +115,19 @@ Use <code>NA</code> to skip seeding.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A named list with components:</p><dl><dt>y</dt>
-<dd><p>Simulated VAR data, dimension <code>(Nobs + Nbin) x N</code>.</p></dd>
+<dd><p>Simulated VAR data, dimension <code>Nobs x N</code> (burn-in discarded).</p></dd>
 
 <dt>IndE</dt>
-<dd><p>Event indicator vector, length <code>Nobs + Nbin</code>.</p></dd>
+<dd><p>Event indicator matrix, dimension <code>Nobs x 1</code>.</p></dd>
 
 <dt>eR</dt>
-<dd><p>Simulated regular shocks, dimension <code>(Nobs + Nbin) x R</code>.</p></dd>
+<dd><p>Simulated regular shocks, dimension <code>Nobs x R</code>.</p></dd>
 
 <dt>eE</dt>
-<dd><p>Simulated event shocks, dimension <code>(Nobs + Nbin) x E</code>.</p></dd>
+<dd><p>Simulated event shocks, dimension <code>Nobs x E</code>.</p></dd>
 
 <dt>e</dt>
-<dd><p>Composite structural shocks, dimension <code>(Nobs + Nbin) x N</code>.</p></dd>
+<dd><p>Composite structural shocks, dimension <code>Nobs x N</code>.</p></dd>
 
 <dt>Phi</dt>
 <dd><p>VAR coefficient array (returned unchanged).</p></dd>

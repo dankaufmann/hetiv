@@ -31,11 +31,13 @@ simulatedata(Phi, SigE, PsiE, PsiR, Nobs, Nbin, N, R, E, Nevn, P, eDist, seed)
 
 - Nobs:
 
-  Number of observations to retain (after burn-in).
+  Number of observations to retain after burn-in. The returned data have
+  exactly `Nobs` rows.
 
 - Nbin:
 
-  Number of burn-in observations discarded at the start.
+  Number of burn-in observations. These are simulated to initialise the
+  VAR but are discarded before returning.
 
 - N:
 
@@ -77,23 +79,23 @@ A named list with components:
 
 - y:
 
-  Simulated VAR data, dimension `(Nobs + Nbin) x N`.
+  Simulated VAR data, dimension `Nobs x N` (burn-in discarded).
 
 - IndE:
 
-  Event indicator vector, length `Nobs + Nbin`.
+  Event indicator matrix, dimension `Nobs x 1`.
 
 - eR:
 
-  Simulated regular shocks, dimension `(Nobs + Nbin) x R`.
+  Simulated regular shocks, dimension `Nobs x R`.
 
 - eE:
 
-  Simulated event shocks, dimension `(Nobs + Nbin) x E`.
+  Simulated event shocks, dimension `Nobs x E`.
 
 - e:
 
-  Composite structural shocks, dimension `(Nobs + Nbin) x N`.
+  Composite structural shocks, dimension `Nobs x N`.
 
 - Phi:
 

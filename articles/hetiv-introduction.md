@@ -92,9 +92,8 @@ sim  <- simulatedata(
   Nevn = 10, P = P, eDist = 0, seed = 42
 )
 
-# Trim burn-in
-y_data <- sim$y[(Nbin + 1):(Nobs + Nbin), ]
-Ind    <- as.integer(sim$IndE[(Nbin + 1):(Nobs + Nbin), 1])
+y_data <- sim$y
+Ind    <- as.integer(sim$IndE[, 1])
 
 # Inject deterministic weekday variation into variables 3 and 4
 y_data[, 3] <- y_data[, 3] + 0.5 * seq_len(Nobs) %% 5
@@ -111,9 +110,9 @@ surprises are only observed on policy announcement days.
 ``` r
 
 # RNG state after simulatedata(seed = 42) is deterministic, so no extra seed needed
-e_proxy       <- sim$eE[(Nbin + 1):(Nobs + Nbin), ]
-e_proxy[, 1]  <- e_proxy[, 1] + rnorm(Nobs, sd = 1)
-e_proxy[, 2]  <- e_proxy[, 2] + rnorm(Nobs, sd = 1)
+e_proxy       <- sim$eE
+e_proxy[, 1]  <- e_proxy[, 1] + rnorm(Nobs, sd = 0.3)
+e_proxy[, 2]  <- e_proxy[, 2] + rnorm(Nobs, sd = 0.3)
 e_proxy[Ind == 0, ] <- NA
 ```
 
@@ -246,9 +245,9 @@ knitr::kable(
 | True | HET-IV without controls | HET-IV with controls | Proxy-IV with controls | Proxy-IV with recursive restriction |
 |---:|---:|---:|---:|---:|
 | 1.0 | 1.00 | 1.00 | 1.00 | 1.00 |
-| 0.5 | 0.53 | 0.46 | 0.53 | 0.53 |
-| 0.3 | 0.46 | 0.29 | 0.28 | 0.28 |
-| 0.2 | 0.19 | 0.19 | 0.22 | 0.22 |
+| 0.5 | 0.53 | 0.46 | 0.55 | 0.55 |
+| 0.3 | 0.46 | 0.29 | 0.29 | 0.29 |
+| 0.2 | 0.19 | 0.19 | 0.23 | 0.23 |
 
 Impact matrix estimates (Psi) for shock 1 across different
 specifications {.table}
@@ -270,8 +269,8 @@ knitr::kable(
 |---:|---:|---:|---:|---:|
 | 0.0 | 0.00 | 0.00 | -0.09 | 0.00 |
 | 1.0 | 1.00 | 1.00 | 1.00 | 1.00 |
-| 0.4 | 0.13 | 0.25 | 0.31 | 0.32 |
-| 0.3 | 0.27 | 0.31 | 0.28 | 0.28 |
+| 0.4 | 0.13 | 0.25 | 0.33 | 0.34 |
+| 0.3 | 0.27 | 0.31 | 0.28 | 0.29 |
 
 Impact matrix estimates (Psi) for shock 2 across different
 specifications {.table}
@@ -447,7 +446,7 @@ event shocksfrom the DGP.
 
 ``` r
 
-true_shocks <- sim$eE[(Nbin + 1):(Nobs + Nbin), ]
+true_shocks <- sim$eE
 
 cor_df1<- data.frame(
     True       = true_shocks[, 1],
@@ -476,7 +475,7 @@ knitr::kable(
 
 |  | True | Proxy | HET-IV without controls | HET-IV with controls | Proxy-IV with controls | Proxy-IV with recursive restriction |
 |:---|---:|---:|---:|---:|---:|---:|
-| True | 1 | 0.91 | 0.86 | 1 | 1 | 1 |
+| True | 1 | 0.99 | 0.86 | 1 | 0.99 | 0.99 |
 
 Correlation of predicted shocks with true shocks for shock 2 {.table}
 
@@ -492,7 +491,7 @@ knitr::kable(
 
 |  | True | Proxy | HET-IV without controls | HET-IV with controls | Proxy-IV with controls | Proxy-IV with recursive restriction |
 |:---|---:|---:|---:|---:|---:|---:|
-| True | 1 | 0.8 | 0.56 | 0.94 | 0.96 | 0.96 |
+| True | 1 | 0.98 | 0.56 | 0.94 | 0.99 | 0.98 |
 
 Correlation of predicted shocks with true shocks for shock 2 {.table}
 
@@ -523,7 +522,10 @@ contains the outcome and instrument columns in the form expected by
 along with any lagged and deterministic controls used in estimation. The
 code below extracts the relevant columns from the `WeakData` data frame
 and runs the weak instrument test for each of the four specifications.
-The results are then compiled into a table for easy comparison.
+The results are then compiled into a table for easy comparison. Note
+that we use EHW instead of Newey-West standard errors, because,
+conditional on the covariates, we know that the shocks are serially
+uncorrelated. If in doubt, use NW option.
 
 ``` r
 
@@ -540,7 +542,7 @@ run_weaktest <- function(weakdata, E) {
   ctrl  <- startsWith(colnames(weakdata), "o") | startsWith(colnames(weakdata), "x")
   X     <- if (any(ctrl)) cbind(weakdata[, ctrl], matrix(1, nrow(weakdata), 1)) else matrix(numeric(0), nrow(weakdata), 0)
    
-  gweaktest(y, Y, X, Z, cov_type = "NW")
+  gweaktest(y, Y, X, Z, cov_type = "EHW")
 }
 
 specs <- list(
@@ -578,10 +580,10 @@ knitr::kable(
 
 | Specification | Statistic | LM critical value | SY critical value | Strong instruments? |
 |:---|---:|---:|---:|:---|
-| HET-IV, no controls | 27.28 | 99.22 | NaN | No |
-| HET-IV, with controls | 142.57 | 60.47 | NaN | Yes |
-| Proxy-IV, with controls | 28.56 | 43.80 | NaN | No |
-| Proxy-IV, with controls + recursive restriction | 28.56 | 43.80 | NaN | No |
+| HET-IV, no controls | 15.94 | 37.11 | NaN | No |
+| HET-IV, with controls | 89.08 | 47.62 | NaN | Yes |
+| Proxy-IV, with controls | 30.57 | 21.77 | NaN | Yes |
+| Proxy-IV, with controls + recursive restriction | 30.57 | 21.77 | NaN | Yes |
 
 Weak instrument test results (Lewis-Mertens generalised minimum
 eigenvalue test) {.table}

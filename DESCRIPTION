@@ -12,6 +12,11 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Config/roxygen2/version: 8.0.0
+VignetteBuilder: knitr
+Suggests:
+    cowplot,
+    knitr,
+    rmarkdown
 Imports:
     dplyr,
     ggplot2,

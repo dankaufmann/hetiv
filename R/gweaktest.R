@@ -425,14 +425,14 @@ gweaktest <- function(y, Y, X, Z,
   Z <- Z[sel, , drop = FALSE]
   X <- X[sel, , drop = FALSE]
 
-  T <- nrow(y)
+  Tobs <- nrow(y)
 
   # Add constant to X if absent; remove zero-variance columns
   if (ncol(X) > 0) {
     col_var <- apply(X, 2, var)
     X       <- cbind(X[, col_var != 0, drop = FALSE], 1)
   } else {
-    X <- matrix(1, T, 1)
+    X <- matrix(1, Tobs, 1)
   }
 
   Nx <- ncol(X)
@@ -463,24 +463,24 @@ gweaktest <- function(y, Y, X, Z,
 
   # HAR covariance matrices
   if (cov_type == "NW") {
-    L_bw    <- ceiling(1.3 * T^0.5)
-    W_mat   <- crossprod(ZV) / T
-    Sig_mat <- crossprod(e)  / T
+    L_bw    <- ceiling(1.3 * Tobs^0.5)
+    W_mat   <- crossprod(ZV) / Tobs
+    Sig_mat <- crossprod(e)  / Tobs
     for (jj in seq_len(L_bw)) {
       w_l  <- 1 - jj / L_bw
-      acv  <- crossprod(ZV[(jj + 1):T, ], ZV[1:(T - jj), ]) / T +
-               crossprod(ZV[1:(T - jj), ], ZV[(jj + 1):T, ]) / T
+      acv  <- crossprod(ZV[(jj + 1):Tobs, ], ZV[1:(Tobs - jj), ]) / Tobs +
+               crossprod(ZV[1:(Tobs - jj), ], ZV[(jj + 1):Tobs, ]) / Tobs
       W_mat   <- W_mat   + w_l * acv
-      acve <- crossprod(e[(jj + 1):T, ], e[1:(T - jj), ]) / T +
-               crossprod(e[1:(T - jj), ], e[(jj + 1):T, ]) / T
+      acve <- crossprod(e[(jj + 1):Tobs, ], e[1:(Tobs - jj), ]) / Tobs +
+               crossprod(e[1:(Tobs - jj), ], e[(jj + 1):Tobs, ]) / Tobs
       Sig_mat <- Sig_mat + w_l * acve
     }
   } else {
-    W_mat   <- crossprod(ZV) / T
-    Sig_mat <- crossprod(e)  / T
+    W_mat   <- crossprod(ZV) / Tobs
+    Sig_mat <- crossprod(e)  / Tobs
   }
 
-  df_corr <- T / (T - K - Nx)
+  df_corr <- Tobs / (Tobs - K - Nx)
   W_mat   <- W_mat   * df_corr
   Sig_mat <- Sig_mat * df_corr
 
@@ -509,7 +509,7 @@ gweaktest <- function(y, Y, X, Z,
   )
 
   # Stock-Yogo statistic (Nagar approximation)
-  Svv      <- crossprod(v2) / (T - K - Nx)
+  Svv      <- crossprod(v2) / (Tobs - K - Nx)
   ZtZ_inv  <- solve(crossprod(Zo))
   inner_sy <- .mat_pow(Svv, -0.5) %*%
                (t(Yo) %*% Zo %*% ZtZ_inv %*% t(Zo) %*% Yo) %*%
@@ -517,7 +517,7 @@ gweaktest <- function(y, Y, X, Z,
   gmin_sy  <- min(eigen(inner_sy, symmetric = TRUE)$values)
 
   list(
-    nobs                                        = T,
+    nobs                                        = Tobs,
     beta_2SLS                                   = as.vector(betahat),
     target                                      = if (identical(target, "beta")) "beta vector"
                                                   else paste0("beta_", target),

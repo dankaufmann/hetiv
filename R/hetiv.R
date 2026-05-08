@@ -93,7 +93,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
 
   # Collect various properties of the data and observations to be used
   Nobs <- dim(y)[1]     # Number of observations in y
-  beg  <- max(P+1)      # Start of the sample
+  beg  <- P + 1         # Start of the sample
   end  <- Nobs - H+1    # End of the sample
   N    <- dim(y)[2]     # Number of variables in y
   M    <- dim(O)[2]     # Number of variables in O

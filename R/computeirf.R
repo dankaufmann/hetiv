@@ -28,21 +28,21 @@ computeirf <- function(Psi, Phi, H, cum) {
 
   irf <- array(0, dim = c(H, N, R))
 
-  for (h in 1:H) {
+  for (h in seq_len(H)) {
     if (h == 1) {
       irf[h, , ] <- Psi
     } else {
-      for (p in 1:min(P, h - 1)) {
+      for (p in seq_len(min(P, h - 1))) {
         irf[h, , ] <- irf[h, , ] + Phi[, , p] %*% irf[h - p, , ]
       }
     }
-    dimnames(irf)[[1]] <- c(0:(H - 1))
   }
+  dimnames(irf)[[1]] <- 0:(H - 1)
 
   # Cumulate responses for selected variables
-  for (i in 1:N) {
+  for (i in seq_len(N)) {
     if (cum[i] == TRUE) {
-      for (r in 1:R) {
+      for (r in seq_len(R)) {
         irf[, i, r] <- cumsum(irf[, i, r])
       }
     }

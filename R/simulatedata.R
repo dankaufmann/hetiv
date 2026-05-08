@@ -8,8 +8,10 @@
 #' @param SigE Variance of the event shocks. This applies to all E shocks.
 #' @param PsiE Impact matrix for event shocks, dimension `N x E`.
 #' @param PsiR Impact matrix for regular shocks, dimension `N x R`.
-#' @param Nobs Number of observations to retain (after burn-in).
-#' @param Nbin Number of burn-in observations discarded at the start.
+#' @param Nobs Number of observations to retain after burn-in. The returned
+#'   data have exactly `Nobs` rows.
+#' @param Nbin Number of burn-in observations. These are simulated to
+#'   initialise the VAR but are discarded before returning.
 #' @param N Number of variables in the VAR.
 #' @param R Number of regular shocks.
 #' @param E Number of event shocks. Currently only `E = 1` is supported.
@@ -25,11 +27,11 @@
 #'
 #' @return A named list with components:
 #' \describe{
-#'   \item{y}{Simulated VAR data, dimension `(Nobs + Nbin) x N`.}
-#'   \item{IndE}{Event indicator vector, length `Nobs + Nbin`.}
-#'   \item{eR}{Simulated regular shocks, dimension `(Nobs + Nbin) x R`.}
-#'   \item{eE}{Simulated event shocks, dimension `(Nobs + Nbin) x E`.}
-#'   \item{e}{Composite structural shocks, dimension `(Nobs + Nbin) x N`.}
+#'   \item{y}{Simulated VAR data, dimension `Nobs x N` (burn-in discarded).}
+#'   \item{IndE}{Event indicator matrix, dimension `Nobs x 1`.}
+#'   \item{eR}{Simulated regular shocks, dimension `Nobs x R`.}
+#'   \item{eE}{Simulated event shocks, dimension `Nobs x E`.}
+#'   \item{e}{Composite structural shocks, dimension `Nobs x N`.}
 #'   \item{Phi}{VAR coefficient array (returned unchanged).}
 #'   \item{PsiE}{Event shock impact matrix (returned unchanged).}
 #'   \item{PsiR}{Regular shock impact matrix (returned unchanged).}
@@ -127,7 +129,10 @@ simulatedata <- function(Phi, SigE, PsiE, PsiR, Nobs, Nbin, N, R, E, Nevn, P, eD
 
   }
 
-  # Return data, event indicator, true random and event shocks, VAR coeffs, impact matrices, vcov matrices
-  return(list(y = y, IndE = IndE, eR = eR, eE = eE, e = e, Phi = Phi, PsiE = PsiE, PsiR = PsiR, SigE = SigE))
+  # Discard burn-in rows and return post-burn-in observations only
+  keep <- (Nbin + 1):(Nobs + Nbin)
+  return(list(y = y[keep, ], IndE = IndE[keep, , drop = FALSE],
+              eR = eR[keep, ], eE = eE[keep, ], e = e[keep, ],
+              Phi = Phi, PsiE = PsiE, PsiR = PsiR, SigE = SigE))
 
 }

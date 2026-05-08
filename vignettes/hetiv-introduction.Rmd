@@ -91,9 +91,8 @@ sim  <- simulatedata(
   Nevn = 10, P = P, eDist = 0, seed = 42
 )
 
-# Trim burn-in
-y_data <- sim$y[(Nbin + 1):(Nobs + Nbin), ]
-Ind    <- as.integer(sim$IndE[(Nbin + 1):(Nobs + Nbin), 1])
+y_data <- sim$y
+Ind    <- as.integer(sim$IndE[, 1])
 
 # Inject deterministic weekday variation into variables 3 and 4
 y_data[, 3] <- y_data[, 3] + 0.5 * seq_len(Nobs) %% 5
@@ -104,9 +103,9 @@ To illustrate the proxy-IV approach, we construct a noisy external proxy for the
 
 ```{r proxy}
 # RNG state after simulatedata(seed = 42) is deterministic, so no extra seed needed
-e_proxy       <- sim$eE[(Nbin + 1):(Nobs + Nbin), ]
-e_proxy[, 1]  <- e_proxy[, 1] + rnorm(Nobs, sd = 1)
-e_proxy[, 2]  <- e_proxy[, 2] + rnorm(Nobs, sd = 1)
+e_proxy       <- sim$eE
+e_proxy[, 1]  <- e_proxy[, 1] + rnorm(Nobs, sd = 0.3)
+e_proxy[, 2]  <- e_proxy[, 2] + rnorm(Nobs, sd = 0.3)
 e_proxy[Ind == 0, ] <- NA
 ```
 
@@ -357,7 +356,7 @@ shocks_proxy_rec <- kfpredict(Sig = res_proxy_rec$Sig, SigR = res_proxy_rec$SigR
 We assess the accuracy of the prediction comparing them to the true event shocksfrom the DGP.
 
 ```{r shock-correlation}
-true_shocks <- sim$eE[(Nbin + 1):(Nobs + Nbin), ]
+true_shocks <- sim$eE
 
 cor_df1<- data.frame(
     True       = true_shocks[, 1],
@@ -403,7 +402,7 @@ Note that classical Stock-Yogo (2005) test is applicable only for the homoskedas
 Both `hetiv()` and `proxyiv()` return a `WeakData` element when `details =
 TRUE`. This data frame contains the outcome and instrument columns in the form
 expected by `gweaktest()`, along with any lagged and deterministic controls used
-in estimation. The code below extracts the relevant columns from the `WeakData` data frame and runs the weak instrument test for each of the four specifications. The results are then compiled into a table for easy comparison.
+in estimation. The code below extracts the relevant columns from the `WeakData` data frame and runs the weak instrument test for each of the four specifications. The results are then compiled into a table for easy comparison. Note that we use EHW instead of Newey-West standard errors, because, conditional on the covariates, we know that the shocks are serially uncorrelated. If in doubt, use NW option.
 
 ```{r gweaktest}
 # Helper: extract y, Y, X, Z from WeakData and run gweaktest
@@ -419,7 +418,7 @@ run_weaktest <- function(weakdata, E) {
   ctrl  <- startsWith(colnames(weakdata), "o") | startsWith(colnames(weakdata), "x")
   X     <- if (any(ctrl)) cbind(weakdata[, ctrl], matrix(1, nrow(weakdata), 1)) else matrix(numeric(0), nrow(weakdata), 0)
    
-  gweaktest(y, Y, X, Z, cov_type = "NW")
+  gweaktest(y, Y, X, Z, cov_type = "EHW")
 }
 
 specs <- list(

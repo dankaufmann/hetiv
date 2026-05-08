@@ -15,9 +15,11 @@ simulatedata(Phi, SigE, PsiE, PsiR, Nobs, Nbin, N, R, E, Nevn, P, eDist, seed)
 
 \item{PsiR}{Impact matrix for regular shocks, dimension \verb{N x R}.}
 
-\item{Nobs}{Number of observations to retain (after burn-in).}
+\item{Nobs}{Number of observations to retain after burn-in. The returned
+data have exactly \code{Nobs} rows.}
 
-\item{Nbin}{Number of burn-in observations discarded at the start.}
+\item{Nbin}{Number of burn-in observations. These are simulated to
+initialise the VAR but are discarded before returning.}
 
 \item{N}{Number of variables in the VAR.}
 
@@ -41,11 +43,11 @@ Use \code{NA} to skip seeding.}
 \value{
 A named list with components:
 \describe{
-\item{y}{Simulated VAR data, dimension \verb{(Nobs + Nbin) x N}.}
-\item{IndE}{Event indicator vector, length \code{Nobs + Nbin}.}
-\item{eR}{Simulated regular shocks, dimension \verb{(Nobs + Nbin) x R}.}
-\item{eE}{Simulated event shocks, dimension \verb{(Nobs + Nbin) x E}.}
-\item{e}{Composite structural shocks, dimension \verb{(Nobs + Nbin) x N}.}
+\item{y}{Simulated VAR data, dimension \verb{Nobs x N} (burn-in discarded).}
+\item{IndE}{Event indicator matrix, dimension \verb{Nobs x 1}.}
+\item{eR}{Simulated regular shocks, dimension \verb{Nobs x R}.}
+\item{eE}{Simulated event shocks, dimension \verb{Nobs x E}.}
+\item{e}{Composite structural shocks, dimension \verb{Nobs x N}.}
 \item{Phi}{VAR coefficient array (returned unchanged).}
 \item{PsiE}{Event shock impact matrix (returned unchanged).}
 \item{PsiR}{Regular shock impact matrix (returned unchanged).}

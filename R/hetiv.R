@@ -97,7 +97,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
   end  <- Nobs - H+1    # End of the sample
   N    <- dim(y)[2]     # Number of variables in y
   M    <- dim(O)[2]     # Number of variables in O
-  K    <- dim(X)[2]     # Number of deterministic variables in X
+  K    <- if (!is.null(X)) dim(X)[2] else 0
 
   if(sum(is.na(y))>0){
     warning("Missing values in y")
@@ -108,9 +108,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
   if(sum(is.na(Ind))>0){
     warning("Missing values in Ind")
   }
-  if(sum(is.na(X))>0){
-    warning("Missing values in X")
-  }
+  if (!is.null(X) && sum(is.na(X)) > 0) warning("Missing values in X")
 
   # Modify cumulation indicator if only one provided
   if(length(cum) == 1){

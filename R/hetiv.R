@@ -174,7 +174,6 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
   # Add deterministic variables
   if(!is.null(X)){
     for(k in 1:K){
-      DataM[, paste0("x", k)] <- DataM[, paste0("x", k)]
       infoVars <- c(infoVars, paste0("x", k))
     }
   }
@@ -247,7 +246,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
       for(h in HSeries){
 
         # Compute dependent variable at horizon h (level or cumulative response)
-        if(cumi == T){
+        if(cumi == TRUE){
           for(f in 1:h){
             if(f == 1){
               DataM$depVar.h <- dplyr::lead(DataM$depVar, f-1)
@@ -275,7 +274,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
         if(details == TRUE){
           # Compute OLS residuals on event and control days (once per shock, at h=1)
           # Save residuals for later computation of variance-covariance matrix
-          if (e == 1 & h == 1){
+          if (e == 1 && h == 1){
             DataMSub$depVar.h2 <- DataMSub$depVar.h
             DataMSub$depVar.h2[DataMSub$Ind == 2] <- NA
 
@@ -305,10 +304,6 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
               vt <- data.frame(vt, vti)
             }
 
-          }else{
-            #eti  <- NA
-            #vti  <- NA
-            #OLS.mod <- NA
           }
         }
 
@@ -331,12 +326,12 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
         }  
       }
 
-      # Label rows of impulse responses to start at 0 (immediate response)
-      dimnames(irfest)[[1]] <- HSeries-1
-      dimnames(irfse)[[1]]  <- HSeries-1
-
     }
   }
+
+  # Label rows of impulse responses to start at 0 (immediate response)
+  dimnames(irfest)[[1]] <- HSeries - 1
+  dimnames(irfse)[[1]]  <- HSeries - 1
 
   if(details == TRUE){
     # Compute variance-covariance matrix of residuals on event days, and impact matrix

@@ -99,7 +99,7 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
 
   # Collect properties of the data
   Nobs <- dim(y)[1]
-  beg  <- max(P + 1)
+  beg  <- P + 1
   end  <- Nobs - H + 1
   N    <- dim(y)[2]
   M    <- dim(O)[2]
@@ -151,9 +151,6 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
       infoVars <- c(infoVars, paste0("x", k))
     }
   }
-
-  # Save original Ind before any per-shock reclassification of missing-instrument days
-  IndOrig <- DataM$Ind
 
   # Estimate proxy-IV impulse responses separately for every shock dimension
   for (e in 1:E) {
@@ -272,10 +269,11 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
         }
       }
 
-      dimnames(irfest)[[1]] <- HSeries - 1
-      dimnames(irfse)[[1]]  <- HSeries - 1
     }
   }
+
+  dimnames(irfest)[[1]] <- HSeries - 1
+  dimnames(irfse)[[1]]  <- HSeries - 1
 
   Method <- "Proxy-IV"
 

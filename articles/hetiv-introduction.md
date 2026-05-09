@@ -168,13 +168,14 @@ res_het_X <- hetiv(
 ### Proxy-IV
 
 We also can use the external proxy `e_proxy` to estimate the model via
-proxy-IV. The same controls and lags are included as in the second
-model. That is, the model is correctly specified in terms of controls,
-but the identification relies on the proxy rather than
-heteroskedasticity. Note that the proxy-IV function still requires Ind
-as an input, because, if the instrument is missing, but Ind = 1, we can
-later on still predict the unobserved shock using the Kalman filter
-projection in
+proxy-IV. The same lags are included as in the second model. However,
+the weekday dummies are dropped due to collinearity, as only the event
+days are used to identify the responses. That is, the model is correctly
+specified in terms of controls, but the identification relies on the
+proxy rather than heteroskedasticity. Note that the proxy-IV function
+still requires Ind as an input, because, if the instrument is missing,
+but Ind = 1, we can later on still predict the unobserved shock using
+the Kalman filter projection in
 [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md).
 
 ``` r
@@ -182,7 +183,6 @@ projection in
 res_proxy <- proxyiv(
   y         = y_data,
   O         = y_data,
-  X         = X_data,
   Z         = e_proxy,
   Ind       = Ind,
   P         = P,
@@ -192,326 +192,6 @@ res_proxy <- proxyiv(
   recursive = FALSE,
   details   = TRUE
 )
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
-#> Warning in ivreg.fit(X, Y, Z, weights, offset, method, ...): some instrumental
-#> variables are collinear
 ```
 
 ### Proxy-IV with recursive zero restriction
@@ -527,7 +207,6 @@ if true, may improve the precision of the estimates.
 res_proxy_rec <- proxyiv(
   y         = y_data,
   O         = y_data,
-  X         = X_data,
   Z         = e_proxy,
   Ind       = Ind,
   P         = P,
@@ -795,7 +474,7 @@ knitr::kable(
 
 |  | True | Proxy | HET-IV without controls | HET-IV with controls | Proxy-IV with controls | Proxy-IV with recursive restriction |
 |:---|---:|---:|---:|---:|---:|---:|
-| True | 1 | 0.99 | 0.86 | 1 | 0.99 | 0.99 |
+| True | 1 | 0.99 | 0.86 | 1 | 0.94 | 0.94 |
 
 Correlation of predicted shocks with true shocks for shock 2 {.table}
 
@@ -811,7 +490,7 @@ knitr::kable(
 
 |  | True | Proxy | HET-IV without controls | HET-IV with controls | Proxy-IV with controls | Proxy-IV with recursive restriction |
 |:---|---:|---:|---:|---:|---:|---:|
-| True | 1 | 0.98 | 0.56 | 0.94 | 0.99 | 0.98 |
+| True | 1 | 0.98 | 0.56 | 0.94 | 0.96 | 0.96 |
 
 Correlation of predicted shocks with true shocks for shock 2 {.table}
 
@@ -909,7 +588,7 @@ Weak instrument test results (Lewis-Mertens generalised minimum
 eigenvalue test) {.table}
 
 The specification without controls is affected by a weak-instrument
-problem. THe other specification pass the weak instrument tests. Note
+problem. The other specification pass the weak instrument tests. Note
 that the critical values are typically much higher than the common rule
 of thumb for the Stock and Yogo (2005) test, but also, higher than in
 the HAR test for the univariate case by Montiel Olea and Pflueger

@@ -110,6 +110,25 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
   M    <- dim(O)[2]
   K    <- if (!is.null(X)) dim(X)[2] else 0
 
+  if (dim(O)[1] != Nobs)
+    stop("y and O must have the same number of rows.")
+  if (!is.null(X) && dim(X)[1] != Nobs)
+    stop("X must have the same number of rows as y.")
+  if (dim(Z)[1] != Nobs)
+    stop("Z must have the same number of rows as y.")
+  if (ncol(Z) < E)
+    stop("Z must have at least E columns (one instrument per shock dimension).")
+  if (length(Ind) != Nobs)
+    stop("Ind must have the same length as nrow(y).")
+  if (E > N)
+    stop("E cannot exceed the number of columns in y.")
+  if (P < 0)
+    stop("P must be a non-negative integer.")
+  if (H < 1)
+    stop("H must be a positive integer.")
+  if (Nobs <= P + H)
+    stop("Not enough observations: nrow(y) must exceed P + H.")
+
   if (sum(is.na(y)) > 0)   warning("Missing values in y")
   if (sum(is.na(O)) > 0)   warning("Missing values in O")
   if (sum(is.na(Ind)) > 0) warning("Missing values in Ind")
@@ -229,13 +248,8 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
                             " | Z + ",
                             paste(controls.iv, collapse = "+"))
 
-        # suppressWarnings only for recursive ordering, where collinearity between
-        # instruments and prior-shock controls is expected and harmless
-        if (recursive == TRUE) {
-          IV.mod <- suppressWarnings(ivreg::ivreg(as.formula(myFormula), data = subset(DataMSub, Ind < 2)))
-        } else {
-          IV.mod <- ivreg::ivreg(as.formula(myFormula), data = subset(DataMSub, Ind < 2))
-        }
+        # Estimate IV regression and compute HC0 standard errors
+        IV.mod <- ivreg::ivreg(as.formula(myFormula), data = subset(DataMSub, Ind < 2))
         IV.se  <- sqrt(diag(sandwich::vcovHC(IV.mod, type = "HC0")))
 
         # Compute OLS residuals for covariance estimation (once per outcome variable, at e=1, h=1)

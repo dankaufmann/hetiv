@@ -18,6 +18,13 @@
 #'
 #' @export
 computeirf <- function(Psi, Phi, H, cum) {
+  if (dim(Phi)[1] != dim(Phi)[2])
+    stop("Each Phi slice must be a square matrix (N x N).")
+  if (dim(Psi)[1] != dim(Phi)[1])
+    stop("Psi and Phi must have the same first dimension (N).")
+  if (H < 1)
+    stop("H must be a positive integer.")
+
   N <- dim(Phi)[1]
   P <- dim(Phi)[3]
   R <- dim(Psi)[2]

@@ -104,6 +104,21 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
   M    <- dim(O)[2]     # Number of variables in O
   K    <- if (!is.null(X)) dim(X)[2] else 0
 
+  if (dim(O)[1] != Nobs)
+    stop("y and O must have the same number of rows.")
+  if (!is.null(X) && dim(X)[1] != Nobs)
+    stop("X must have the same number of rows as y.")
+  if (length(Ind) != Nobs)
+    stop("Ind must have the same length as nrow(y).")
+  if (E > N)
+    stop("E cannot exceed the number of columns in y.")
+  if (P < 0)
+    stop("P must be a non-negative integer.")
+  if (H < 1)
+    stop("H must be a positive integer.")
+  if (Nobs <= P + H)
+    stop("Not enough observations: nrow(y) must exceed P + H.")
+
   if(sum(is.na(y))>0){
     warning("Missing values in y")
   }
@@ -272,6 +287,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
                             paste0("| Z + ",
                                    paste(controls.iv, collapse = "+")))
 
+        # Estimate IV regression and compute HC0 standard errors
         IV.mod  <- ivreg::ivreg(as.formula(myFormula), data = subset(DataMSub, Ind < 2))
         IV.se   <- sqrt(diag(sandwich::vcovHC(IV.mod, type = "HC0")))
 

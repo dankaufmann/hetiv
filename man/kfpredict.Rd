@@ -40,6 +40,6 @@ of residuals on event and control days, the function recovers the latent
 shocks for each observation. Optionally rescales shocks to unit variance.
 }
 \references{
-Burri, M. and Kaufmann, D. (2024). Measuring monetary policy shocks.
+Burri, M. and Kaufmann, D. (2026). Measuring monetary policy shocks.
 IRENE Working Paper 24-03, IRENE Institute of Economic Research, University of Neuchâtel.
 }

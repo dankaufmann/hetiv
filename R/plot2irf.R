@@ -71,7 +71,6 @@ plot2irf <- function(IRF1, IRF1se, IRF2, IRF2se, HTick, Labels, ci = 0.90){
         ggplot2::theme(plot.title = ggplot2::element_text(size = 10)) +
         ggplot2::scale_x_continuous(breaks = seq(HSeries[1], max(HSeries), HTick)) +
         ggplot2::geom_hline(yintercept = 0, linewidth = 0.2) +
-        ggplot2::theme(legend.position = "none") +
         ggplot2::geom_line(ggplot2::aes(y = IRF1, colour = "Approach 1", linetype = "Approach 1"), linewidth = 0.7) +
         ggplot2::geom_line(ggplot2::aes(y = IRF2, colour = "Approach 2", linetype = "Approach 2"), linewidth = 0.7) +
         ggplot2::geom_ribbon(ggplot2::aes(ymin = lower1, ymax = upper1), fill = "steelblue", alpha = 0.1) +
@@ -80,12 +79,13 @@ plot2irf <- function(IRF1, IRF1se, IRF2, IRF2se, HTick, Labels, ci = 0.90){
         ggplot2::scale_linetype_manual(values = c("Approach 1" = "solid",   "Approach 2" = "dotted")) +
         ggplot2::labs(colour = NULL, linetype = NULL) +
         ggplot2::theme(
-          legend.position  = "bottom",
           panel.grid       = ggplot2::element_line(color = "gray", linewidth = 0.2, linetype = "dotted"),
           panel.grid.minor = ggplot2::element_blank(),
           panel.border     = ggplot2::element_rect(color = "black", fill = NA, linewidth = 0.2, linetype = "solid")
         ) +
-        ggplot2::theme(plot.margin = grid::unit(c(0.1, 0.1, 0.1, 0.1), "cm"))
+        ggplot2::theme(plot.margin = grid::unit(c(0.1, 0.1, 0.1, 0.1), "cm"))+
+        ggplot2::theme(legend.position = "none") 
+        
 
       myGraphs[[n]] <- g1
       n <- n + 1

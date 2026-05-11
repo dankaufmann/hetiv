@@ -76,7 +76,7 @@ plotirf <- function(IRFest, IRFse = NULL, HTick, Labels, ci = c(0.90, 0.95)){
 
       if(has_se){
         # Alpha decreases for wider bands so narrower bands appear more opaque
-        alphas <- seq(0.30, 0.10, length.out = length(ci))
+        alphas <- seq(0.2, 0.10, length.out = length(ci))
         for(k in seq_along(ci)){
           g1 <- g1 + ggplot2::geom_ribbon(
             ggplot2::aes(ymin = .data[[paste0("lower", k)]], ymax = .data[[paste0("upper", k)]]),

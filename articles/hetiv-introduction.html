@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hetiv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,7 +58,7 @@ Kaufmann, Marc Burri, Valentin Grob</h4>
             
             <h4 data-toc-skip class="date">2026-05-11</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/dankaufmann/hetiv/blob/HEAD/vignettes/hetiv-introduction.Rmd" class="external-link"><code>vignettes/hetiv-introduction.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/dankaufmann/hetiv/blob/main/vignettes/hetiv-introduction.Rmd" class="external-link"><code>vignettes/hetiv-introduction.Rmd</code></a></small>
       <div class="d-none name"><code>hetiv-introduction.Rmd</code></div>
     </div>
 
@@ -716,7 +716,6 @@ doubt, use NW option.</p>
 <span>    Specification <span class="op">=</span> <span class="va">nm</span>,</span>
 <span>    Statistic     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">gmin_generalized</span>, <span class="fl">2</span><span class="op">)</span>,</span>
 <span>    LM_CV         <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">gmin_generalized_critical_value</span>, <span class="fl">2</span><span class="op">)</span>,</span>
-<span>    SY_CV         <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">stock_yogo_critical_value_nagar</span>, <span class="fl">2</span><span class="op">)</span>,</span>
 <span>    Strong        <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">gmin_generalized</span> <span class="op">&gt;</span> <span class="va">r</span><span class="op">$</span><span class="va">gmin_generalized_critical_value</span>,</span>
 <span>                           <span class="st">"Yes"</span>, <span class="st">"No"</span><span class="op">)</span>,</span>
 <span>    stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -726,24 +725,22 @@ doubt, use NW option.</p>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="va">tab</span>,</span>
 <span>  col.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Specification"</span>, <span class="st">"Statistic"</span>, <span class="st">"LM critical value"</span>,</span>
-<span>                <span class="st">"SY critical value"</span>, <span class="st">"Strong instruments?"</span><span class="op">)</span>,</span>
+<span>                <span class="st">"Strong instruments?"</span><span class="op">)</span>,</span>
 <span>  caption   <span class="op">=</span> <span class="st">"Weak instrument test results (Lewis-Mertens generalised minimum eigenvalue test)"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <caption>Weak instrument test results (Lewis-Mertens generalised minimum
 eigenvalue test)</caption>
 <colgroup>
-<col width="42%">
-<col width="8%">
-<col width="15%">
-<col width="15%">
-<col width="17%">
+<col width="50%">
+<col width="10%">
+<col width="18%">
+<col width="20%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">Specification</th>
 <th align="right">Statistic</th>
 <th align="right">LM critical value</th>
-<th align="right">SY critical value</th>
 <th align="left">Strong instruments?</th>
 </tr></thead>
 <tbody>
@@ -751,28 +748,24 @@ eigenvalue test)</caption>
 <td align="left">HET-IV, no controls</td>
 <td align="right">15.94</td>
 <td align="right">37.11</td>
-<td align="right">NaN</td>
 <td align="left">No</td>
 </tr>
 <tr class="even">
 <td align="left">HET-IV, with controls</td>
 <td align="right">89.08</td>
 <td align="right">47.62</td>
-<td align="right">NaN</td>
 <td align="left">Yes</td>
 </tr>
 <tr class="odd">
 <td align="left">Proxy-IV, with controls</td>
 <td align="right">30.57</td>
 <td align="right">21.77</td>
-<td align="right">NaN</td>
 <td align="left">Yes</td>
 </tr>
 <tr class="even">
 <td align="left">Proxy-IV, with controls + recursive restriction</td>
 <td align="right">30.57</td>
 <td align="right">21.77</td>
-<td align="right">NaN</td>
 <td align="left">Yes</td>
 </tr>
 </tbody>

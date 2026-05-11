@@ -562,7 +562,6 @@ tab <- do.call(rbind, lapply(names(wt_results), function(nm) {
     Specification = nm,
     Statistic     = round(r$gmin_generalized, 2),
     LM_CV         = round(r$gmin_generalized_critical_value, 2),
-    SY_CV         = round(r$stock_yogo_critical_value_nagar, 2),
     Strong        = ifelse(r$gmin_generalized > r$gmin_generalized_critical_value,
                            "Yes", "No"),
     stringsAsFactors = FALSE
@@ -572,17 +571,17 @@ tab <- do.call(rbind, lapply(names(wt_results), function(nm) {
 knitr::kable(
   tab,
   col.names = c("Specification", "Statistic", "LM critical value",
-                "SY critical value", "Strong instruments?"),
+                "Strong instruments?"),
   caption   = "Weak instrument test results (Lewis-Mertens generalised minimum eigenvalue test)"
 )
 ```
 
-| Specification | Statistic | LM critical value | SY critical value | Strong instruments? |
-|:---|---:|---:|---:|:---|
-| HET-IV, no controls | 15.94 | 37.11 | NaN | No |
-| HET-IV, with controls | 89.08 | 47.62 | NaN | Yes |
-| Proxy-IV, with controls | 30.57 | 21.77 | NaN | Yes |
-| Proxy-IV, with controls + recursive restriction | 30.57 | 21.77 | NaN | Yes |
+| Specification | Statistic | LM critical value | Strong instruments? |
+|:---|---:|---:|:---|
+| HET-IV, no controls | 15.94 | 37.11 | No |
+| HET-IV, with controls | 89.08 | 47.62 | Yes |
+| Proxy-IV, with controls | 30.57 | 21.77 | Yes |
+| Proxy-IV, with controls + recursive restriction | 30.57 | 21.77 | Yes |
 
 Weak instrument test results (Lewis-Mertens generalised minimum
 eigenvalue test) {.table}

@@ -1,16 +1,16 @@
 #' Plot and compare impulse responses from two estimation approaches
 #'
-#' Produces a panel of IRF plots comparing two sets of impulse responses
-#' side-by-side. Each panel shows the point estimates and confidence bands
+#' Produces a panel of IRF plots comparing two sets of impulse responses. 
+#' Each panel shows the point estimates and confidence bands
 #' at level `ci` for both approaches. Returns a list of `ggplot` objects
 #' (one per variable-shock combination) that can be arranged with e.g.
 #' `cowplot::plot_grid()`.
 #'
 #' @param IRF1 Array (H x N x E) of impulse responses for the first approach.
 #'   Dimnames on the first dimension must be the horizon labels (numeric).
-#' @param IRF1se Array (H x N x E) of standard errors for the first approach.
+#' @param IRF1se Array (H x N x E) of standard errors for the first approach (set to 0 to surpress confidence intervals).
 #' @param IRF2 Array (H x N x E) of impulse responses for the second approach.
-#' @param IRF2se Array (H x N x E) of standard errors for the second approach.
+#' @param IRF2se Array (H x N x E) of standard errors for the second approach (set to 0 to surpress confidence intervals).
 #' @param HTick Integer. Step size for x-axis tick marks.
 #' @param Labels Character vector of length N. Variable names used as panel titles.
 #' @param ci Numeric scalar in (0, 1). Confidence level for the shaded bands.

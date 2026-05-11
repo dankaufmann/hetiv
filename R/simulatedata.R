@@ -130,6 +130,9 @@ simulatedata <- function(Phi, SigE, PsiE, PsiR, Nobs, Nbin, N, R, E, Nevn, P, eD
 
   }
 
+  # Set heteroskedasticity shocks to 0 for non-event days
+  eE[IndE == 0, ] <- 0
+
   # Discard burn-in rows and return post-burn-in observations only
   keep <- (Nbin + 1):(Nobs + Nbin)
   return(list(y = y[keep, ], IndE = IndE[keep, , drop = FALSE],

@@ -14,11 +14,10 @@ computeirf(Psi, Phi, H, cum)
 \item{H}{Horizon (number of periods) for which to compute IRFs.}
 
 \item{cum}{Logical scalar or logical vector of length \code{N}. If \code{TRUE} for
-variable \code{i}, the IRF is cumulated via \code{cumsum}. A single value is
-recycled to all variables.}
+variable \code{i}, the IRF is cumulated via \code{cumsum}. A single value is applied to all variables.}
 }
 \value{
-A named list with component:
+An array:
 \describe{
 \item{irf}{Array of impulse responses, dimension \verb{H x N x R}. Row names
 are labelled \code{0} to \code{H-1}.}

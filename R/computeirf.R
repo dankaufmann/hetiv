@@ -7,10 +7,9 @@
 #' @param Phi Array of VAR coefficient matrices, dimension `N x N x P`.
 #' @param H Horizon (number of periods) for which to compute IRFs.
 #' @param cum Logical scalar or logical vector of length `N`. If `TRUE` for
-#'   variable `i`, the IRF is cumulated via `cumsum`. A single value is
-#'   recycled to all variables.
+#'   variable `i`, the IRF is cumulated via `cumsum`. A single value is applied to all variables.
 #'
-#' @return A named list with component:
+#' @return An array:
 #' \describe{
 #'   \item{irf}{Array of impulse responses, dimension `H x N x R`. Row names
 #'     are labelled `0` to `H-1`.}
@@ -55,5 +54,5 @@ computeirf <- function(Psi, Phi, H, cum) {
     }
   }
 
-  return(list(irf = irf))
+  return(irf)
 }

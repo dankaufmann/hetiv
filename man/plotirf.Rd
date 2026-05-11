@@ -27,7 +27,7 @@ ordered by shock (outer loop) then variable (inner loop).
 }
 \description{
 Produces a panel of IRF plots for a single set of impulse responses,
-with optional 90\% and 95\% confidence bands. Returns a list of \code{ggplot}
+with optional confidence bands. Returns a list of \code{ggplot}
 objects (one per variable-shock combination) that can be arranged with
 e.g. \code{cowplot::plot_grid()}.
 }

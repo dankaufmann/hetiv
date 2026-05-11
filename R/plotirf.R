@@ -1,7 +1,7 @@
 #' Plot impulse responses from a single estimation approach
 #'
 #' Produces a panel of IRF plots for a single set of impulse responses,
-#' with optional 90% and 95% confidence bands. Returns a list of `ggplot`
+#' with optional confidence bands. Returns a list of `ggplot`
 #' objects (one per variable-shock combination) that can be arranged with
 #' e.g. `cowplot::plot_grid()`.
 #'

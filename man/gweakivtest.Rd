@@ -69,20 +69,21 @@ the Nagar approximation.}
 \description{
 Tests for weak instruments with multiple endogenous regressors using the
 generalised minimum eigenvalue statistic of Lewis and Mertens (2025). The
-test is robust to heteroscedasticity and serial correlation and nests the
-classical Stock-Yogo (2005) test as a special case.
+test is robust to heteroskedasticity and autocorrelation and nests the
+classical Stock-Yogo (2005) test as a special case. The function is a direct port
+from the Matlab codes by Lewis and Mertens (2025)
 }
 \references{
 Lazarus, E., Lewis, D. J., Stock, J. H. and Watson, M. W. (2018).
-HAR Inference: Recommendations for Practice. \emph{Journal of Business &
+HAR inference: recommendations for practice. \emph{Journal of Business &
 Economic Statistics}, 36(4), 541–559.
 
-Lewis, D. J. and Mertens, K. (2025). A Robust Test for Weak Instruments for
-2SLS with Multiple Endogenous Regressors. \emph{The Review of Economic Studies},
+Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments for
+2SLS with multiple endogenous regressors. \emph{The Review of Economic Studies},
 DOI: 10.1093/restud/rdaf103.
 
-Stock, J. H. and Yogo, M. (2005). Testing for Weak Instruments in Linear IV
-Regression. In D. W. K. Andrews and J. H. Stock (Eds.), \emph{Identification and
-Inference for Econometric Models: Essays in Honor of Thomas Rothenberg},
+Stock, J. H. and Yogo, M. (2005). Testing for weak instruments in linear IV
+regression. In D. W. K. Andrews and J. H. Stock (Eds.), \emph{Identification and
+inference for econometric models: essays in honor of Thomas Rothenberg},
 pp. 80–108. Cambridge University Press.
 }

@@ -4,13 +4,15 @@ An R package for measuring and identifying structural shocks using heteroskedast
 
 **Authors**: Daniel Kaufmann, Marc Burri, Valentin Grob
 
-**Note**: This is work in progress. Installation and use at own risk.
+**Note**: This is work in progress. Install and use at own risk. Comments are welcome.
 
 ## Documentation
 
 Full documentation and a worked example are available at the package website: **https://dankaufmann.github.io/hetiv/**
 
 The introductory vignette — covering data simulation, HET-IV, Proxy-IV, IRF plots, shock extraction, and weak instrument testing — is at: **https://dankaufmann.github.io/hetiv/articles/hetiv-introduction.html**
+
+`gweakivtest`is a direct port of the Matlab files by Lewis and Mertens (2025) available on **https://karelmertens.com/research/**
 
 ## Installation
 
@@ -81,7 +83,7 @@ cowplot::plot_grid(plotlist = plots)
 ### Test for weak instruments (Lewis-Mertens, 2025)
 
 ```r
-# y: T x 1 regressand
+# y: T x 1 outcome variable
 # Y: T x N matrix of endogenous regressors
 # X: T x Nx matrix of exogenous controls
 # Z: T x K matrix of instruments (requires K >= N)
@@ -92,28 +94,36 @@ wt <- gweakivtest(y = y, Y = Y, X = X, Z = Z)
 wt$gmin_generalized                            # generalised min-eigenvalue statistic
 wt$gmin_generalized_critical_value             # Lewis-Mertens sharp critical value (Stiefel)
 wt$gmin_generalized_critical_value_simplified  # conservative closed-form bound
-wt$stock_yogo_test_statistic                   # Stock-Yogo statistic (Nagar approximation)
-wt$stock_yogo_critical_value_nagar             # Stock-Yogo critical value
 
 # With Newey-West HAR standard errors and custom bias tolerance
 wt <- gweakivtest(y = y, Y = Y, X = X, Z = Z, cov_type = "NW", tau = 0.10)
 
 # hetiv() and proxyiv() return WeakData when details = TRUE,
-# which contains the outcome and instrument columns needed for gweakivtest()
+# which contains the outcome and instrument columns needed for gweakivtest(). Note that the E endogenous variables have to be ordered first
 res     <- hetiv(y = y, O = O, Ind = Ind, P = 1, H = 20, E = 1, details = TRUE)
-z_cols  <- grep("^Z", names(res$WeakData))
-y_cols  <- grep("^y", names(res$WeakData))
-wt      <- gweakivtest(y = res$WeakData[, y_cols[1], drop = FALSE],
-                     Y = res$WeakData[, y_cols[-1], drop = FALSE],
-                     X = matrix(numeric(0), nrow(res$WeakData), 0),
-                     Z = res$WeakData[, z_cols, drop = FALSE])
+ # y: outcome variable E+1 (not used as endogenous regressor)
+  y <- res$WeakData[, paste0("y", E + 1)]
+  # Y: first E outcome variables (endogenous regressors)
+  Y <- res$WeakData[, paste0("y", 1:E)]
+  # Z: the E instruments
+  Z <- res$WeakData[, paste0("Z", 1:E),]
+  # X: lagged ("o*") and deterministic ("x*") and indicator variables ("i*") control columns. In any case, add a constant term as well.
+  # Note that gweakivtest() adds a constant term if missing
+  ctrl  <- startsWith(colnames(weakdata), "o") | startsWith(colnames(weakdata), "x") | startsWith(colnames(weakdata), "i")
+  X     <- if (any(ctrl)) cbind(weakdata[, ctrl], matrix(1, nrow(weakdata), 1)) else matrix(numeric(0), nrow(weakdata), 0)
+
+wt      <- gweakivtest(y = y,
+                     Y = Y,
+                     X = X,
+                     Z = Z)
 ```
 
 ### Extract structural shocks
 
 ```r
+# We can use estiamtes from hetiv() and proxyiv() to predict the unobserved underlying shokcs using the Kalman filter
 shocks <- kfpredict(Sig = res$Sig, SigR = res$SigR,
-                    Psi = res$Psi, et = res$et, tol = 1e-10)
+                    Psi = res$Psi, et = res$et)
 ```
 
 ### Simulate data
@@ -126,21 +136,21 @@ sim <- simulatedata(Phi = Phi, SigE = 4, PsiE = PsiE, PsiR = PsiR,
 
 ## References
 
-Burri, M. and D. Kaufmann (2026). Measuring monetary policy shocks. IRENE Working Papers 24-03, IRENE Institute of Economic Research, University of Neuchâtel. 
+Burri, M. and D. Kaufmann (2026). Measuring monetary policy shocks. IRENE Working Papers 24-03, IRENE Institute of Economic Research, University of Neuchâtel.
 
-Burri, M. and D. Kaufmann (2026). Multiple monetary policy shocks from daily data: A heteroskedasticity IV approach.  IRENE Working Papers 26-06, IRENE Institute of Economic Research, University of Neuchâtel. 
+Burri, M. and D. Kaufmann (2026). Multiple monetary policy shocks from daily data: A heteroskedasticity IV approach. IRENE Working Papers 26-06, IRENE Institute of Economic Research, University of Neuchâtel.
 
-Jordà, Ò. (2005). Estimation and Inference of Impulse Responses by Local Projections. *American Economic Review*, 95(1), 161–182.
+Jordà, Ò. (2005). Estimation and inference of impulse responses by local projections. *American Economic Review*, 95(1), 161–182.
 
-Lewis, D. J. (2022). Robust Inference in Models Identified via Heteroskedasticity. *Review of Economics and Statistics*, 104(3), 510–524.
+Lewis, D. J. (2022). Robust inference in models identified via heteroskedasticity. *Review of Economics and Statistics*, 104(3), 510–524.
 
-Lewis, D. J. and Mertens, K. (2025). A Robust Test for Weak Instruments for 2SLS with Multiple Endogenous Regressors. *The Review of Economic Studies*, DOI: 10.1093/restud/rdaf103.
+Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments for 2SLS with multiple endogenous regressors. *The Review of Economic Studies*, DOI: 10.1093/restud/rdaf103.
 
-Mertens, K. and Ravn, M. O. (2013). The Dynamic Effects of Personal and Corporate Income Tax Changes in the United States. *American Economic Review*, 103(4), 1212–1247.
+Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and corporate income tax changes in the United States. *American Economic Review*, 103(4), 1212–1247.
 
-Rigobon, R. (2003). Identification Through Heteroskedasticity. *Review of Economics and Statistics*, 85(4), 777–792.
+Rigobon, R. (2003). Identification through heteroskedasticity. *Review of Economics and Statistics*, 85(4), 777–792.
 
-Stock, J. H. and Watson, M. W. (2018). Identification and Estimation of Dynamic Causal Effects in Macroeconomics Using External Instruments. *Economic Journal*, 128(610), 917–948.
+Stock, J. H. and Watson, M. W. (2018). Identification and estimation of dynamic causal effects in macroeconomics using external instruments. *Economic Journal*, 128(610), 917–948.
 
 ## License
 

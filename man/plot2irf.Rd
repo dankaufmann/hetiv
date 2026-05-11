@@ -10,11 +10,11 @@ plot2irf(IRF1, IRF1se, IRF2, IRF2se, HTick, Labels, ci = 0.9)
 \item{IRF1}{Array (H x N x E) of impulse responses for the first approach.
 Dimnames on the first dimension must be the horizon labels (numeric).}
 
-\item{IRF1se}{Array (H x N x E) of standard errors for the first approach.}
+\item{IRF1se}{Array (H x N x E) of standard errors for the first approach (set to 0 to surpress confidence intervals).}
 
 \item{IRF2}{Array (H x N x E) of impulse responses for the second approach.}
 
-\item{IRF2se}{Array (H x N x E) of standard errors for the second approach.}
+\item{IRF2se}{Array (H x N x E) of standard errors for the second approach (set to 0 to surpress confidence intervals).}
 
 \item{HTick}{Integer. Step size for x-axis tick marks.}
 
@@ -28,8 +28,8 @@ A list of \code{ggplot} objects, one per variable-shock combination,
 ordered by shock (outer loop) then variable (inner loop).
 }
 \description{
-Produces a panel of IRF plots comparing two sets of impulse responses
-side-by-side. Each panel shows the point estimates and confidence bands
+Produces a panel of IRF plots comparing two sets of impulse responses.
+Each panel shows the point estimates and confidence bands
 at level \code{ci} for both approaches. Returns a list of \code{ggplot} objects
 (one per variable-shock combination) that can be arranged with e.g.
 \code{cowplot::plot_grid()}.

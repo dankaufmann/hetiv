@@ -2,7 +2,7 @@
 #'
 #' Estimates impulse response functions (IRFs) using recursive
 #' heteroskedasticity-IV identification (Rigobon, 2003; Rigobon and Sack, 2004;
-#' Lewis, 2022; Burri and Kaufmann, 2026) combined with local projections 
+#' Lewis, 2022; Burri and Kaufmann, 2026a, 2026b) combined with local projections 
 #' (Jordà, 2005). Identification exploits the difference in variance between 
 #' policy event days and control days to construct instruments for the 
 #' endogenous variables.
@@ -13,8 +13,9 @@
 #'   and for recursive ordering to identify multiple dimensions.
 #' @param O Numeric matrix of information set variables (T x M). May be
 #'   identical to `y`. Included as lags 1 through `P`.
-#' @param X Numeric matrix of deterministic variables (T x K). May include a constant, 
-#'   time trend, seasonal dummies or other deterministic controls. Included as is (no lags).
+#' @param X Numeric matrix of deterministic variables (T x K). For example, 
+#'   time trend, seasonal dummies or other deterministic controls. Included as is (no lags). 
+#'   A constant is included by default.
 #' @param Ind Integer vector of length T, event indicator:
 #'   \itemize{
 #'     \item `0` Control day (no event)
@@ -22,7 +23,7 @@
 #'     \item `2` Contaminated control day (excluded from estimation)
 #'   }
 #' @param P Integer. Maximum lag order for the information set. Set to `0` for
-#'   no lags (regression on constant only).
+#'   no lags (regression on deterministic terms only).
 #' @param H Integer. Maximum horizon (in periods) up to which IRFs are estimated.
 #' @param E Integer. Number of shock dimensions to identify via recursive
 #'   ordering.
@@ -38,7 +39,7 @@
 #'   all horizons 0 through H - 1. Values greater than 1 are intended only for
 #'   fast testing; they are only safe when `Hstep >= H` (a single horizon is
 #'   stored). For complete IRF estimation always use `Hstep = 1`.
-#' @param details Logical. If `TRUE`, code saves detailed IV results, which is slower.
+#' @param details Logical. If `TRUE`, code saves detailed IV results, which is slightly slower.
 #'   if set to `FALSE`, returns only impulse response and standard error (e.g. for bootstrap)
 #'
 #' @return A named list with the following elements:
@@ -66,24 +67,24 @@
 #'   }
 #'
 #' @references
-#' Burri, M. and D. Kaufmann (2026). Measuring monetary policy shocks.
+#' Burri, M. and D. Kaufmann (2026a). Measuring monetary policy shocks.
 #' IRENE Working Papers 24-03, IRENE Institute of Economic Research,
 #' University of Neuchâtel.
 #'
-#' Burri, M. and D. Kaufmann (2026). Multiple monetary policy shocks from
+#' Burri, M. and D. Kaufmann (2026b). Multiple monetary policy shocks from
 #' daily data: A heteroskedasticity IV approach. IRENE Working Papers 26-06,
 #' IRENE Institute of Economic Research, University of Neuchâtel.
 #'
-#' Jordà, Ò. (2005). Estimation and Inference of Impulse Responses by Local
-#' Projections. *American Economic Review*, 95(1), 161–182.
+#' Jordà, Ò. (2005). Estimation and inference of impulse responses by local
+#' projections. *American Economic Review*, 95(1), 161–182.
 #'
-#' Lewis, D. J. (2022). Robust Inference in Models Identified via
-#' Heteroskedasticity. *Review of Economics and Statistics*, 104(3), 510–524.
-#' 
-#' Lewis, D. J. and Mertens, K. (2025). A Robust Test for Weak Instruments for 2SLS with Multiple
-#' Endogenous Regressors. *The Review of Economic Studies*, DOI: 10.1093/restud/rdaf103
+#' Lewis, D. J. (2022). Robust inference in models identified via
+#' heteroskedasticity. *Review of Economics and Statistics*, 104(3), 510–524.
 #'
-#' Rigobon, R. (2003). Identification Through Heteroskedasticity.
+#' Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments for 2SLS with multiple
+#' endogenous regressors. *The Review of Economic Studies*, DOI: 10.1093/restud/rdaf103
+#'
+#' Rigobon, R. (2003). Identification through heteroskedasticity.
 #' *Review of Economics and Statistics*, 85(4), 777–792.
 #'
 #' Rigobon, R. and Sack, B. (2004). The impact of monetary policy on asset

@@ -59,6 +59,6 @@ number of rows as `et` and one column per shock dimension.
 
 ## References
 
-Burri, M. and Kaufmann, D. (2024). Measuring monetary policy shocks.
+Burri, M. and Kaufmann, D. (2026). Measuring monetary policy shocks.
 IRENE Working Paper 24-03, IRENE Institute of Economic Research,
 University of Neuchâtel.

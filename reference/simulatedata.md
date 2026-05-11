@@ -49,7 +49,8 @@ simulatedata(Phi, SigE, PsiE, PsiR, Nobs, Nbin, N, R, E, Nevn, P, eDist, seed)
 
 - E:
 
-  Number of event shocks. Currently only `E = 1` is supported.
+  Number of event shocks. For GARCH shock distributions
+  (`eDist = c(alpha, beta)`), only `E = 1` is supported.
 
 - Nevn:
 

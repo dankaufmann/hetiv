@@ -34,7 +34,7 @@ periods). The shock distribution can be normal, Student-t, or GARCH(1,1)."></hea
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Simulate VAR data with heteroskedastic shocks and given parameters</h1>
-      <small class="dont-index">Source: <a href="https://github.com/dankaufmann/hetiv/blob/main/R/simulatedata.R" class="external-link"><code>R/simulatedata.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/dankaufmann/hetiv/blob/HEAD/R/simulatedata.R" class="external-link"><code>R/simulatedata.R</code></a></small>
       <div class="d-none name"><code>simulatedata.Rd</code></div>
     </div>
 
@@ -88,7 +88,7 @@ initialise the VAR but are discarded before returning.</p></dd>
 
 
 <dt id="arg-e">E<a class="anchor" aria-label="anchor" href="#arg-e"></a></dt>
-<dd><p>Number of event shocks. Currently only <code>E = 1</code> is supported.</p></dd>
+<dd><p>Number of event shocks. For GARCH shock distributions (<code>eDist = c(alpha, beta)</code>), only <code>E = 1</code> is supported.</p></dd>
 
 
 <dt id="arg-nevn">Nevn<a class="anchor" aria-label="anchor" href="#arg-nevn"></a></dt>

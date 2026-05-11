@@ -1,6 +1,6 @@
 Package: hetiv
 Title: Heteroskedasticity and Proxy-Based IV Methods
-Version: 0.1.0
+Version: 0.1.1
 Authors@R:
     c(person("Daniel", "Kaufmann", email = "info@dankaufmann.com", role = c("aut", "cre")),
       person("Marc", "Burri", role = "aut"),

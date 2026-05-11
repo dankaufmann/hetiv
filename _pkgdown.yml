@@ -25,7 +25,7 @@ reference:
   - title: Weak instrument test
     desc: Test for weak instruments (Lewis-Mertens 2025)
     contents:
-      - gweaktest
+      - gweakivtest
   - title: Shock extraction and IRF computation
     contents:
       - kfpredict

@@ -143,9 +143,9 @@
 
 # Critical values (internal) ---------------------------------------------
 
-# Critical values for gweaktest(); not exported — called internally.
+# Critical values for gweakivtest(); not exported — called internally.
 # Reference: Lewis & Mertens (2025).
-gweaktest_critical_values <- function(W, K,
+gweakivtest_critical_values <- function(W, K,
                                       Sig     = NULL,
                                       alfa    = 0.05,
                                       tau     = 0.10,
@@ -403,7 +403,7 @@ gweaktest_critical_values <- function(W, K,
 #' pp. 80–108. Cambridge University Press.
 #'
 #' @export
-gweaktest <- function(y, Y, X, Z,
+gweakivtest <- function(y, Y, X, Z,
                       cov_type = "EHW",
                       alfa     = 0.05,
                       tau      = 0.10,
@@ -497,7 +497,7 @@ gweaktest <- function(y, Y, X, Z,
   # Critical values
   Sig_arg <- if (crit == "rel") NULL else Sig_mat
 
-  cv_list <- gweaktest_critical_values(
+  cv_list <- gweakivtest_critical_values(
     W      = W_mat,
     K      = K,
     Sig    = Sig_arg,

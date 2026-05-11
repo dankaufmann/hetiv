@@ -14,7 +14,7 @@
 #'   initialise the VAR but are discarded before returning.
 #' @param N Number of variables in the VAR.
 #' @param R Number of regular shocks.
-#' @param E Number of event shocks. Currently only `E = 1` is supported.
+#' @param E Number of event shocks. For GARCH shock distributions (`eDist = c(alpha, beta)`), only `E = 1` is supported.
 #' @param Nevn Event frequency: an event shock occurs every `Nevn` periods.
 #'   Set to `0` to suppress event shocks entirely (no heteroskedasticity).
 #' @param P VAR lag order.

@@ -34,7 +34,7 @@ Both approaches are implemented as local projection IV estimators following
 Jordà (2005), which directly produce impulse response functions (IRFs) across
 multiple horizons. Inference is based on HC robust standard errors (Montiel Olea et al., 2025).
 
-The package allows for multiple shocks and endogenous variables. Weak-instrument robust inference is implemented via the generalised minimum eigenvalue test of Lewis and Mertens (2025), which nests the classical Stock-Yogo (2005) test as a special case. The `gweaktest()` function is a direct port of the Matlab files by Lewis and Mertens (2025).
+The package allows for multiple shocks and endogenous variables. Weak-instrument robust inference is implemented via the generalised minimum eigenvalue test of Lewis and Mertens (2025), which nests the classical Stock-Yogo (2005) test as a special case. The `gweakivtest()` function is a direct port of the Matlab files by Lewis and Mertens (2025).
 
 In addition, the package provides the function `kfpredict()` for predicting the underlying unobserved shocks based on the Kalman-filter, following Burri and Kaufmann (2026b).
 
@@ -393,17 +393,17 @@ The correlation between the true shocks and the proxy is lower than one due to a
 
 ## Weak instrument test
 
-`gweaktest()` implements the generalised minimum eigenvalue test of Lewis and
+`gweakivtest()` implements the generalised minimum eigenvalue test of Lewis and
 Mertens (2025), which is robust to heteroskedasticity and serial correlation and applicable to multiple endogenous regressors and multiple instruments.
 Note that classical Stock-Yogo (2005) test is applicable only for the homoskedastic case.
 
 Both `hetiv()` and `proxyiv()` return a `WeakData` element when `details =
 TRUE`. This data frame contains the outcome and instrument columns in the form
-expected by `gweaktest()`, along with any lagged and deterministic controls used
+expected by `gweakivtest()`, along with any lagged and deterministic controls used
 in estimation. The code below extracts the relevant columns from the `WeakData` data frame and runs the weak instrument test for each of the four specifications. The results are then compiled into a table for easy comparison. Note that we use EHW instead of Newey-West standard errors, because, conditional on the covariates, we know that the shocks are serially uncorrelated. If in doubt, use NW option.
 
-```{r gweaktest}
-# Helper: extract y, Y, X, Z from WeakData and run gweaktest
+```{r gweakivtest}
+# Helper: extract y, Y, X, Z from WeakData and run gweakivtest
 run_weaktest <- function(weakdata, E) {
   # y: outcome variable E+1 (not used as endogenous regressor)
   y <- weakdata[, paste0("y", E + 1)]
@@ -412,11 +412,11 @@ run_weaktest <- function(weakdata, E) {
   # Z: the E instruments
   Z <- weakdata[, paste0("Z", 1:E),]
   # X: lagged ("o*") and deterministic ("x*") control columns. In any case, add a constant term as well.
-  # Note that gweaktest() adds a constant term if missing
-  ctrl  <- startsWith(colnames(weakdata), "o") | startsWith(colnames(weakdata), "x")
+  # Note that gweakivtest() adds a constant term if missing
+  ctrl  <- startsWith(colnames(weakdata), "o") | startsWith(colnames(weakdata), "x") | startsWith(colnames(weakdata), "i")
   X     <- if (any(ctrl)) cbind(weakdata[, ctrl], matrix(1, nrow(weakdata), 1)) else matrix(numeric(0), nrow(weakdata), 0)
-   
-  gweaktest(y, Y, X, Z, cov_type = "EHW")
+
+  gweakivtest(y, Y, X, Z, cov_type = "EHW")
 }
 
 specs <- list(
@@ -429,14 +429,13 @@ specs <- list(
 wt_results <- lapply(specs, run_weaktest, E = E)
 ```
 
-```{r gweaktest-table}
+```{r gweakivtest-table}
 tab <- do.call(rbind, lapply(names(wt_results), function(nm) {
   r <- wt_results[[nm]]
   data.frame(
     Specification = nm,
     Statistic     = round(r$gmin_generalized, 2),
     LM_CV         = round(r$gmin_generalized_critical_value, 2),
-    SY_CV         = round(r$stock_yogo_critical_value_nagar, 2),
     Strong        = ifelse(r$gmin_generalized > r$gmin_generalized_critical_value,
                            "Yes", "No"),
     stringsAsFactors = FALSE
@@ -446,7 +445,7 @@ tab <- do.call(rbind, lapply(names(wt_results), function(nm) {
 knitr::kable(
   tab,
   col.names = c("Specification", "Statistic", "LM critical value",
-                "SY critical value", "Strong instruments?"),
+                "Strong instruments?"),
   caption   = "Weak instrument test results (Lewis-Mertens generalised minimum eigenvalue test)"
 )
 ```

@@ -1,7 +1,7 @@
 #' Estimate impulse responses via heteroskedasticity-based IV local projections
 #'
 #' Estimates impulse response functions (IRFs) using recursive
-#' heteroskedasticity-IV identification (Rigobon, 2003; Rigobon and Sachs, 2004;
+#' heteroskedasticity-IV identification (Rigobon, 2003; Rigobon and Sack, 2004;
 #' Lewis, 2022; Burri and Kaufmann, 2026) combined with local projections 
 #' (Jordà, 2005). Identification exploits the difference in variance between 
 #' policy event days and control days to construct instruments for the 
@@ -161,13 +161,13 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
         if(interact == TRUE){
           # Compute lags of variables interacted with event dummies (excluding contaminated events)
           for(e in 0:1){
-            DataM[, paste0("Event", e, ".o", j, ".l", p)] <- dplyr::lag(DataM[, paste0("o", j)], p) * (Ind == e)
-            infoVars <- c(infoVars, paste0("Event", e, ".o", j, ".l", p))
+            DataM[, paste0("o", j, ".l", p, ".i", e)] <- dplyr::lag(DataM[, paste0("o", j)], p) * (Ind == e)
+            infoVars <- c(infoVars, paste0("o", j, ".l", p, ".i", e))
 
             # Include interacted constant (only for e == 1 to avoid perfect multicollinearity)
             if(p == 1 & e == 1){
-              DataM[, paste0("Event", e)] <- (Ind == e)
-              infoVars <- c(infoVars, paste0("Event", e))
+              DataM[, paste0("i", e)] <- (Ind == e)
+              infoVars <- c(infoVars, paste0("i", e))
             }
           }
         }else{
@@ -183,8 +183,8 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
   if(P == 0){
     if(interact == TRUE){
       # Include interacted constant (only for e == 1 to avoid perfect multicollinearity)
-      DataM[, paste0("Event", 1)] <- (Ind == 1)
-      infoVars <- c(infoVars, paste0("Event", 1))
+      DataM[, paste0("i", 1)] <- (Ind == 1)
+      infoVars <- c(infoVars, paste0("i", 1))
     
     }else{
       infoVars <- "1"

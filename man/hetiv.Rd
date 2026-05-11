@@ -92,7 +92,7 @@ the Lewis-Mertens (2025) weak instrument test.}
 }
 \description{
 Estimates impulse response functions (IRFs) using recursive
-heteroskedasticity-IV identification (Rigobon, 2003; Rigobon and Sachs, 2004;
+heteroskedasticity-IV identification (Rigobon, 2003; Rigobon and Sack, 2004;
 Lewis, 2022; Burri and Kaufmann, 2026) combined with local projections
 (Jordà, 2005). Identification exploits the difference in variance between
 policy event days and control days to construct instruments for the

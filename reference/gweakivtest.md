@@ -2,8 +2,9 @@
 
 Tests for weak instruments with multiple endogenous regressors using the
 generalised minimum eigenvalue statistic of Lewis and Mertens (2025).
-The test is robust to heteroscedasticity and serial correlation and
-nests the classical Stock-Yogo (2005) test as a special case.
+The test is robust to heteroskedasticity and autocorrelation and nests
+the classical Stock-Yogo (2005) test as a special case. The function is
+a direct port from the Matlab codes by Lewis and Mertens (2025)
 
 ## Usage
 

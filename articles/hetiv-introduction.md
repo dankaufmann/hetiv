@@ -20,9 +20,9 @@ functions (IRFs) across multiple horizons. Inference is based on HC
 robust standard errors (Montiel Olea et al., 2025).
 
 The package allows for multiple shocks and endogenous variables.
-Weak-instrument robust inference is implemented via the generalised
-minimum eigenvalue test of Lewis and Mertens (2025), which nests the
-classical Stock-Yogo (2005) test as a special case. The
+Weak-instrument HAR inference is implemented via the generalised minimum
+eigenvalue test of Lewis and Mertens (2025), which nests the classical
+Stock-Yogo (2005) test for the univariate homoskedastic case. The
 [`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md)
 function is a direct port of the Matlab files by Lewis and Mertens
 (2025).
@@ -30,24 +30,44 @@ function is a direct port of the Matlab files by Lewis and Mertens
 In addition, the package provides the function
 [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md)
 for predicting the underlying unobserved shocks based on the
-Kalman-filter, following Burri and Kaufmann (2026b).
+Kalman-filter, as suggested by Burri and Kaufmann (2026b).
 
-This vignette illustrates both approaches using a simulated
+This vignette demonstrates the functionality using a simulated
 four-variable VAR with two structural shocks.
 
 ## Simulated data
 
 We simulate data from a VAR(2) with $`N = 4`$ variables, $`E = 2`$ event
 (policy) shocks, $`R = 2`$ regular shocks, and $`P = 2`$ lags over
-$`T = 500`$ observations. A policy event occurs every 10th period
-(approximately 10% of observations). Shocks are drawn from a standard
-normal distribution. The impact matrix is lower-triangular,
-corresponding to the identifying assumption by Burri and Kaufmann
-(2026a) that the first shock has a contemporaneous effect on all
-variables, while the second shock has no contemporaneous effect on the
-first variable. Deterministic weekday patterns are added to variables 3
-and 4 to illustrate the role of controls. The event indicator `Ind`
-equals 1 on policy event days and 0 on control days.
+$`T = 500`$ observations. The model reads:
+
+``` math
+y_t = \Psi \varepsilon_t + \Gamma v_t + \Phi(L) y_{t-1} + \beta X_t \ \ \text{for } t\in \mathcal{P}
+```
+
+``` math
+y_t =  \Gamma v_t + \Phi(L) y_{t-1} + \beta X_t \ \ \text{for } t\in \mathcal{C}
+```
+
+where $`\mathcal{P}, \mathcal{C}`$ denote policy event and other days,
+respectively, $`\Psi`$ is the impact matrix of $`E`$ policy event shocks
+and $`\Gamma`$ the impact matrix of $`R`$ other shocks. $`\Phi(L)`$ is a
+conformable lag polynomial, and $`X_t`$ an matrix of deterministic
+terms.
+
+Regular shocks occur on all days. A policy event occurs every 10th
+period (approximately 10% of observations). The latter introduces
+heteroskedasticity in the variance-covariance matrix of the reduced-form
+residuals
+[`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md)
+exploits to identify the impulse response functions. Shocks are drawn
+from a standard normal distribution. The impact matrix is
+lower-triangular, corresponding to the identifying assumption by Burri
+and Kaufmann (2026a) that the first shock has a contemporaneous effect
+on all variables, while the second shock has no contemporaneous effect
+on the first variable. Deterministic weekday patterns are added to
+variables 3 and 4 to illustrate the role of controls. The event
+indicator `Ind` equals 1 on policy event days and 0 on control days.
 
 ``` r
 
@@ -59,11 +79,12 @@ E  <- 2   # event shocks
 R  <- 2   # regular shocks
 P  <- 2   # VAR lag order
 H  <- 20  # IRF horizons
+Nevn <- 10 # Frequency of event shocks
 
 # Impact matrix for event shocks (N x E); lower triangular for recursive ID
 PsiE      <- matrix(0, N, E)
 PsiE[, 1] <- c(1.0,  0.5,  0.3,  0.2)
-PsiE[, 2] <- c(0.0,  1.0,  0.4,  0.3)
+PsiE[, 2] <- c(0.0,  1.0,  -0.4,  0.3)
 
 SigE <- 4  # event shock variance (scalar, applies to all E shocks)
 
@@ -89,21 +110,22 @@ Nbin <- 100
 sim  <- simulatedata(
   Phi = Phi, SigE = SigE, PsiE = PsiE, PsiR = PsiR,
   Nobs = Nobs, Nbin = Nbin, N = N, R = R, E = E,
-  Nevn = 10, P = P, eDist = 0, seed = 42
+  Nevn = Nevn, P = P, eDist = 0, seed = 42
 )
 
+# Extract simulated data and event indicator
 y_data <- sim$y
 Ind    <- as.integer(sim$IndE[, 1])
 
-# Inject deterministic weekday variation into variables 3 and 4
+# Add deterministic weekday variation into variables 3 and 4
 y_data[, 3] <- y_data[, 3] + 0.5 * seq_len(Nobs) %% 5
 y_data[, 4] <- y_data[, 4] + 0.3 * seq_len(Nobs) %% 5
 ```
 
-To illustrate the proxy-IV approach, we construct a noisy external proxy
-for the two event shocks by adding Gaussian noise to the true shocks.
-The proxy is observed only on policy event days and set to `NA` on
-control days. This mirrors the typical situation in high-frequency
+To illustrate the proxy-IV approach, we construct a noisy external
+instrument for the two event shocks by adding Gaussian noise to the true
+shocks. The proxy is observed only on policy event days and set to `NA`
+on control days. This mirrors the typical situation in high-frequency
 identification of monetary policy shocks, where the high-frequency
 surprises are only observed on policy announcement days.
 
@@ -111,8 +133,8 @@ surprises are only observed on policy announcement days.
 
 # RNG state after simulatedata(seed = 42) is deterministic, so no extra seed needed
 e_proxy       <- sim$eE
-e_proxy[, 1]  <- e_proxy[, 1] + rnorm(Nobs, sd = 0.3)
-e_proxy[, 2]  <- e_proxy[, 2] + rnorm(Nobs, sd = 0.3)
+e_proxy[, 1]  <- e_proxy[, 1] + rnorm(Nobs, sd = 1)
+e_proxy[, 2]  <- e_proxy[, 2] + rnorm(Nobs, sd = 1)
 e_proxy[Ind == 0, ] <- NA
 ```
 
@@ -120,10 +142,11 @@ e_proxy[Ind == 0, ] <- NA
 
 ### Heteroskedasticity-IV without controls
 
-First, we estimate a misspecified model, which allows us later on to
-illustrate the role of control variables. The misspsecification stems
-from not controlling for lagged dependent variables ($`P = 0`$) and not
-adding deterministic controls.
+First, we estimate a misspecified model, failing to control for lagged
+dependent variables and weekday-variation. Note that we impose a
+normalization on the impact on the endogenous variable for every shock.
+The value of the normalization can be chosen by `norm`. Here, we choose
+the normalization that corresponds to the true impact matrix.
 
 ``` r
 
@@ -141,9 +164,11 @@ res_het <- hetiv(
 
 ### Heteroskedasticity-IV with controls
 
-The second model we estimate is the correctly specified model, with
-$`P = 2`$ lags and the weekday dummies. Note that the weekday dummies
-absorb the deterministic pattern that we added to the data.
+Second, we estimate the correctly specified model, with $`P = 2`$ lags
+and the weekday dummies. Note that the weekday dummies absorb the
+deterministic pattern that we added to the data. The regressions
+generally include a constant term. Therefore, we only add four weekday
+dummies.
 
 ``` r
 
@@ -167,16 +192,15 @@ res_het_X <- hetiv(
 
 ### Proxy-IV
 
-We also can use the external proxy `e_proxy` to estimate the model via
+Third, we use the external instrument to estimate the model via
 proxy-IV. The same lags are included as in the second model. However,
 the weekday dummies are dropped due to collinearity, as only the event
-days are used to identify the responses. That is, the model is correctly
-specified in terms of controls, but the identification relies on the
-proxy rather than heteroskedasticity. Note that the proxy-IV function
-still requires Ind as an input, because, if the instrument is missing,
-but Ind = 1, we can later on still predict the unobserved shock using
-the Kalman filter projection in
-[`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md).
+days are used to identify the responses. Note that the proxy-IV function
+still requires `Ind` as an input, because, in case the instrument is
+missing, but `Ind = 1`, we can later on predict the unobserved shock
+using the Kalman filter with
+[`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md)
+(see Burri and Kaufmann, 2026a).
 
 ``` r
 
@@ -196,11 +220,13 @@ res_proxy <- proxyiv(
 
 ### Proxy-IV with recursive zero restriction
 
-If the proxies are valid, we do not need additional restrictions in
-principle. However, the function allows to additionally impose zero
-restrictions. This is useful in a situation where there is some doubt
-about the validity of the proxies. In addition, imposing the restriction
-if true, may improve the precision of the estimates.
+If the proxies are valid, we do not need additional restrictions to
+identify the impulse responses. However, the function allows us to
+additionally impose zero restrictions mirroring the assumptions used by
+[`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md).
+This is useful in a situation where there is some doubt about the
+validity of the external instruments, and the researcher is convinced
+that a zero restriction is valid.
 
 ``` r
 
@@ -220,47 +246,54 @@ res_proxy_rec <- proxyiv(
 
 ## Impact matrices
 
-The estimated impact matrix `Psi` gives the contemporaneous responses of
-all $`N`$ variables to each structural shock. We can compare the
-estimates across the four specifications against the true `PsiE`. At
+The estimated impact matrix $`\Psi`$ gives the contemporaneous responses
+of all $`N`$ variables to each structural shock. We can compare the
+estimates across the four specifications against the true $`\Psi`$. At
 first sight, the differences are small. As we will see below, there are
 still some differences in terms of the accuracy of the estimates, the
 predicted shocks, and the strength of the instruments.
 
 ``` r
 
-var_labels <- paste0("Variable ", 1:N)
 
-tab_1 <- round(data.frame(True = PsiE[, 1], HET_IV = res_het$Psi[, 1], HET_IV_X = res_het_X$Psi[, 1],
-                          Proxy_IV = res_proxy$Psi[, 1], Proxy_IV_rec = res_proxy_rec$Psi[, 1]), 2)
+tab_1 <- round(data.frame(
+            True = PsiE[, 1], 
+            HET_IV = res_het$Psi[, 1], 
+            HET_IV_X = res_het_X$Psi[, 1],
+            Proxy_IV = res_proxy$Psi[, 1], 
+            Proxy_IV_rec = res_proxy_rec$Psi[, 1]), 2)
 
 knitr::kable(
   tab_1,
   col.names = c("True", "HET-IV without controls", "HET-IV with controls", "Proxy-IV with controls", "Proxy-IV with recursive restriction"),
-  caption   = "Impact matrix estimates (Psi) for shock 1 across different specifications"
+  caption   = "Impact matrix estimates ($\\Psi$) for shock 1 across different specifications"
 )
 ```
 
 | True | HET-IV without controls | HET-IV with controls | Proxy-IV with controls | Proxy-IV with recursive restriction |
 |---:|---:|---:|---:|---:|
 | 1.0 | 1.00 | 1.00 | 1.00 | 1.00 |
-| 0.5 | 0.53 | 0.46 | 0.55 | 0.55 |
-| 0.3 | 0.46 | 0.29 | 0.29 | 0.29 |
-| 0.2 | 0.19 | 0.19 | 0.23 | 0.23 |
+| 0.5 | 0.53 | 0.45 | 0.53 | 0.53 |
+| 0.3 | 0.52 | 0.31 | 0.29 | 0.29 |
+| 0.2 | 0.20 | 0.19 | 0.22 | 0.22 |
 
-Impact matrix estimates (Psi) for shock 1 across different
+Impact matrix estimates ($`\Psi`$) for shock 1 across different
 specifications {.table}
 
 ``` r
 
 
-tab_2 <- round(data.frame(True = PsiE[, 2], HET_IV = res_het$Psi[, 2], HET_IV_X = res_het_X$Psi[, 2],
-                          Proxy_IV = res_proxy$Psi[, 2], Proxy_IV_rec = res_proxy_rec$Psi[, 2]), 2)
+tab_2 <- round(data.frame(
+            True = PsiE[, 2], 
+            HET_IV = res_het$Psi[, 2], 
+            HET_IV_X = res_het_X$Psi[, 2],
+            Proxy_IV = res_proxy$Psi[, 2], 
+            Proxy_IV_rec = res_proxy_rec$Psi[, 2]), 2)
 
 knitr::kable(
   tab_2,
   col.names = c("True", "HET-IV without controls", "HET-IV with controls", "Proxy-IV with controls", "Proxy-IV with recursive restriction"),
-  caption   = "Impact matrix estimates (Psi) for shock 2 across different specifications"
+  caption   = "Impact matrix estimates ($\\Psi$) for shock 2 across different specifications"
 )
 ```
 
@@ -268,15 +301,15 @@ knitr::kable(
 |---:|---:|---:|---:|---:|
 | 0.0 | 0.00 | 0.00 | -0.09 | 0.00 |
 | 1.0 | 1.00 | 1.00 | 1.00 | 1.00 |
-| 0.4 | 0.13 | 0.25 | 0.33 | 0.34 |
-| 0.3 | 0.27 | 0.31 | 0.28 | 0.29 |
+| -0.4 | -0.46 | -0.31 | -0.35 | -0.31 |
+| 0.3 | 0.26 | 0.31 | 0.28 | 0.28 |
 
-Impact matrix estimates (Psi) for shock 2 across different
+Impact matrix estimates ($`\Psi`$) for shock 2 across different
 specifications {.table}
 
 ## Impulse response functions
 
-### Single estimator with confidence bands
+### Impulse responses with confidence intervals
 
 We can assess the accuracy of the estimates, and the dynamic causal
 effects, using
@@ -287,6 +320,8 @@ approach. The confidence levels can be chosen freely. Here, we show the
 controls.
 
 ``` r
+
+var_labels <- paste0("Variable ", 1:N)
 
 plots_het_X <- plotirf(
   IRFest = res_het_X$irf,
@@ -309,8 +344,7 @@ for (j in seq_len(E)) {
 
 ### HET-IV estimates versus true IRF
 
-Because we use simulated data, we can compare the estimates to the true
-ones.
+We can compare the estimates to the true impulse responses.
 [`plot2irf()`](https://dankaufmann.github.io/hetiv/reference/plot2irf.md)
 overlays two sets of IRFs. We compare the HET-IV estimate (blue) against
 the theoretical IRF computed from the known VAR parameters (red). The
@@ -321,7 +355,7 @@ set to zero, so that no confidence bands are plotted for the true IRF.
 
 ``` r
 
-irf_true    <- computeirf(PsiE, Phi, H, cum = FALSE)$irf
+irf_true    <- computeirf(PsiE, Phi, H, cum = FALSE)
 irf_true_se <- array(0, dim = dim(irf_true), dimnames = dimnames(irf_true))
 
 plots_vs_true <- plot2irf(
@@ -339,7 +373,7 @@ for (j in seq_len(E)) {
   panel <- cowplot::plot_grid(plotlist = plots_vs_true[idx], ncol = 2)
   title <- cowplot::ggdraw() +
     cowplot::draw_label(
-      paste0("HET-IV with controls (blue) vs True (red) — Shock ", j), size = 11)
+      paste0("HET-IV with controls (blue) vs True (red) — Shock ", j, " (90% CI)"), size = 11)
   print(cowplot::plot_grid(title, panel, ncol = 1, rel_heights = c(0.05, 1)))
 }
 ```
@@ -349,11 +383,7 @@ for (j in seq_len(E)) {
 ### HET-IV estimates versus misspecified model
 
 We can also compare the accuracy of the estimates using the correct and
-misspecified models. We see that the confidence intervals are wider
-using the misspecified model. This is especially true for the third and
-fourth variables that are affected by the deterministic weekday pattern.
-The misspecified model does not account for this pattern, which leads to
-more uncertainty and biased estimates.
+misspecified models.
 
 ``` r
 
@@ -373,20 +403,25 @@ for (j in seq_len(E)) {
   panel <- cowplot::plot_grid(plotlist = plots_vs_true[idx], ncol = 2)
   title <- cowplot::ggdraw() +
     cowplot::draw_label(
-      paste0("HET-IV with controls (blue) vs without controls (red) — Shock ", j), size = 11)
+      paste0("HET-IV with controls (blue) vs without controls (red) — Shock ", j, " (90% CI)"), size = 11)
   print(cowplot::plot_grid(title, panel, ncol = 1, rel_heights = c(0.05, 1)))
 }
 ```
 
 ![](hetiv-introduction_files/figure-html/plot2irf-misspecified-1.png)![](hetiv-introduction_files/figure-html/plot2irf-misspecified-2.png)
 
+We see that the confidence intervals are wider using the misspecified
+model (red). This is especially true for the third and fourth variables
+that are affected by the deterministic weekday pattern. The misspecified
+model does not account for this pattern, which leads to more uncertainty
+and biased estimates. But also, the intervals are somewhat wider or
+variables 1 and 2 because we fail to control for lagged dependent
+variables.
+
 ### HET-IV versus Proxy-IV
 
-We can also compare the HET-IV estimates to the Proxy-IV estimates. The
-confidence intervals are slightly wider for the HET-IV approach, which
-is expected given that the proxy is highly correlated with the true
-shocks. This may not be the case if the proxy is more noisy and
-therefore weakly correlated with the endogenous variable. However, the
+Next, we compare the HET-IV estimates to the Proxy-IV estimates. We
+obtain relatively similar results with both approaches.However, the
 point estimates are quite similar across the two approaches.
 
 ``` r
@@ -406,7 +441,7 @@ for (j in seq_len(E)) {
   panel <- cowplot::plot_grid(plotlist = plots_vs_proxy[idx], ncol = 2)
   title <- cowplot::ggdraw() +
     cowplot::draw_label(
-      paste0("HET-IV (blue) vs Proxy-IV (red) — Shock ", j), size = 11)
+      paste0("HET-IV (blue) vs Proxy-IV (red) — Shock ", j, " (90% CI)"), size = 11)
   print(cowplot::plot_grid(title, panel, ncol = 1, rel_heights = c(0.05, 1)))
 }
 ```
@@ -424,24 +459,20 @@ and the residuals `et`.
 ``` r
 
 shocks_het   <- kfpredict(Sig = res_het$Sig,   SigR = res_het$SigR,
-                           Psi = res_het$Psi,   et   = res_het$et,
-                           tol = 1e-4, scale = TRUE)
+                           Psi = res_het$Psi,   et   = res_het$et)
 
 shocks_het_X <- kfpredict(Sig = res_het_X$Sig, SigR = res_het_X$SigR,
-                           Psi = res_het_X$Psi, et   = res_het_X$et,
-                           tol = 1e-4, scale = TRUE)
+                           Psi = res_het_X$Psi, et   = res_het_X$et)
 
 shocks_proxy <- kfpredict(Sig = res_proxy$Sig, SigR = res_proxy$SigR,
-                           Psi = res_proxy$Psi, et   = res_proxy$et,
-                           tol = 1e-4, scale = TRUE)
+                           Psi = res_proxy$Psi, et   = res_proxy$et)
 
 shocks_proxy_rec <- kfpredict(Sig = res_proxy_rec$Sig, SigR = res_proxy_rec$SigR,
-                           Psi = res_proxy_rec$Psi, et   = res_proxy_rec$et,
-                           tol = 1e-4, scale = TRUE)
+                           Psi = res_proxy_rec$Psi, et   = res_proxy_rec$et)
 ```
 
 We assess the accuracy of the prediction comparing them to the true
-event shocksfrom the DGP.
+event shocks from the underlying model.
 
 ``` r
 
@@ -465,49 +496,41 @@ cor_df2<- data.frame(
     Proxy_IV_Rec = shocks_proxy_rec[, 2]
 )
 
-knitr::kable(
-    data.frame(round(cor(cor_df1, use = "complete.obs"), 2))[1, ],
+tab_all <- data.frame(
+      rbind(round(cor(cor_df1, use = "complete.obs"), 2)[1, ],
+            round(cor(cor_df2, use = "complete.obs"), 2)[1, ])
+            )
+rownames(tab_all) <- c("Shock 1", "Shock 2")
+
+knitr::kable(tab_all,
     col.names = c("True", "Proxy", "HET-IV without controls", "HET-IV with controls", "Proxy-IV with controls", "Proxy-IV with recursive restriction"),
-    caption   = paste0("Correlation of predicted shocks with true shocks for shock ", j)
-)
+    row.names = TRUE,
+    caption   = "Correlation of predicted shocks with true shocks"
+    )
 ```
 
 |  | True | Proxy | HET-IV without controls | HET-IV with controls | Proxy-IV with controls | Proxy-IV with recursive restriction |
 |:---|---:|---:|---:|---:|---:|---:|
-| True | 1 | 0.99 | 0.86 | 1 | 0.94 | 0.94 |
+| Shock 1 | 1 | 0.91 | 0.70 | 1.00 | 0.98 | 0.98 |
+| Shock 2 | 1 | 0.80 | 0.85 | 0.94 | 0.89 | 0.88 |
 
-Correlation of predicted shocks with true shocks for shock 2 {.table}
+Correlation of predicted shocks with true shocks {.table}
 
-``` r
-
-
-knitr::kable(
-    data.frame(round(cor(cor_df2, use = "complete.obs"), 2))[1, ],
-    col.names = c("True", "Proxy","HET-IV without controls", "HET-IV with controls", "Proxy-IV with controls", "Proxy-IV with recursive restriction"),
-    caption   = paste0("Correlation of predicted shocks with true shocks for shock ", j)
-)
-```
-
-|  | True | Proxy | HET-IV without controls | HET-IV with controls | Proxy-IV with controls | Proxy-IV with recursive restriction |
-|:---|---:|---:|---:|---:|---:|---:|
-| True | 1 | 0.98 | 0.56 | 0.94 | 0.96 | 0.96 |
-
-Correlation of predicted shocks with true shocks for shock 2 {.table}
-
-The correlation between the true shocks and the proxy is lower than one
-due to an attenuation bias (see Burri and Kaufmann, 2026a). The
-correlation of the prediction is even lower if we use a misspecified
-model. However, if we use the correct model, the correlation is larger
-than 0.99 (0.94 for Shock 2). Proxy-IV with controls also well. Note
-that it works also almost equally well imposing the recursive
-restriction. This is what we would expect given that the restriction is
-true in the DGP.
+The correlation between the true shocks and the proxy is slightly lower
+than one due to an attenuation bias (see Burri and Kaufmann, 2026a),
+which depends on the variance of the noise term affecting the proxy. The
+correlation of the prediction is also relatively low if we use a
+misspecified model. However, if we use the correct model, the
+correlation is is close to unity for Shock 1 and 0.94 for Shock 2.
+Proxy-IV with controls yields a high correlation as well, at least for
+Shock 1. Note that the specific values depend on the exact nature of the
+simulated data
 
 ## Weak instrument test
 
 [`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md)
 implements the generalised minimum eigenvalue test of Lewis and Mertens
-(2025), which is robust to heteroskedasticity and serial correlation and
+(2025), which is robust to heteroskedasticity and autocorrelation and
 applicable to multiple endogenous regressors and multiple instruments.
 Note that classical Stock-Yogo (2005) test is applicable only for the
 homoskedastic case.
@@ -515,16 +538,15 @@ homoskedastic case.
 Both [`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md)
 and
 [`proxyiv()`](https://dankaufmann.github.io/hetiv/reference/proxyiv.md)
-return a `WeakData` element when `details = TRUE`. This data frame
-contains the outcome and instrument columns in the form expected by
-[`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md),
-along with any lagged and deterministic controls used in estimation. The
-code below extracts the relevant columns from the `WeakData` data frame
-and runs the weak instrument test for each of the four specifications.
-The results are then compiled into a table for easy comparison. Note
-that we use EHW instead of Newey-West standard errors, because,
-conditional on the covariates, we know that the shocks are serially
-uncorrelated. If in doubt, use NW option.
+return a `WeakData` object when `details = TRUE`. This data frame
+contains the data expected by
+[`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md).
+The code below extracts the relevant columns from the `WeakData` data
+frame and runs the weak instrument test for each of the four
+specifications. For illustration, we use the heteroskedasticity-robust
+version (`EHW`). For the HAR (Newey West) version, use the option `NW`.
+By default, the function uses a bias tolerance of 10% at a significance
+level of 5%.
 
 ``` r
 
@@ -578,20 +600,25 @@ knitr::kable(
 
 | Specification | Statistic | LM critical value | Strong instruments? |
 |:---|---:|---:|:---|
-| HET-IV, no controls | 15.94 | 37.11 | No |
-| HET-IV, with controls | 89.08 | 47.62 | Yes |
-| Proxy-IV, with controls | 30.57 | 21.77 | Yes |
-| Proxy-IV, with controls + recursive restriction | 30.57 | 21.77 | Yes |
+| HET-IV, no controls | 15.55 | 38.28 | No |
+| HET-IV, with controls | 88.68 | 47.23 | Yes |
+| Proxy-IV, with controls | 23.03 | 23.27 | No |
+| Proxy-IV, with controls + recursive restriction | 23.03 | 23.27 | No |
 
 Weak instrument test results (Lewis-Mertens generalised minimum
 eigenvalue test) {.table}
 
-The specification without controls is affected by a weak-instrument
-problem. The other specification pass the weak instrument tests. Note
-that the critical values are typically much higher than the common rule
-of thumb for the Stock and Yogo (2005) test, but also, higher than in
-the HAR test for the univariate case by Montiel Olea and Pflueger
-(2013), which is around 23.
+The specification without controls is affected by a weak instrument
+problem. The correctly specified model passes the weak instrument tests.
+The Proxy-IV fail the test. However, note that this depends on the
+degree of noise used to construct the proxy and is not suggesting that
+[`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md)is
+generally superior to
+[`proxyiv()`](https://dankaufmann.github.io/hetiv/reference/proxyiv.md).
+Interestingly, at least for HET-IV, the critical values are much higher
+than the common rule of thumb for the Stock and Yogo (2005) test, but
+also, higher than in the HAR test for the univariate case by Montiel
+Olea and Pflueger (2013) and Lewis (2022), which is around 23.
 
 ## References
 

@@ -6,7 +6,8 @@ proxy variables serve directly as instruments for the endogenous shock
 variables. Optionally imposes recursive zero restrictions across shock
 dimensions and supports deterministic controls following the same
 conventions as
-[`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md).
+[`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md). d
+only).
 
 ## Usage
 

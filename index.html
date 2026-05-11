@@ -53,7 +53,7 @@
 </h1></div>
 <p>An R package for measuring and identifying structural shocks using heteroskedasticity- and proxy-based instrumental variable (IV) methods with daily financial market data.</p>
 <p><strong>Authors</strong>: Daniel Kaufmann, Marc Burri, Valentin Grob</p>
-<p><strong>Note</strong>: This is work in progress. Installation and use at own risk.</p>
+<p><strong>Note</strong>: This is work in progress. Install and use at own risk. Comments are welcome.</p>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
@@ -66,7 +66,7 @@
 <p>You can install the development version from GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"dankaufmann/hetiv"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"dankaufmann/hetiv"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a>
@@ -180,7 +180,7 @@
 <h3 id="test-for-weak-instruments-lewis-mertens-2025">Test for weak instruments (Lewis-Mertens, 2025)<a class="anchor" aria-label="anchor" href="#test-for-weak-instruments-lewis-mertens-2025"></a>
 </h3>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># y: T x 1 regressand</span></span>
+<code class="sourceCode R"><span><span class="co"># y: T x 1 outcome variable</span></span>
 <span><span class="co"># Y: T x N matrix of endogenous regressors</span></span>
 <span><span class="co"># X: T x Nx matrix of exogenous controls</span></span>
 <span><span class="co"># Z: T x K matrix of instruments (requires K &gt;= N)</span></span>
@@ -191,28 +191,36 @@
 <span><span class="va">wt</span><span class="op">$</span><span class="va">gmin_generalized</span>                            <span class="co"># generalised min-eigenvalue statistic</span></span>
 <span><span class="va">wt</span><span class="op">$</span><span class="va">gmin_generalized_critical_value</span>             <span class="co"># Lewis-Mertens sharp critical value (Stiefel)</span></span>
 <span><span class="va">wt</span><span class="op">$</span><span class="va">gmin_generalized_critical_value_simplified</span>  <span class="co"># conservative closed-form bound</span></span>
-<span><span class="va">wt</span><span class="op">$</span><span class="va">stock_yogo_test_statistic</span>                   <span class="co"># Stock-Yogo statistic (Nagar approximation)</span></span>
-<span><span class="va">wt</span><span class="op">$</span><span class="va">stock_yogo_critical_value_nagar</span>             <span class="co"># Stock-Yogo critical value</span></span>
 <span></span>
 <span><span class="co"># With Newey-West HAR standard errors and custom bias tolerance</span></span>
 <span><span class="va">wt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/gweakivtest.html">gweakivtest</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">y</span>, Y <span class="op">=</span> <span class="va">Y</span>, X <span class="op">=</span> <span class="va">X</span>, Z <span class="op">=</span> <span class="va">Z</span>, cov_type <span class="op">=</span> <span class="st">"NW"</span>, tau <span class="op">=</span> <span class="fl">0.10</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># hetiv() and proxyiv() return WeakData when details = TRUE,</span></span>
-<span><span class="co"># which contains the outcome and instrument columns needed for gweakivtest()</span></span>
+<span><span class="co"># which contains the outcome and instrument columns needed for gweakivtest(). Note that the E endogenous variables have to be ordered first</span></span>
 <span><span class="va">res</span>     <span class="op">&lt;-</span> <span class="fu"><a href="reference/hetiv.html">hetiv</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">y</span>, O <span class="op">=</span> <span class="va">O</span>, Ind <span class="op">=</span> <span class="va">Ind</span>, P <span class="op">=</span> <span class="fl">1</span>, H <span class="op">=</span> <span class="fl">20</span>, E <span class="op">=</span> <span class="fl">1</span>, details <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">z_cols</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"^Z"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">WeakData</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">y_cols</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"^y"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">WeakData</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">wt</span>      <span class="op">&lt;-</span> <span class="fu"><a href="reference/gweakivtest.html">gweakivtest</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">WeakData</span><span class="op">[</span>, <span class="va">y_cols</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span>,</span>
-<span>                     Y <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">WeakData</span><span class="op">[</span>, <span class="va">y_cols</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span>,</span>
-<span>                     X <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">WeakData</span><span class="op">)</span>, <span class="fl">0</span><span class="op">)</span>,</span>
-<span>                     Z <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">WeakData</span><span class="op">[</span>, <span class="va">z_cols</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<span> <span class="co"># y: outcome variable E+1 (not used as endogenous regressor)</span></span>
+<span>  <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">res</span><span class="op">$</span><span class="va">WeakData</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"y"</span>, <span class="va">E</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">]</span></span>
+<span>  <span class="co"># Y: first E outcome variables (endogenous regressors)</span></span>
+<span>  <span class="va">Y</span> <span class="op">&lt;-</span> <span class="va">res</span><span class="op">$</span><span class="va">WeakData</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"y"</span>, <span class="fl">1</span><span class="op">:</span><span class="va">E</span><span class="op">)</span><span class="op">]</span></span>
+<span>  <span class="co"># Z: the E instruments</span></span>
+<span>  <span class="va">Z</span> <span class="op">&lt;-</span> <span class="va">res</span><span class="op">$</span><span class="va">WeakData</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Z"</span>, <span class="fl">1</span><span class="op">:</span><span class="va">E</span><span class="op">)</span>,<span class="op">]</span></span>
+<span>  <span class="co"># X: lagged ("o*") and deterministic ("x*") and indicator variables ("i*") control columns. In any case, add a constant term as well.</span></span>
+<span>  <span class="co"># Note that gweakivtest() adds a constant term if missing</span></span>
+<span>  <span class="va">ctrl</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"o"</span><span class="op">)</span> <span class="op">|</span> <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"x"</span><span class="op">)</span> <span class="op">|</span> <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"i"</span><span class="op">)</span></span>
+<span>  <span class="va">X</span>     <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="va">ctrl</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">[</span>, <span class="va">ctrl</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="fl">0</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">wt</span>      <span class="op">&lt;-</span> <span class="fu"><a href="reference/gweakivtest.html">gweakivtest</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">y</span>,</span>
+<span>                     Y <span class="op">=</span> <span class="va">Y</span>,</span>
+<span>                     X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>                     Z <span class="op">=</span> <span class="va">Z</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="extract-structural-shocks">Extract structural shocks<a class="anchor" aria-label="anchor" href="#extract-structural-shocks"></a>
 </h3>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">shocks</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kfpredict.html">kfpredict</a></span><span class="op">(</span>Sig <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">Sig</span>, SigR <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">SigR</span>,</span>
-<span>                    Psi <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">Psi</span>, et <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">et</span>, tol <span class="op">=</span> <span class="fl">1e-10</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># We can use estiamtes from hetiv() and proxyiv() to predict the unobserved underlying shokcs using the Kalman filter</span></span>
+<span><span class="va">shocks</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kfpredict.html">kfpredict</a></span><span class="op">(</span>Sig <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">Sig</span>, SigR <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">SigR</span>,</span>
+<span>                    Psi <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">Psi</span>, et <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">et</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="simulate-data">Simulate data<a class="anchor" aria-label="anchor" href="#simulate-data"></a>
@@ -226,8 +234,8 @@
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<p>Burri, M. and D. Kaufmann (2026). Measuring monetary policy shocks. IRENE Working Papers 24-03, IRENE Institute of Economic Research, University of Neuchâtel.</p>
-<p>Burri, M. and D. Kaufmann (2026). Multiple monetary policy shocks from daily data: A heteroskedasticity IV approach. IRENE Working Papers 26-06, IRENE Institute of Economic Research, University of Neuchâtel.</p>
+<p>Burri, M. and D. Kaufmann (2026). Measuring Monetary Policy Shocks. IRENE Working Papers 24-03, IRENE Institute of Economic Research, University of Neuchâtel.</p>
+<p>Burri, M. and D. Kaufmann (2026). Multiple Monetary Policy Shocks from Daily Data: A Heteroskedasticity IV Approach. IRENE Working Papers 26-06, IRENE Institute of Economic Research, University of Neuchâtel.</p>
 <p>Jordà, Ò. (2005). Estimation and Inference of Impulse Responses by Local Projections. <em>American Economic Review</em>, 95(1), 161–182.</p>
 <p>Lewis, D. J. (2022). Robust Inference in Models Identified via Heteroskedasticity. <em>Review of Economics and Statistics</em>, 104(3), 510–524.</p>
 <p>Lewis, D. J. and Mertens, K. (2025). A Robust Test for Weak Instruments for 2SLS with Multiple Endogenous Regressors. <em>The Review of Economic Studies</em>, DOI: 10.1093/restud/rdaf103.</p>
@@ -252,9 +260,8 @@
 <div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
-<li>
-<a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a>
-</li>
+<li><a href="LICENSE.html">Full license</a></li>
+<li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
 </ul>
 </div>
 

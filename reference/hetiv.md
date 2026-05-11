@@ -2,7 +2,7 @@
 
 Estimates impulse response functions (IRFs) using recursive
 heteroskedasticity-IV identification (Rigobon, 2003; Rigobon and Sack,
-2004; Lewis, 2022; Burri and Kaufmann, 2026) combined with local
+2004; Lewis, 2022; Burri and Kaufmann, 2026a, 2026b) combined with local
 projections (Jordà, 2005). Identification exploits the difference in
 variance between policy event days and control days to construct
 instruments for the endogenous variables.
@@ -43,9 +43,9 @@ hetiv(
 
 - X:
 
-  Numeric matrix of deterministic variables (T x K). May include a
-  constant, time trend, seasonal dummies or other deterministic
-  controls. Included as is (no lags).
+  Numeric matrix of deterministic variables (T x K). For example, time
+  trend, seasonal dummies or other deterministic controls. Included as
+  is (no lags). A constant is included by default.
 
 - Ind:
 
@@ -60,7 +60,7 @@ hetiv(
 - P:
 
   Integer. Maximum lag order for the information set. Set to `0` for no
-  lags (regression on constant only).
+  lags (regression on deterministic terms only).
 
 - H:
 
@@ -96,9 +96,9 @@ hetiv(
 
 - details:
 
-  Logical. If `TRUE`, code saves detailed IV results, which is slower.
-  if set to `FALSE`, returns only impulse response and standard error
-  (e.g. for bootstrap)
+  Logical. If `TRUE`, code saves detailed IV results, which is slightly
+  slower. if set to `FALSE`, returns only impulse response and standard
+  error (e.g. for bootstrap)
 
 ## Value
 
@@ -155,11 +155,11 @@ A named list with the following elements:
 
 ## References
 
-Burri, M. and D. Kaufmann (2026). Measuring monetary policy shocks.
+Burri, M. and D. Kaufmann (2026a). Measuring monetary policy shocks.
 IRENE Working Papers 24-03, IRENE Institute of Economic Research,
 University of Neuchâtel.
 
-Burri, M. and D. Kaufmann (2026). Multiple monetary policy shocks from
+Burri, M. and D. Kaufmann (2026b). Multiple monetary policy shocks from
 daily data: A heteroskedasticity IV approach. IRENE Working Papers
 26-06, IRENE Institute of Economic Research, University of Neuchâtel.
 

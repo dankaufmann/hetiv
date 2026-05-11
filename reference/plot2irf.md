@@ -1,9 +1,9 @@
 # Plot and compare impulse responses from two estimation approaches
 
-Produces a panel of IRF plots comparing two sets of impulse responses
-side-by-side. Each panel shows the point estimates and confidence bands
-at level `ci` for both approaches. Returns a list of `ggplot` objects
-(one per variable-shock combination) that can be arranged with e.g.
+Produces a panel of IRF plots comparing two sets of impulse responses.
+Each panel shows the point estimates and confidence bands at level `ci`
+for both approaches. Returns a list of `ggplot` objects (one per
+variable-shock combination) that can be arranged with e.g.
 [`cowplot::plot_grid()`](https://wilkelab.org/cowplot/reference/plot_grid.html).
 
 ## Usage
@@ -21,7 +21,8 @@ plot2irf(IRF1, IRF1se, IRF2, IRF2se, HTick, Labels, ci = 0.9)
 
 - IRF1se:
 
-  Array (H x N x E) of standard errors for the first approach.
+  Array (H x N x E) of standard errors for the first approach (set to 0
+  to surpress confidence intervals).
 
 - IRF2:
 
@@ -29,7 +30,8 @@ plot2irf(IRF1, IRF1se, IRF2, IRF2se, HTick, Labels, ci = 0.9)
 
 - IRF2se:
 
-  Array (H x N x E) of standard errors for the second approach.
+  Array (H x N x E) of standard errors for the second approach (set to 0
+  to surpress confidence intervals).
 
 - HTick:
 

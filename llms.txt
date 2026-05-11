@@ -6,7 +6,8 @@ with daily financial market data.
 
 **Authors**: Daniel Kaufmann, Marc Burri, Valentin Grob
 
-**Note**: This is work in progress. Installation and use at own risk.
+**Note**: This is work in progress. Install and use at own risk.
+Comments are welcome.
 
 ## Documentation
 
@@ -91,7 +92,7 @@ cowplot::plot_grid(plotlist = plots)
 
 ``` r
 
-# y: T x 1 regressand
+# y: T x 1 outcome variable
 # Y: T x N matrix of endogenous regressors
 # X: T x Nx matrix of exogenous controls
 # Z: T x K matrix of instruments (requires K >= N)
@@ -102,29 +103,37 @@ wt <- gweakivtest(y = y, Y = Y, X = X, Z = Z)
 wt$gmin_generalized                            # generalised min-eigenvalue statistic
 wt$gmin_generalized_critical_value             # Lewis-Mertens sharp critical value (Stiefel)
 wt$gmin_generalized_critical_value_simplified  # conservative closed-form bound
-wt$stock_yogo_test_statistic                   # Stock-Yogo statistic (Nagar approximation)
-wt$stock_yogo_critical_value_nagar             # Stock-Yogo critical value
 
 # With Newey-West HAR standard errors and custom bias tolerance
 wt <- gweakivtest(y = y, Y = Y, X = X, Z = Z, cov_type = "NW", tau = 0.10)
 
 # hetiv() and proxyiv() return WeakData when details = TRUE,
-# which contains the outcome and instrument columns needed for gweakivtest()
+# which contains the outcome and instrument columns needed for gweakivtest(). Note that the E endogenous variables have to be ordered first
 res     <- hetiv(y = y, O = O, Ind = Ind, P = 1, H = 20, E = 1, details = TRUE)
-z_cols  <- grep("^Z", names(res$WeakData))
-y_cols  <- grep("^y", names(res$WeakData))
-wt      <- gweakivtest(y = res$WeakData[, y_cols[1], drop = FALSE],
-                     Y = res$WeakData[, y_cols[-1], drop = FALSE],
-                     X = matrix(numeric(0), nrow(res$WeakData), 0),
-                     Z = res$WeakData[, z_cols, drop = FALSE])
+ # y: outcome variable E+1 (not used as endogenous regressor)
+  y <- res$WeakData[, paste0("y", E + 1)]
+  # Y: first E outcome variables (endogenous regressors)
+  Y <- res$WeakData[, paste0("y", 1:E)]
+  # Z: the E instruments
+  Z <- res$WeakData[, paste0("Z", 1:E),]
+  # X: lagged ("o*") and deterministic ("x*") and indicator variables ("i*") control columns. In any case, add a constant term as well.
+  # Note that gweakivtest() adds a constant term if missing
+  ctrl  <- startsWith(colnames(weakdata), "o") | startsWith(colnames(weakdata), "x") | startsWith(colnames(weakdata), "i")
+  X     <- if (any(ctrl)) cbind(weakdata[, ctrl], matrix(1, nrow(weakdata), 1)) else matrix(numeric(0), nrow(weakdata), 0)
+
+wt      <- gweakivtest(y = y,
+                     Y = Y,
+                     X = X,
+                     Z = Z)
 ```
 
 ### Extract structural shocks
 
 ``` r
 
+# We can use estiamtes from hetiv() and proxyiv() to predict the unobserved underlying shokcs using the Kalman filter
 shocks <- kfpredict(Sig = res$Sig, SigR = res$SigR,
-                    Psi = res$Psi, et = res$et, tol = 1e-10)
+                    Psi = res$Psi, et = res$et)
 ```
 
 ### Simulate data
@@ -138,12 +147,12 @@ sim <- simulatedata(Phi = Phi, SigE = 4, PsiE = PsiE, PsiR = PsiR,
 
 ## References
 
-Burri, M. and D. Kaufmann (2026). Measuring monetary policy shocks.
+Burri, M. and D. Kaufmann (2026). Measuring Monetary Policy Shocks.
 IRENE Working Papers 24-03, IRENE Institute of Economic Research,
 University of Neuchâtel.
 
-Burri, M. and D. Kaufmann (2026). Multiple monetary policy shocks from
-daily data: A heteroskedasticity IV approach. IRENE Working Papers
+Burri, M. and D. Kaufmann (2026). Multiple Monetary Policy Shocks from
+Daily Data: A Heteroskedasticity IV Approach. IRENE Working Papers
 26-06, IRENE Institute of Economic Research, University of Neuchâtel.
 
 Jordà, Ò. (2005). Estimation and Inference of Impulse Responses by Local

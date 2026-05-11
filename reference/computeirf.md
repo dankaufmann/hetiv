@@ -26,12 +26,12 @@ computeirf(Psi, Phi, H, cum)
 - cum:
 
   Logical scalar or logical vector of length `N`. If `TRUE` for variable
-  `i`, the IRF is cumulated via `cumsum`. A single value is recycled to
+  `i`, the IRF is cumulated via `cumsum`. A single value is applied to
   all variables.
 
 ## Value
 
-A named list with component:
+An array:
 
 - irf:
 

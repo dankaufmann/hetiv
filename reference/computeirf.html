@@ -32,7 +32,7 @@ Optionally cumulates responses for selected variables."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Compute impulse response functions for a VAR(P)</h1>
-      <small class="dont-index">Source: <a href="https://github.com/dankaufmann/hetiv/blob/main/R/computeirf.R" class="external-link"><code>R/computeirf.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/dankaufmann/hetiv/blob/HEAD/R/computeirf.R" class="external-link"><code>R/computeirf.R</code></a></small>
       <div class="d-none name"><code>computeirf.Rd</code></div>
     </div>
 
@@ -64,13 +64,12 @@ Optionally cumulates responses for selected variables.</p>
 
 <dt id="arg-cum">cum<a class="anchor" aria-label="anchor" href="#arg-cum"></a></dt>
 <dd><p>Logical scalar or logical vector of length <code>N</code>. If <code>TRUE</code> for
-variable <code>i</code>, the IRF is cumulated via <code>cumsum</code>. A single value is
-recycled to all variables.</p></dd>
+variable <code>i</code>, the IRF is cumulated via <code>cumsum</code>. A single value is applied to all variables.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A named list with component:</p><dl><dt>irf</dt>
+    <p>An array:</p><dl><dt>irf</dt>
 <dd><p>Array of impulse responses, dimension <code>H x N x R</code>. Row names
 are labelled <code>0</code> to <code>H-1</code>.</p></dd>
 

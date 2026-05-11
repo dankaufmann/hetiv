@@ -22,10 +22,9 @@ robust standard errors (Montiel Olea et al., 2025).
 The package allows for multiple shocks and endogenous variables.
 Weak-instrument HAR inference is implemented via the generalised minimum
 eigenvalue test of Lewis and Mertens (2025), which nests the classical
-Stock-Yogo (2005) test for the univariate homoskedastic case. The
-[`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md)
-function is a direct port of the Matlab files by Lewis and Mertens
-(2025).
+Stock-Yogo (2005) test for the univariate homoskedastic case.
+`gweakivtest`is a direct port of the Matlab files by Lewis and Mertens
+(2025) available on **<https://karelmertens.com/research/>**.
 
 In addition, the package provides the function
 [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md)
@@ -663,5 +662,5 @@ dynamic causal effects in macroeconomics using external instruments.
 
 Stock, J. H. and Yogo, M. (2005). Testing for weak instruments in linear
 IV regression. In D. W. K. Andrews and J. H. Stock (Eds.),
-*Identification and Inference for Econometric Models*, pp. 80–108.
+*Identification and inference for econometric models*, pp. 80–108.
 Cambridge University Press.

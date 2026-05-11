@@ -18,6 +18,9 @@ The introductory vignette — covering data simulation, HET-IV, Proxy-IV,
 IRF plots, shock extraction, and weak instrument testing — is at:
 **<https://dankaufmann.github.io/hetiv/articles/hetiv-introduction.html>**
 
+`gweakivtest`is a direct port of the Matlab files by Lewis and Mertens
+(2025) available on **<https://karelmertens.com/research/>**
+
 ## Installation
 
 You can install the development version from GitHub:
@@ -147,34 +150,34 @@ sim <- simulatedata(Phi = Phi, SigE = 4, PsiE = PsiE, PsiR = PsiR,
 
 ## References
 
-Burri, M. and D. Kaufmann (2026). Measuring Monetary Policy Shocks.
+Burri, M. and D. Kaufmann (2026). Measuring monetary policy shocks.
 IRENE Working Papers 24-03, IRENE Institute of Economic Research,
 University of Neuchâtel.
 
-Burri, M. and D. Kaufmann (2026). Multiple Monetary Policy Shocks from
-Daily Data: A Heteroskedasticity IV Approach. IRENE Working Papers
+Burri, M. and D. Kaufmann (2026). Multiple monetary policy shocks from
+daily data: A heteroskedasticity IV approach. IRENE Working Papers
 26-06, IRENE Institute of Economic Research, University of Neuchâtel.
 
-Jordà, Ò. (2005). Estimation and Inference of Impulse Responses by Local
-Projections. *American Economic Review*, 95(1), 161–182.
+Jordà, Ò. (2005). Estimation and inference of impulse responses by local
+projections. *American Economic Review*, 95(1), 161–182.
 
-Lewis, D. J. (2022). Robust Inference in Models Identified via
-Heteroskedasticity. *Review of Economics and Statistics*, 104(3),
+Lewis, D. J. (2022). Robust inference in models identified via
+heteroskedasticity. *Review of Economics and Statistics*, 104(3),
 510–524.
 
-Lewis, D. J. and Mertens, K. (2025). A Robust Test for Weak Instruments
-for 2SLS with Multiple Endogenous Regressors. *The Review of Economic
+Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments
+for 2SLS with multiple endogenous regressors. *The Review of Economic
 Studies*, DOI: 10.1093/restud/rdaf103.
 
-Mertens, K. and Ravn, M. O. (2013). The Dynamic Effects of Personal and
-Corporate Income Tax Changes in the United States. *American Economic
+Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and
+corporate income tax changes in the United States. *American Economic
 Review*, 103(4), 1212–1247.
 
-Rigobon, R. (2003). Identification Through Heteroskedasticity. *Review
+Rigobon, R. (2003). Identification through heteroskedasticity. *Review
 of Economics and Statistics*, 85(4), 777–792.
 
-Stock, J. H. and Watson, M. W. (2018). Identification and Estimation of
-Dynamic Causal Effects in Macroeconomics Using External Instruments.
+Stock, J. H. and Watson, M. W. (2018). Identification and estimation of
+dynamic causal effects in macroeconomics using external instruments.
 *Economic Journal*, 128(610), 917–948.
 
 ## License

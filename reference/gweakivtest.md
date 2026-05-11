@@ -115,14 +115,14 @@ A named list with the following elements:
 ## References
 
 Lazarus, E., Lewis, D. J., Stock, J. H. and Watson, M. W. (2018). HAR
-Inference: Recommendations for Practice. *Journal of Business & Economic
+inference: recommendations for practice. *Journal of Business & Economic
 Statistics*, 36(4), 541–559.
 
-Lewis, D. J. and Mertens, K. (2025). A Robust Test for Weak Instruments
-for 2SLS with Multiple Endogenous Regressors. *The Review of Economic
+Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments
+for 2SLS with multiple endogenous regressors. *The Review of Economic
 Studies*, DOI: 10.1093/restud/rdaf103.
 
-Stock, J. H. and Yogo, M. (2005). Testing for Weak Instruments in Linear
-IV Regression. In D. W. K. Andrews and J. H. Stock (Eds.),
-*Identification and Inference for Econometric Models: Essays in Honor of
+Stock, J. H. and Yogo, M. (2005). Testing for weak instruments in linear
+IV regression. In D. W. K. Andrews and J. H. Stock (Eds.),
+*Identification and inference for econometric models: essays in honor of
 Thomas Rothenberg*, pp. 80–108. Cambridge University Press.

@@ -14,7 +14,7 @@ Source:
 [`DESCRIPTION`](https://github.com/dankaufmann/hetiv/blob/HEAD/DESCRIPTION)
 
 Kaufmann D, Burri M, Grob V (2026). *hetiv: Heteroskedasticity and
-Proxy-Based IV Methods*. R package version 0.1.1,
+Proxy-Based IV Methods*. R package version 1.0.0,
 https://github.com/dankaufmann/hetiv,
 <https://dankaufmann.github.io/hetiv/>.
 
@@ -22,6 +22,6 @@ https://github.com/dankaufmann/hetiv,
       title = {hetiv: Heteroskedasticity and Proxy-Based IV Methods},
       author = {Daniel Kaufmann and Marc Burri and Valentin Grob},
       year = {2026},
-      note = {R package version 0.1.1, https://github.com/dankaufmann/hetiv},
+      note = {R package version 1.0.0, https://github.com/dankaufmann/hetiv},
       url = {https://dankaufmann.github.io/hetiv/},
     }

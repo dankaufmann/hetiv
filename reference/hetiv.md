@@ -163,18 +163,18 @@ Burri, M. and D. Kaufmann (2026b). Multiple monetary policy shocks from
 daily data: A heteroskedasticity IV approach. IRENE Working Papers
 26-06, IRENE Institute of Economic Research, University of Neuchâtel.
 
-Jordà, Ò. (2005). Estimation and Inference of Impulse Responses by Local
-Projections. *American Economic Review*, 95(1), 161–182.
+Jordà, Ò. (2005). Estimation and inference of impulse responses by local
+projections. *American Economic Review*, 95(1), 161–182.
 
-Lewis, D. J. (2022). Robust Inference in Models Identified via
-Heteroskedasticity. *Review of Economics and Statistics*, 104(3),
+Lewis, D. J. (2022). Robust inference in models identified via
+heteroskedasticity. *Review of Economics and Statistics*, 104(3),
 510–524.
 
-Lewis, D. J. and Mertens, K. (2025). A Robust Test for Weak Instruments
-for 2SLS with Multiple Endogenous Regressors. *The Review of Economic
+Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments
+for 2SLS with multiple endogenous regressors. *The Review of Economic
 Studies*, DOI: 10.1093/restud/rdaf103
 
-Rigobon, R. (2003). Identification Through Heteroskedasticity. *Review
+Rigobon, R. (2003). Identification through heteroskedasticity. *Review
 of Economics and Statistics*, 85(4), 777–792.
 
 Rigobon, R. and Sack, B. (2004). The impact of monetary policy on asset

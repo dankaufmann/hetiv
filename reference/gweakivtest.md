@@ -8,7 +8,7 @@ nests the classical Stock-Yogo (2005) test as a special case.
 ## Usage
 
 ``` r
-gweaktest(
+gweakivtest(
   y,
   Y,
   X,

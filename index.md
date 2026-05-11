@@ -33,7 +33,7 @@ remotes::install_github("dankaufmann/hetiv")
 |----|----|
 | [`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md) | Estimates impulse response functions via heteroskedasticity-based IV local projections |
 | [`proxyiv()`](https://dankaufmann.github.io/hetiv/reference/proxyiv.md) | Estimates impulse response functions via proxy-IV local projections |
-| [`gweaktest()`](https://dankaufmann.github.io/hetiv/reference/gweaktest.md) | Tests for weak instruments using the generalised minimum eigenvalue statistic of Lewis and Mertens (2025) |
+| [`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md) | Tests for weak instruments using the generalised minimum eigenvalue statistic of Lewis and Mertens (2025) |
 | [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md) | Extracts structural shocks from reduced-form residuals via Kalman filter |
 | [`computeirf()`](https://dankaufmann.github.io/hetiv/reference/computeirf.md) | Recursively computes IRFs from an impact matrix and VAR coefficients |
 | [`normalize()`](https://dankaufmann.github.io/hetiv/reference/normalize.md) | Standardizes a time series to zero mean and unit standard deviation |
@@ -96,7 +96,7 @@ cowplot::plot_grid(plotlist = plots)
 # X: T x Nx matrix of exogenous controls
 # Z: T x K matrix of instruments (requires K >= N)
 
-wt <- gweaktest(y = y, Y = Y, X = X, Z = Z)
+wt <- gweakivtest(y = y, Y = Y, X = X, Z = Z)
 
 # Inspect test statistics and critical values
 wt$gmin_generalized                            # generalised min-eigenvalue statistic
@@ -106,14 +106,14 @@ wt$stock_yogo_test_statistic                   # Stock-Yogo statistic (Nagar app
 wt$stock_yogo_critical_value_nagar             # Stock-Yogo critical value
 
 # With Newey-West HAR standard errors and custom bias tolerance
-wt <- gweaktest(y = y, Y = Y, X = X, Z = Z, cov_type = "NW", tau = 0.10)
+wt <- gweakivtest(y = y, Y = Y, X = X, Z = Z, cov_type = "NW", tau = 0.10)
 
 # hetiv() and proxyiv() return WeakData when details = TRUE,
-# which contains the outcome and instrument columns needed for gweaktest()
+# which contains the outcome and instrument columns needed for gweakivtest()
 res     <- hetiv(y = y, O = O, Ind = Ind, P = 1, H = 20, E = 1, details = TRUE)
 z_cols  <- grep("^Z", names(res$WeakData))
 y_cols  <- grep("^y", names(res$WeakData))
-wt      <- gweaktest(y = res$WeakData[, y_cols[1], drop = FALSE],
+wt      <- gweakivtest(y = res$WeakData[, y_cols[1], drop = FALSE],
                      Y = res$WeakData[, y_cols[-1], drop = FALSE],
                      X = matrix(numeric(0), nrow(res$WeakData), 0),
                      Z = res$WeakData[, z_cols, drop = FALSE])

@@ -23,7 +23,7 @@ The package allows for multiple shocks and endogenous variables.
 Weak-instrument robust inference is implemented via the generalised
 minimum eigenvalue test of Lewis and Mertens (2025), which nests the
 classical Stock-Yogo (2005) test as a special case. The
-[`gweaktest()`](https://dankaufmann.github.io/hetiv/reference/gweaktest.md)
+[`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md)
 function is a direct port of the Matlab files by Lewis and Mertens
 (2025).
 
@@ -505,7 +505,7 @@ true in the DGP.
 
 ## Weak instrument test
 
-[`gweaktest()`](https://dankaufmann.github.io/hetiv/reference/gweaktest.md)
+[`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md)
 implements the generalised minimum eigenvalue test of Lewis and Mertens
 (2025), which is robust to heteroskedasticity and serial correlation and
 applicable to multiple endogenous regressors and multiple instruments.
@@ -517,7 +517,7 @@ and
 [`proxyiv()`](https://dankaufmann.github.io/hetiv/reference/proxyiv.md)
 return a `WeakData` element when `details = TRUE`. This data frame
 contains the outcome and instrument columns in the form expected by
-[`gweaktest()`](https://dankaufmann.github.io/hetiv/reference/gweaktest.md),
+[`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md),
 along with any lagged and deterministic controls used in estimation. The
 code below extracts the relevant columns from the `WeakData` data frame
 and runs the weak instrument test for each of the four specifications.
@@ -528,7 +528,7 @@ uncorrelated. If in doubt, use NW option.
 
 ``` r
 
-# Helper: extract y, Y, X, Z from WeakData and run gweaktest
+# Helper: extract y, Y, X, Z from WeakData and run gweakivtest
 run_weaktest <- function(weakdata, E) {
   # y: outcome variable E+1 (not used as endogenous regressor)
   y <- weakdata[, paste0("y", E + 1)]
@@ -537,11 +537,11 @@ run_weaktest <- function(weakdata, E) {
   # Z: the E instruments
   Z <- weakdata[, paste0("Z", 1:E),]
   # X: lagged ("o*") and deterministic ("x*") control columns. In any case, add a constant term as well.
-  # Note that gweaktest() adds a constant term if missing
-  ctrl  <- startsWith(colnames(weakdata), "o") | startsWith(colnames(weakdata), "x")
+  # Note that gweakivtest() adds a constant term if missing
+  ctrl  <- startsWith(colnames(weakdata), "o") | startsWith(colnames(weakdata), "x") | startsWith(colnames(weakdata), "i")
   X     <- if (any(ctrl)) cbind(weakdata[, ctrl], matrix(1, nrow(weakdata), 1)) else matrix(numeric(0), nrow(weakdata), 0)
-   
-  gweaktest(y, Y, X, Z, cov_type = "EHW")
+
+  gweakivtest(y, Y, X, Z, cov_type = "EHW")
 }
 
 specs <- list(

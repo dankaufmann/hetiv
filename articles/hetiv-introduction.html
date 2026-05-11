@@ -56,7 +56,7 @@
                         <h4 data-toc-skip class="author">Daniel
 Kaufmann, Marc Burri, Valentin Grob</h4>
             
-            <h4 data-toc-skip class="date">2026-05-09</h4>
+            <h4 data-toc-skip class="date">2026-05-11</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/dankaufmann/hetiv/blob/HEAD/vignettes/hetiv-introduction.Rmd" class="external-link"><code>vignettes/hetiv-introduction.Rmd</code></a></small>
       <div class="d-none name"><code>hetiv-introduction.Rmd</code></div>
@@ -90,7 +90,7 @@ robust standard errors (Montiel Olea et al., 2025).</p>
 Weak-instrument robust inference is implemented via the generalised
 minimum eigenvalue test of Lewis and Mertens (2025), which nests the
 classical Stock-Yogo (2005) test as a special case. The
-<code><a href="../reference/gweaktest.html">gweaktest()</a></code> function is a direct port of the Matlab files
+<code><a href="../reference/gweakivtest.html">gweakivtest()</a></code> function is a direct port of the Matlab files
 by Lewis and Mertens (2025).</p>
 <p>In addition, the package provides the function
 <code><a href="../reference/kfpredict.html">kfpredict()</a></code> for predicting the underlying unobserved shocks
@@ -667,7 +667,7 @@ true in the DGP.</p>
 <div class="section level2">
 <h2 id="weak-instrument-test">Weak instrument test<a class="anchor" aria-label="anchor" href="#weak-instrument-test"></a>
 </h2>
-<p><code><a href="../reference/gweaktest.html">gweaktest()</a></code> implements the generalised minimum
+<p><code><a href="../reference/gweakivtest.html">gweakivtest()</a></code> implements the generalised minimum
 eigenvalue test of Lewis and Mertens (2025), which is robust to
 heteroskedasticity and serial correlation and applicable to multiple
 endogenous regressors and multiple instruments. Note that classical
@@ -676,7 +676,7 @@ case.</p>
 <p>Both <code><a href="../reference/hetiv.html">hetiv()</a></code> and <code><a href="../reference/proxyiv.html">proxyiv()</a></code> return a
 <code>WeakData</code> element when <code>details = TRUE</code>. This
 data frame contains the outcome and instrument columns in the form
-expected by <code><a href="../reference/gweaktest.html">gweaktest()</a></code>, along with any lagged and
+expected by <code><a href="../reference/gweakivtest.html">gweakivtest()</a></code>, along with any lagged and
 deterministic controls used in estimation. The code below extracts the
 relevant columns from the <code>WeakData</code> data frame and runs the
 weak instrument test for each of the four specifications. The results
@@ -685,7 +685,7 @@ instead of Newey-West standard errors, because, conditional on the
 covariates, we know that the shocks are serially uncorrelated. If in
 doubt, use NW option.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Helper: extract y, Y, X, Z from WeakData and run gweaktest</span></span>
+<code class="sourceCode R"><span><span class="co"># Helper: extract y, Y, X, Z from WeakData and run gweakivtest</span></span>
 <span><span class="va">run_weaktest</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">weakdata</span>, <span class="va">E</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="co"># y: outcome variable E+1 (not used as endogenous regressor)</span></span>
 <span>  <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">weakdata</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"y"</span>, <span class="va">E</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">]</span></span>
@@ -694,11 +694,11 @@ doubt, use NW option.</p>
 <span>  <span class="co"># Z: the E instruments</span></span>
 <span>  <span class="va">Z</span> <span class="op">&lt;-</span> <span class="va">weakdata</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Z"</span>, <span class="fl">1</span><span class="op">:</span><span class="va">E</span><span class="op">)</span>,<span class="op">]</span></span>
 <span>  <span class="co"># X: lagged ("o*") and deterministic ("x*") control columns. In any case, add a constant term as well.</span></span>
-<span>  <span class="co"># Note that gweaktest() adds a constant term if missing</span></span>
-<span>  <span class="va">ctrl</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"o"</span><span class="op">)</span> <span class="op">|</span> <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"x"</span><span class="op">)</span></span>
+<span>  <span class="co"># Note that gweakivtest() adds a constant term if missing</span></span>
+<span>  <span class="va">ctrl</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"o"</span><span class="op">)</span> <span class="op">|</span> <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"x"</span><span class="op">)</span> <span class="op">|</span> <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"i"</span><span class="op">)</span></span>
 <span>  <span class="va">X</span>     <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="va">ctrl</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">[</span>, <span class="va">ctrl</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="fl">0</span><span class="op">)</span></span>
-<span>   </span>
-<span>  <span class="fu"><a href="../reference/gweaktest.html">gweaktest</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">Y</span>, <span class="va">X</span>, <span class="va">Z</span>, cov_type <span class="op">=</span> <span class="st">"EHW"</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="fu"><a href="../reference/gweakivtest.html">gweakivtest</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">Y</span>, <span class="va">X</span>, <span class="va">Z</span>, cov_type <span class="op">=</span> <span class="st">"EHW"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">specs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>

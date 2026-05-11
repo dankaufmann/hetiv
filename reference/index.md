@@ -14,7 +14,7 @@ Estimate impulse response functions via IV local projections
 
 Test for weak instruments (Lewis-Mertens 2025)
 
-- [`gweaktest()`](https://dankaufmann.github.io/hetiv/reference/gweaktest.md)
+- [`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md)
   : Generalised weak instrument test
 
 ## Shock extraction and IRF computation

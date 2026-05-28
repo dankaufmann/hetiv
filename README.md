@@ -12,6 +12,8 @@ Full documentation and a worked example are available at the package website: **
 
 The introductory vignette — covering data simulation, HET-IV, Proxy-IV, IRF plots, shock extraction, and weak instrument testing — is at: **https://dankaufmann.github.io/hetiv/articles/hetiv-introduction.html**
 
+Replication files for Burri and Kaufmann (2026b), providing a real-world example, are available at: **https://github.com/dankaufmann/bk_2026_eclet_replication/**
+
 `gweakivtest`is a direct port of the Matlab files by Lewis and Mertens (2025) available on **https://karelmertens.com/research/**
 
 ## Installation
@@ -136,9 +138,9 @@ sim <- simulatedata(Phi = Phi, SigE = 4, PsiE = PsiE, PsiR = PsiR,
 
 ## References
 
-Burri, M. and D. Kaufmann (2026). Measuring monetary policy shocks. IRENE Working Papers 24-03, IRENE Institute of Economic Research, University of Neuchâtel.
+Burri, M. and D. Kaufmann (2026a). Measuring monetary policy shocks. IRENE Working Papers 24-03, IRENE Institute of Economic Research, University of Neuchâtel.
 
-Burri, M. and D. Kaufmann (2026). Multiple monetary policy shocks from daily data: A heteroskedasticity IV approach. IRENE Working Papers 26-06, IRENE Institute of Economic Research, University of Neuchâtel.
+Burri, M. and D. Kaufmann (2026b). Multiple monetary policy shocks from daily data: A heteroskedasticity IV approach. IRENE Working Papers 26-06, IRENE Institute of Economic Research, University of Neuchâtel.
 
 Jordà, Ò. (2005). Estimation and inference of impulse responses by local projections. *American Economic Review*, 95(1), 161–182.
 

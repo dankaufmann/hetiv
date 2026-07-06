@@ -1,5 +1,7 @@
 # hetiv
 
+<img src="man/figures/logo.png" align="right" width="160" alt="hetiv hex sticker logo" />
+
 [![coverage](https://github.com/dankaufmann/hetiv/actions/workflows/coverage.yaml/badge.svg)](https://github.com/dankaufmann/hetiv/actions/workflows/coverage.yaml)
 
 An R package for measuring and identifying structural shocks using heteroskedasticity- and proxy-based instrumental variable (IV) methods with daily financial market data.

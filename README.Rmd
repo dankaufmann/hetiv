@@ -13,9 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# hetiv
-
-<img src="man/figures/logo.png" align="right" width="138" alt="hetiv hex sticker logo" />
+# hetiv <a><img src="man/figures/logo.png" align="right" width="138" alt="hetiv hex sticker logo" /></a>
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/dankaufmann/hetiv/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/dankaufmann/hetiv/actions/workflows/R-CMD-check.yaml)

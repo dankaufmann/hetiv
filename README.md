@@ -1,9 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# hetiv
-
-<img src="man/figures/logo.png" align="right" width="138" alt="hetiv hex sticker logo" />
+# hetiv <a><img src="man/figures/logo.png" align="right" width="138" alt="hetiv hex sticker logo" /></a>
 
 <!-- badges: start -->
 

@@ -3,7 +3,7 @@
 
 # hetiv
 
-<img src="man/figures/logo.png" align="right" width="160" alt="hetiv hex sticker logo" />
+<img src="man/figures/logo.png" align="right" width="138" alt="hetiv hex sticker logo" />
 
 <!-- badges: start -->
 

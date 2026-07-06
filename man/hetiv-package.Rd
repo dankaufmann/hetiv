@@ -7,7 +7,7 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Tools for identifying structural shocks using heteroskedasticity- and proxy-based instrumental variable (IV) methods in event-study settings. Supports local projection impulse response estimation of Jorda (2005) \doi{10.1257/0002828053828518}, generalised weak instrument testing of Lewis and Mertens (2025) \doi{10.1093/restud/rdaf103}, and Kalman-filter shock extraction of Burri and Kaufmann (2026) \url{https://ideas.repec.org/p/irn/wpaper/24-03.html}.
+Tools for identifying structural shocks using heteroskedasticity- and proxy-based instrumental variable (IV) methods in event-study settings. Supports local projection impulse response estimation of Jorda (2005) \doi{10.1257/0002828053828518}, generalised weak instrument testing of Lewis and Mertens (2025) \doi{10.1093/restud/rdaf103}, and Kalman-filter shock extraction of Burri and Kaufmann (2026) \doi{10.1016/j.econlet.2026.113091}.
 }
 \seealso{
 Useful links:

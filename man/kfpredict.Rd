@@ -51,5 +51,5 @@ kfpredict(Sig = Sig, SigR = SigR, Psi = Psi, et = et)
 }
 \references{
 Burri, M. and Kaufmann, D. (2026). Measuring monetary policy shocks.
-IRENE Working Paper 24-03, IRENE Institute of Economic Research, University of Neuchatel.
+\emph{Economics Letters}. \doi{10.1016/j.econlet.2026.113091}
 }

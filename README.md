@@ -174,8 +174,7 @@ sim <- simulatedata(Phi = Phi, SigE = 4, PsiE = PsiE, PsiR = PsiR,
 ## References
 
 Burri, M. and D. Kaufmann (2026a). Measuring monetary policy shocks.
-IRENE Working Papers 24-03, IRENE Institute of Economic Research,
-University of Neuchâtel.
+*Economics Letters*. <https://doi.org/10.1016/j.econlet.2026.113091>
 
 Burri, M. and D. Kaufmann (2026b). Multiple monetary policy shocks from
 daily data: A heteroskedasticity IV approach. IRENE Working Papers

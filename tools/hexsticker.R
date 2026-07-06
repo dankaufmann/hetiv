@@ -1,7 +1,6 @@
 #!/usr/bin/env Rscript
 
 dir.create("man/figures", recursive = TRUE, showWarnings = FALSE)
-rplots_existed <- file.exists("Rplots.pdf")
 
 library(ggplot2)
 library(hexSticker)
@@ -10,8 +9,8 @@ fill <- "#164F86"
 border <- "#14275B"
 
 x <- seq(-4.5, 4.5, length.out = 500)
-thin_density <- dnorm(x, sd = 0.8)
-fat_tail_density <- dt(x / 1.05, df = 2.8) / 1.05
+thin_density <- dnorm(x, sd = 1.1)
+fat_tail_density <- dt(x / 1.7, df = 2.8) / 1.7
 
 scale_density <- function(y) y / max(y)
 
@@ -59,17 +58,10 @@ write_sticker <- function(filename) {
     p_color = "#FFFFFF",
     h_fill = fill,
     h_color = border,
-    h_size = 2.8,
-    dpi = 600,
+    # h_size = 2.8,
+    # dpi = 600,
     white_around_sticker = FALSE
   )
 }
 
 write_sticker("man/figures/logo.png")
-write_sticker("man/figures/logo.svg")
-
-if (!rplots_existed && file.exists("Rplots.pdf")) {
-  unlink("Rplots.pdf")
-}
-
-message("Wrote man/figures/logo.png and man/figures/logo.svg")

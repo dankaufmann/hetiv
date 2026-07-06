@@ -13,3 +13,4 @@
 ^vignettes/.*\.html$
 ^hetiv_.*\.tar\.gz$
 ^hetiv\.Rcheck$
+^README\.Rmd$

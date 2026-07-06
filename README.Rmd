@@ -1,45 +1,48 @@
+---
+output: github_document
+---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
 
 # hetiv
 
 <img src="man/figures/logo.png" align="right" width="160" alt="hetiv hex sticker logo" />
 
 <!-- badges: start -->
-
 [![coverage](https://github.com/dankaufmann/hetiv/actions/workflows/coverage.yaml/badge.svg)](https://github.com/dankaufmann/hetiv/actions/workflows/coverage.yaml)
 <!-- badges: end -->
 
-An R package for measuring and identifying structural shocks using
-heteroskedasticity- and proxy-based instrumental variable (IV) methods
-with daily financial market data.
+An R package for measuring and identifying structural shocks using heteroskedasticity- and proxy-based instrumental variable (IV) methods with daily financial market data.
 
 **Authors**: Daniel Kaufmann, Marc Burri, Valentin Grob
 
-Comments, bug reports, and feature requests are welcome through the
-GitHub issue tracker.
+Comments, bug reports, and feature requests are welcome through the GitHub issue tracker.
 
 ## Documentation
 
-Full documentation and a worked example are available at the package
-website: **<https://dankaufmann.github.io/hetiv/>**
+Full documentation and a worked example are available at the package website: **https://dankaufmann.github.io/hetiv/**
 
-The introductory vignette – covering data simulation, HET-IV, Proxy-IV,
-IRF plots, shock extraction, and weak instrument testing – is at:
-**<https://dankaufmann.github.io/hetiv/articles/hetiv-introduction.html>**
+The introductory vignette -- covering data simulation, HET-IV, Proxy-IV, IRF plots, shock extraction, and weak instrument testing -- is at: **https://dankaufmann.github.io/hetiv/articles/hetiv-introduction.html**
 
-Replication files for Burri and Kaufmann (2026b), providing a real-world
-example, are available at:
-**<https://github.com/dankaufmann/bk_2026_eclet_replication/>**
+Replication files for Burri and Kaufmann (2026b), providing a real-world example, are available at: **https://github.com/dankaufmann/bk_2026_eclet_replication/**
 
-`gweakivtest()` is a direct port of the Matlab files by Lewis and
-Mertens (2025) available on **<https://karelmertens.com/research/>**.
+`gweakivtest()` is a direct port of the Matlab files by Lewis and Mertens
+(2025) available on **https://karelmertens.com/research/**.
 
 ## Installation
 
 You can install the development version from GitHub:
 
-``` r
+```r
 # install.packages("remotes")
 remotes::install_github("dankaufmann/hetiv")
 ```
@@ -47,7 +50,7 @@ remotes::install_github("dankaufmann/hetiv")
 ## Functions
 
 | Function | Description |
-|----|----|
+|---|---|
 | `hetiv()` | Estimates impulse response functions via heteroskedasticity-based IV local projections |
 | `proxyiv()` | Estimates impulse response functions via proxy-IV local projections |
 | `gweakivtest()` | Tests for weak instruments using the generalised minimum eigenvalue statistic of Lewis and Mertens (2025) |
@@ -66,7 +69,7 @@ remotes::install_github("dankaufmann/hetiv")
 
 ### Estimate impulse responses via heteroskedasticity-IV
 
-``` r
+```r
 library(hetiv)
 
 set.seed(1)
@@ -93,7 +96,7 @@ res <- hetiv(y = y, O = O, X = X, Ind = Ind, P = 1, H = 20, E = 1, norm = 1, det
 
 ### Estimate impulse responses via proxy-IV
 
-``` r
+```r
 # Z: T x E matrix of external instruments (proxies)
 Z <- matrix(sim$eE[, 1] + rnorm(nrow(y)), ncol = 1)
 Z[Ind == 0, ] <- 0
@@ -107,7 +110,7 @@ res <- proxyiv(y = y, O = O, Z = Z, Ind = Ind, P = 1, H = 20, E = 2,
 
 ### Plot impulse responses
 
-``` r
+```r
 plots <- plotirf(IRFest = res$irf, IRFse = res$se,
                  HTick = 5, Labels = c("Var 1", "Var 2"))
 cowplot::plot_grid(plotlist = plots)
@@ -115,7 +118,7 @@ cowplot::plot_grid(plotlist = plots)
 
 ### Test for weak instruments (Lewis-Mertens, 2025)
 
-``` r
+```r
 # y: T x 1 outcome variable
 # Y: T x N matrix of endogenous regressors
 # X: T x Nx matrix of exogenous controls
@@ -154,7 +157,7 @@ wt <- gweakivtest(y = y_w, Y = Y_w, X = X_w, Z = Z_w)
 
 ### Extract structural shocks
 
-``` r
+```r
 # Use estimates from hetiv() or proxyiv() to predict the unobserved underlying
 # shocks with the Kalman filter.
 shocks <- kfpredict(Sig = res$Sig, SigR = res$SigR,
@@ -163,7 +166,7 @@ shocks <- kfpredict(Sig = res$Sig, SigR = res$SigR,
 
 ### Simulate data
 
-``` r
+```r
 sim <- simulatedata(Phi = Phi, SigE = 4, PsiE = PsiE, PsiR = PsiR,
                     Nobs = 500, Nbin = 100, N = 2, R = 2, E = 1,
                     Nevn = 5, P = 1, eDist = 0, seed = 42)
@@ -171,35 +174,21 @@ sim <- simulatedata(Phi = Phi, SigE = 4, PsiE = PsiE, PsiR = PsiR,
 
 ## References
 
-Burri, M. and D. Kaufmann (2026a). Measuring monetary policy shocks.
-IRENE Working Papers 24-03, IRENE Institute of Economic Research,
-University of Neuchâtel.
+Burri, M. and D. Kaufmann (2026a). Measuring monetary policy shocks. IRENE Working Papers 24-03, IRENE Institute of Economic Research, University of Neuchâtel.
 
-Burri, M. and D. Kaufmann (2026b). Multiple monetary policy shocks from
-daily data: A heteroskedasticity IV approach. IRENE Working Papers
-26-06, IRENE Institute of Economic Research, University of Neuchâtel.
+Burri, M. and D. Kaufmann (2026b). Multiple monetary policy shocks from daily data: A heteroskedasticity IV approach. IRENE Working Papers 26-06, IRENE Institute of Economic Research, University of Neuchâtel.
 
-Jordà, Ò. (2005). Estimation and inference of impulse responses by local
-projections. *American Economic Review*, 95(1), 161-182.
+Jordà, Ò. (2005). Estimation and inference of impulse responses by local projections. *American Economic Review*, 95(1), 161-182.
 
-Lewis, D. J. (2022). Robust inference in models identified via
-heteroskedasticity. *Review of Economics and Statistics*, 104(3),
-510-524.
+Lewis, D. J. (2022). Robust inference in models identified via heteroskedasticity. *Review of Economics and Statistics*, 104(3), 510-524.
 
-Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments
-for 2SLS with multiple endogenous regressors. *The Review of Economic
-Studies*, DOI: 10.1093/restud/rdaf103.
+Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments for 2SLS with multiple endogenous regressors. *The Review of Economic Studies*, DOI: 10.1093/restud/rdaf103.
 
-Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and
-corporate income tax changes in the United States. *American Economic
-Review*, 103(4), 1212-1247.
+Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and corporate income tax changes in the United States. *American Economic Review*, 103(4), 1212-1247.
 
-Rigobon, R. (2003). Identification through heteroskedasticity. *Review
-of Economics and Statistics*, 85(4), 777-792.
+Rigobon, R. (2003). Identification through heteroskedasticity. *Review of Economics and Statistics*, 85(4), 777-792.
 
-Stock, J. H. and Watson, M. W. (2018). Identification and estimation of
-dynamic causal effects in macroeconomics using external instruments.
-*Economic Journal*, 128(610), 917-948.
+Stock, J. H. and Watson, M. W. (2018). Identification and estimation of dynamic causal effects in macroeconomics using external instruments. *Economic Journal*, 128(610), 917-948.
 
 ## License
 

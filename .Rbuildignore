@@ -1,1 +1,7 @@
 ^LICENSE\.md$
+^\.github$
+^\.lintr$
+^CONTRIBUTING\.md$
+^_pkgdown\.yml$
+^docs$
+^figure$

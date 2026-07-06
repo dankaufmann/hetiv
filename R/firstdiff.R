@@ -9,7 +9,11 @@
 #' @return A numeric vector of the same length as `TS`, with `NA` in the
 #'   first position.
 #'
+#' @examples
+#' firstdiff(c(1, 3, 6))
+#'
 #' @export
 firstdiff <- function(TS) {
+  if (!is.numeric(TS)) stop("TS must be numeric.", call. = FALSE)
   TS - dplyr::lag(TS, 1)
 }

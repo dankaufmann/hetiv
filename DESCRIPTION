@@ -15,10 +15,11 @@ BugReports: https://github.com/dankaufmann/hetiv/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 8.0.0
-Config/roxygen2/version: 8.0.0
+RoxygenNote: 7.3.3
+Config/roxygen2/version: 7.3.3
 VignetteBuilder: knitr
 Suggests:
+    covr,
     cowplot,
     knitr,
     pkgdown,
@@ -30,5 +31,6 @@ Imports:
     grid,
     ivreg,
     MASS,
+    rlang,
     sandwich,
     zoo

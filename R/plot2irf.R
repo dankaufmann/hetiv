@@ -8,9 +8,11 @@
 #'
 #' @param IRF1 Array (H x N x E) of impulse responses for the first approach.
 #'   Dimnames on the first dimension must be the horizon labels (numeric).
-#' @param IRF1se Array (H x N x E) of standard errors for the first approach (set to 0 to surpress confidence intervals).
+#' @param IRF1se Array (H x N x E) of standard errors for the first approach
+#'   (set to 0 to suppress confidence intervals).
 #' @param IRF2 Array (H x N x E) of impulse responses for the second approach.
-#' @param IRF2se Array (H x N x E) of standard errors for the second approach (set to 0 to surpress confidence intervals).
+#' @param IRF2se Array (H x N x E) of standard errors for the second approach
+#'   (set to 0 to suppress confidence intervals).
 #' @param HTick Integer. Step size for x-axis tick marks.
 #' @param Labels Character vector of length N. Variable names used as panel titles.
 #' @param ci Numeric scalar in (0, 1). Confidence level for the shaded bands.
@@ -22,15 +24,35 @@
 #' @importFrom ggplot2 ggplot aes geom_line geom_ribbon geom_hline scale_x_continuous scale_colour_manual scale_linetype_manual theme_minimal theme element_text element_rect element_blank xlab ylab ggtitle element_line labs
 #' @importFrom grid unit
 #'
+#' @examples
+#' irf1 <- array(c(1, 0.5, 0.2, 0.1), dim = c(4, 1, 1))
+#' dimnames(irf1)[[1]] <- 0:3
+#' irf2 <- irf1 * 0.8
+#' se <- array(0.1, dim = dim(irf1), dimnames = dimnames(irf1))
+#' plot2irf(irf1, se, irf2, se * 0, HTick = 1, Labels = "Output")
+#'
 #' @export
 plot2irf <- function(IRF1, IRF1se, IRF2, IRF2se, HTick, Labels, ci = 0.90){
 
+  IRF1 <- .validate_irf_array(IRF1, "IRF1")
+  IRF2 <- .validate_irf_array(IRF2, "IRF2")
+  IRF1se <- .validate_irf_array(IRF1se, "IRF1se")
+  IRF2se <- .validate_irf_array(IRF2se, "IRF2se")
+  if (!identical(dim(IRF1), dim(IRF2)) ||
+      !identical(dim(IRF1), dim(IRF1se)) ||
+      !identical(dim(IRF1), dim(IRF2se))) {
+    stop("IRF1, IRF1se, IRF2, and IRF2se must have matching dimensions.",
+         call. = FALSE)
+  }
   myGraphs <- list()
   noDims   <- length(dim(IRF1))
   HNum     <- dim(IRF1)[1]
-  HSeries  <- as.numeric(dimnames(IRF1)[[1]])
+  HSeries  <- .check_horizon_labels(IRF1, "IRF1")
 
   N <- dim(IRF1)[2]
+  .validate_plot_common(HSeries, HTick, Labels, N)
+  .check_numeric_scalar(ci, "ci", min = .Machine$double.eps,
+                        max = 1 - .Machine$double.eps)
   n <- 1
 
   # Handle 2-dimensional input (single shock, no E dimension)
@@ -83,7 +105,7 @@ plot2irf <- function(IRF1, IRF1se, IRF2, IRF2se, HTick, Labels, ci = 0.90){
           panel.grid.minor = ggplot2::element_blank(),
           panel.border     = ggplot2::element_rect(color = "black", fill = NA, linewidth = 0.2, linetype = "solid")
         ) +
-        ggplot2::theme(plot.margin = grid::unit(c(0.1, 0.1, 0.1, 0.1), "cm"))+
+        ggplot2::theme(plot.margin = grid::unit(c(0.1, 0.1, 0.1, 0.1), "cm")) +
         ggplot2::theme(legend.position = "none") 
         
 

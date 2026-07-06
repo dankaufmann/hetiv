@@ -29,3 +29,9 @@ horizontal reference lines at user-supplied significance levels. Returns a
 list of \code{ggplot} objects (one per variable-shock combination) that can be
 arranged with e.g. \code{cowplot::plot_grid()}.
 }
+\examples{
+pvals <- array(c(0.2, 0.08, 0.04), dim = c(3, 1, 1))
+dimnames(pvals)[[1]] <- 0:2
+plotpval(pvals, HTick = 1, Labels = "Output")
+
+}

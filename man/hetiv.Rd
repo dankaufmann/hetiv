@@ -107,6 +107,15 @@ For \code{E > 1}, identification is recursive and order-dependent: the
 column order of \code{y} defines both the shock ordering and the normalization
 variable for each shock dimension.
 }
+\examples{
+set.seed(1)
+y <- matrix(rnorm(80), ncol = 2)
+Ind <- rep(0L, nrow(y))
+Ind[seq(5, nrow(y), by = 5)] <- 1L
+res <- hetiv(y = y, O = y, Ind = Ind, P = 1, H = 3, details = TRUE)
+dim(res$irf)
+
+}
 \references{
 Burri, M. and D. Kaufmann (2026a). Measuring monetary policy shocks.
 IRENE Working Papers 24-03, IRENE Institute of Economic Research,

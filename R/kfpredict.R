@@ -33,28 +33,29 @@
 #'
 #' @importFrom MASS ginv
 #'
+#' @examples
+#' Sig <- diag(2)
+#' SigR <- diag(c(0.5, 0.5))
+#' Psi <- matrix(c(1, 0.5), nrow = 2)
+#' et <- matrix(rnorm(20), ncol = 2)
+#' kfpredict(Sig = Sig, SigR = SigR, Psi = Psi, et = et)
+#'
 #' @export
 kfpredict <- function(Sig, SigR, Psi, et, tol = sqrt(.Machine$double.eps), scale = TRUE){
 
+  Sig <- .as_numeric_matrix(Sig, "Sig", square = TRUE, allow_na = FALSE)
+  scale <- .check_logical_scalar(scale, "scale")
+  tol <- .check_numeric_scalar(tol, "tol", min = 0)
   tol <- max(tol, sqrt(.Machine$double.eps))
-  Psi <- as.matrix(Psi)
-  et  <- as.matrix(et)
-
-  if (nrow(Sig) != ncol(Sig))
-    stop("Sig must be a square matrix.")
-  if (nrow(Psi) != nrow(Sig))
-    stop("Psi must have the same number of rows as Sig.")
-  if (ncol(et) != nrow(Sig))
-    stop("et must have one column for each row/column of Sig.")
+  Psi <- .as_numeric_matrix(Psi, "Psi", nrow = nrow(Sig), allow_na = FALSE)
+  et <- .as_numeric_matrix(et, "et", ncol = nrow(Sig))
 
   E <- ncol(Psi)
 
   if(scale == TRUE){
-    SigR <- as.matrix(SigR)
+    SigR <- .as_numeric_matrix(SigR, "SigR", square = TRUE, allow_na = FALSE)
     if (!identical(dim(Sig), dim(SigR)))
-      stop("Sig and SigR must have the same dimensions.")
-    if (anyNA(SigR))
-      stop("SigR cannot contain NA when scale = TRUE.")
+      stop("Sig and SigR must have the same dimensions.", call. = FALSE)
     # Back out implied shock variances from the difference in covariance matrices
     # between event and control days (Sig - SigR = Psi * SigEps * Psi')
     # Unit impact normalization on Psi means we need to recover the scale of

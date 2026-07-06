@@ -79,6 +79,16 @@ test is robust to heteroskedasticity and autocorrelation and nests the
 classical Stock-Yogo (2005) test as a special case. The function is a direct port
 from the Matlab codes by Lewis and Mertens (2025)
 }
+\examples{
+set.seed(1)
+n <- 80
+Z <- matrix(rnorm(n), ncol = 1)
+X <- matrix(1, n, 1)
+Y <- 0.8 * Z + rnorm(n)
+y <- 1.5 * Y + rnorm(n)
+gweakivtest(y = y, Y = Y, X = X, Z = Z, points = 1)
+
+}
 \references{
 Lazarus, E., Lewis, D. J., Stock, J. H. and Watson, M. W. (2018).
 HAR inference: recommendations for practice. \emph{Journal of Business &

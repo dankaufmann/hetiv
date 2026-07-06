@@ -99,9 +99,35 @@
 #' @importFrom ivreg ivreg
 #' @importFrom sandwich NeweyWest vcovHC
 #'
+#' @examples
+#' set.seed(1)
+#' y <- matrix(rnorm(80), ncol = 2)
+#' Ind <- rep(0L, nrow(y))
+#' Ind[seq(5, nrow(y), by = 5)] <- 1L
+#' res <- hetiv(y = y, O = y, Ind = Ind, P = 1, H = 3, details = TRUE)
+#' dim(res$irf)
+#'
 #' @export
 hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
                   cum = FALSE, Hstep = 1, cov_type = "HC0", details = FALSE){
+
+  args <- .validate_estimator_inputs(
+    y = y, O = O, X = X, Ind = Ind, P = P, H = H, E = E, norm = norm,
+    cum = cum, Hstep = Hstep, cov_type = cov_type
+  )
+  y <- args$y
+  O <- args$O
+  X <- args$X
+  Ind <- args$Ind
+  P <- args$P
+  H <- args$H
+  E <- args$E
+  norm <- args$norm
+  cum <- args$cum
+  Hstep <- args$Hstep
+  cov_type <- args$cov_type
+  interact <- .check_logical_scalar(interact, "interact")
+  details <- .check_logical_scalar(details, "details")
 
   # Collect various properties of the data and observations to be used
   Nobs <- dim(y)[1]     # Number of observations in y
@@ -110,28 +136,6 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
   N    <- dim(y)[2]     # Number of variables in y
   M    <- dim(O)[2]     # Number of variables in O
   K    <- if (!is.null(X)) dim(X)[2] else 0
-
-  if (dim(O)[1] != Nobs)
-    stop("y and O must have the same number of rows.")
-  if (!is.null(X) && dim(X)[1] != Nobs)
-    stop("X must have the same number of rows as y.")
-  if (length(Ind) != Nobs)
-    stop("Ind must have the same length as nrow(y).")
-  if (E > N)
-    stop("E cannot exceed the number of columns in y.")
-  if (P < 0)
-    stop("P must be a non-negative integer.")
-  if (H < 1)
-    stop("H must be a positive integer.")
-  if (Nobs <= P + H)
-    stop("Not enough observations: nrow(y) must exceed P + H.")
-  if (!all(Ind %in% c(0, 1, 2, NA)))
-    stop("Ind must contain only 0, 1, 2, or NA.")
-  if (!is.numeric(norm) || length(norm) != 1 || is.na(norm))
-    stop("norm must be a non-missing numeric scalar.")
-  if (length(Hstep) != 1 || is.na(Hstep) || Hstep < 1)
-    stop("Hstep must be a positive integer.")
-  cov_type <- match.arg(cov_type, c("HC0", "NW"))
 
   if(sum(is.na(y))>0){
     warning("Missing values in y")
@@ -143,13 +147,6 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
     warning("Missing values in Ind")
   }
   if (!is.null(X) && sum(is.na(X)) > 0) warning("Missing values in X")
-
-  # Modify cumulation indicator if only one provided
-  if (!is.logical(cum) || anyNA(cum) || !(length(cum) %in% c(1, N)))
-    stop("cum must be a non-missing logical scalar or a logical vector of length ncol(y).")
-  if(length(cum) == 1){
-    cum <- rep(cum, N)
-  }
 
   # Specify at which horizons IRF should be computed
   HSeries <- seq(1, H, Hstep)

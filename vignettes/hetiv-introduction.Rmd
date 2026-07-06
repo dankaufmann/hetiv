@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-**hetiv** provides tools for measuring and identifying multi-dimensional structural shocks in dynamic models models using two complementary IV approaches:
+**hetiv** provides tools for measuring and identifying multi-dimensional structural shocks in dynamic models using two complementary IV approaches:
 
 - **Heteroskedasticity-IV** (Rigobon 2003, Rigobon and Sack 2004, Lewis 2022, Burri and Kaufmann, 2026a): exploits the higher
   variance of outcome variables on policy event days relative to control days to
@@ -34,12 +34,12 @@ Both approaches are implemented as local projection IV estimators following
 Jordà (2005), which directly produce impulse response functions (IRFs) across
 multiple horizons. Inference is based on HC robust standard errors (Montiel Olea et al., 2025).
 
-The package allows for multiple shocks and endogenous variables. Weak-instrument HAR inference is implemented via the generalised minimum eigenvalue test of Lewis and Mertens (2025), which nests the classical Stock-Yogo (2005) test for the univariate homoskedastic case. `gweakivtest`is a direct port of the Matlab files by Lewis and Mertens (2025) available on **https://karelmertens.com/research/**.
+The package allows for multiple shocks and endogenous variables. Weak-instrument HAR inference is implemented via the generalised minimum eigenvalue test of Lewis and Mertens (2025), which nests the classical Stock-Yogo (2005) test for the univariate homoskedastic case. `gweakivtest()` is a direct port of the Matlab files by Lewis and Mertens (2025) available on **https://karelmertens.com/research/**.
 
-In addition, the package provides the function `kfpredict()` for predicting the underlying unobserved shocks based on the Kalman-filter, as suggested by Burri and Kaufmann (2026b).
+In addition, the package provides `kfpredict()` for predicting the underlying unobserved shocks based on the Kalman filter, as suggested by Burri and Kaufmann (2026b).
 
 This vignette demonstrates the functionality using a simulated four-variable VAR
-with two structural shocks. 
+with two structural shocks.
 
 ## Simulated data
 
@@ -50,7 +50,7 @@ $$y_t = \Psi \varepsilon_t + \Gamma v_t + \Phi(L) y_{t-1} + \beta X_t \ \ \text{
 
 $$y_t =  \Gamma v_t + \Phi(L) y_{t-1} + \beta X_t \ \ \text{for } t\in \mathcal{C}$$
 
-where $\mathcal{P}, \mathcal{C}$ denote policy event and other days, respectively, $\Psi$ is the impact matrix of $E$ policy event shocks and $\Gamma$ the impact matrix of $R$ other shocks. $\Phi(L)$ is a conformable lag polynomial, and $X_t$ an matrix of deterministic terms.
+where $\mathcal{P}, \mathcal{C}$ denote policy event and other days, respectively, $\Psi$ is the impact matrix of $E$ policy event shocks and $\Gamma$ the impact matrix of $R$ other shocks. $\Phi(L)$ is a conformable lag polynomial, and $X_t$ is a matrix of deterministic terms.
 
 Regular shocks occur on all days. A policy event occurs every 10th period (approximately 10% of observations). The latter introduces heteroskedasticity in the variance-covariance matrix of the reduced-form residuals `hetiv()` exploits to identify the impulse response functions. Shocks are drawn from a standard normal distribution. The impact matrix is lower-triangular, corresponding to the identifying assumption by Burri and Kaufmann (2026a) that the first shock has a contemporaneous effect on all variables, while the second shock has no contemporaneous effect on the first variable. Deterministic weekday patterns are added to variables 3 and 4 to illustrate the role of controls. The event indicator `Ind` equals 1 on policy event days and 0 on control days.
 
@@ -107,14 +107,14 @@ y_data[, 3] <- y_data[, 3] + 0.5 * seq_len(Nobs) %% 5
 y_data[, 4] <- y_data[, 4] + 0.3 * seq_len(Nobs) %% 5
 ```
 
-To illustrate the proxy-IV approach, we construct a noisy external instrument for the two event shocks by adding Gaussian noise to the true shocks. The proxy is observed only on policy event days and set to `NA` on control days. This mirrors the typical situation in high-frequency identification of monetary policy shocks, where the high-frequency surprises are only observed on policy announcement days.
+To illustrate the proxy-IV approach, we construct a noisy external instrument for the two event shocks by adding Gaussian noise to the true shocks. The proxy is set to zero on control days. This mirrors the typical situation in high-frequency identification of monetary policy shocks, where high-frequency surprises are recorded around policy announcement windows and are zero otherwise in the event-study sample.
 
 ```{r proxy}
 # RNG state after simulatedata(seed = 42) is deterministic, so no extra seed needed
 e_proxy       <- sim$eE
 e_proxy[, 1]  <- e_proxy[, 1] + rnorm(Nobs, sd = 1)
 e_proxy[, 2]  <- e_proxy[, 2] + rnorm(Nobs, sd = 1)
-e_proxy[Ind == 0, ] <- NA
+e_proxy[Ind == 0, ] <- 0
 ```
 
 ## Estimation
@@ -291,7 +291,7 @@ for (j in seq_len(E)) {
 
 ### HET-IV estimates versus misspecified model
 
-We can also compare the accuracy of the estimates using the correct and misspecified models. 
+We can also compare the accuracy of the estimates using the correct and misspecified models.
 
 ```{r plot2irf-misspecified, fig.height = 7}
 
@@ -315,11 +315,11 @@ for (j in seq_len(E)) {
 }
 ```
 
-We see that the confidence intervals are wider using the misspecified model (red). This is especially true for the third and fourth variables that are affected by the deterministic weekday pattern. The misspecified model does not account for this pattern, which leads to more uncertainty and biased estimates. But also, the intervals are somewhat wider or variables 1 and 2 because we fail to control for lagged dependent variables.
+We see that the confidence intervals are wider using the misspecified model (red). This is especially true for the third and fourth variables that are affected by the deterministic weekday pattern. The misspecified model does not account for this pattern, which leads to more uncertainty and biased estimates. The intervals are also somewhat wider for variables 1 and 2 because we fail to control for lagged dependent variables.
 
 
 ### HET-IV versus Proxy-IV
-Next, we compare the HET-IV estimates to the Proxy-IV estimates. We obtain relatively similar results with both approaches.However, the point estimates are quite similar across the two approaches.
+Next, we compare the HET-IV estimates to the Proxy-IV estimates. We obtain relatively similar point estimates across the two approaches.
 
 ```{r plot2irf-het-proxy, fig.height = 7}
 plots_vs_proxy <- plot2irf(
@@ -364,7 +364,7 @@ shocks_proxy_rec <- kfpredict(Sig = res_proxy_rec$Sig, SigR = res_proxy_rec$SigR
                            Psi = res_proxy_rec$Psi, et   = res_proxy_rec$et)
 ```
 
-We assess the accuracy of the prediction comparing them to the true event shocks from the underlying model.
+We assess the accuracy of the predictions by comparing them to the true event shocks from the underlying model.
 
 ```{r shock-correlation}
 true_shocks <- sim$eE
@@ -404,7 +404,7 @@ knitr::kable(tab_all,
 
 ```
 
-The correlation between the true shocks and the proxy is slightly lower than one due to an attenuation bias (see Burri and Kaufmann, 2026a), which depends on the variance of the noise term affecting the proxy. The correlation of the prediction is also relatively low if we use a misspecified model. However, if we use the correct model, the correlation is is close to unity for Shock 1 and 0.94 for Shock 2. Proxy-IV with controls yields a high correlation as well, at least for Shock 1. Note that the specific values depend on the exact nature of the simulated data
+The correlation between the true shocks and the proxy is slightly lower than one due to an attenuation bias (see Burri and Kaufmann, 2026a), which depends on the variance of the noise term affecting the proxy. The correlation of the prediction is also relatively low if we use a misspecified model. However, if we use the correct model, the correlation is close to unity for Shock 1 and 0.94 for Shock 2. Proxy-IV with controls yields a high correlation as well, at least for Shock 1. Note that the specific values depend on the exact nature of the simulated data.
 
 ## Weak instrument test
 
@@ -424,10 +424,10 @@ run_weaktest <- function(weakdata, E) {
   Y <- weakdata[, paste0("y", 1:E)]
   # Z: the E instruments
   Z <- weakdata[, paste0("Z", 1:E),]
-  # X: lagged ("o*") and deterministic ("x*") control columns. In any case, add a constant term as well.
-  # Note that gweakivtest() adds a constant term if missing
+  # X: lagged ("o*"), deterministic ("x*"), and indicator ("i*") controls.
+  # gweakivtest() adds a constant term if one is missing.
   ctrl  <- startsWith(colnames(weakdata), "o") | startsWith(colnames(weakdata), "x") | startsWith(colnames(weakdata), "i")
-  X     <- if (any(ctrl)) cbind(weakdata[, ctrl], matrix(1, nrow(weakdata), 1)) else matrix(numeric(0), nrow(weakdata), 0)
+  X     <- if (any(ctrl)) weakdata[, ctrl, drop = FALSE] else matrix(numeric(0), nrow(weakdata), 0)
 
   gweakivtest(y, Y, X, Z, cov_type = "EHW")
 }
@@ -463,7 +463,7 @@ knitr::kable(
 )
 ```
 
-The specification without controls is affected by a weak instrument problem. The correctly specified model passes the weak instrument tests. The Proxy-IV fail the test. However, note that this depends on the degree of noise used to construct the proxy and is not suggesting that `hetiv()`is generally superior to `proxyiv()`. Interestingly, at least for HET-IV, the critical values are much higher than the common rule of thumb for the Stock and Yogo (2005) test, but also, higher than in the HAR test for the univariate case by Montiel Olea and Pflueger (2013) and Lewis (2022), which is around 23.
+The specification without controls is affected by a weak instrument problem. The correctly specified model passes the weak instrument tests. Proxy-IV fails the test. However, note that this depends on the degree of noise used to construct the proxy and does not suggest that `hetiv()` is generally superior to `proxyiv()`. Interestingly, at least for HET-IV, the critical values are much higher than the common rule of thumb for the Stock and Yogo (2005) test and higher than in the HAR test for the univariate case by Montiel Olea and Pflueger (2013) and Lewis (2022), which is around 23.
 
 
 ## References

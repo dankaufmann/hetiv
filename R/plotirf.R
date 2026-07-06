@@ -21,15 +21,27 @@
 #' @importFrom ggplot2 ggplot aes geom_line geom_ribbon geom_hline scale_x_continuous theme_minimal theme element_text element_rect element_blank xlab ylab ggtitle element_line
 #' @importFrom grid unit
 #'
+#' @examples
+#' irf <- array(c(1, 0.5, 0.2, 0.1), dim = c(4, 1, 1))
+#' dimnames(irf)[[1]] <- 0:3
+#' se <- array(0.1, dim = dim(irf), dimnames = dimnames(irf))
+#' plotirf(irf, se, HTick = 1, Labels = "Output")
+#'
 #' @export
 plotirf <- function(IRFest, IRFse = NULL, HTick, Labels, ci = c(0.90, 0.95)){
 
+  IRFest <- .validate_irf_array(IRFest, "IRFest")
   myGraphs <- list()
   noDims   <- length(dim(IRFest))
   HNum     <- dim(IRFest)[1]
-  HSeries  <- as.numeric(dimnames(IRFest)[[1]])
+  HSeries  <- .check_horizon_labels(IRFest, "IRFest")
 
   N <- dim(IRFest)[2]
+  .validate_plot_common(HSeries, HTick, Labels, N)
+  if (!is.numeric(ci) || length(ci) < 1 || anyNA(ci) ||
+      any(ci <= 0 | ci >= 1)) {
+    stop("ci must contain confidence levels between 0 and 1.", call. = FALSE)
+  }
   n <- 1
 
   # Handle 2-dimensional input (single shock, no E dimension)
@@ -41,9 +53,13 @@ plotirf <- function(IRFest, IRFse = NULL, HTick, Labels, ci = c(0.90, 0.95)){
   }
 
   # Compute confidence bands for each level in ci (sorted widest first for layering)
-  has_se <- is.array(IRFse)
+  has_se <- !is.null(IRFse)
   ci     <- sort(ci, decreasing = TRUE)   # widest band drawn first (behind)
   if(has_se){
+    IRFse <- .validate_irf_array(IRFse, "IRFse")
+    if (!identical(dim(IRFse), dim(IRFest))) {
+      stop("IRFse must have the same dimensions as IRFest.", call. = FALSE)
+    }
     IRFse_loc <- IRFse
     if(noDims != 3) dim(IRFse_loc) <- c(HNum, N, 1)
     bands <- lapply(ci, function(level){

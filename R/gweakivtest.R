@@ -2,7 +2,20 @@
 
 # Symmetric matrix power A^p via eigendecomposition (A must be symmetric PSD)
 .mat_pow <- function(A, p) {
+  if (nrow(A) != ncol(A)) {
+    stop("Matrix powers require a square matrix.", call. = FALSE)
+  }
   e <- eigen(A, symmetric = TRUE)
+  tol <- sqrt(.Machine$double.eps)
+  if (any(e$values < -tol)) {
+    stop("Matrix powers require a positive semidefinite matrix.",
+         call. = FALSE)
+  }
+  if (p < 0 && any(e$values <= tol)) {
+    stop("Matrix powers with negative exponents require a positive definite matrix.",
+         call. = FALSE)
+  }
+  e$values <- pmax(e$values, tol)
   e$vectors %*% diag(e$values^p, nrow = length(e$values)) %*% t(e$vectors)
 }
 
@@ -420,6 +433,15 @@ gweakivtest_critical_values <- function(W, K,
 #' inference for econometric models: essays in honor of Thomas Rothenberg*,
 #' pp. 80–108. Cambridge University Press.
 #'
+#' @examples
+#' set.seed(1)
+#' n <- 80
+#' Z <- matrix(rnorm(n), ncol = 1)
+#' X <- matrix(1, n, 1)
+#' Y <- 0.8 * Z + rnorm(n)
+#' y <- 1.5 * Y + rnorm(n)
+#' gweakivtest(y = y, Y = Y, X = X, Z = Z, points = 1)
+#'
 #' @export
 gweakivtest <- function(y, Y, X, Z,
                       cov_type = "EHW",
@@ -449,6 +471,17 @@ gweakivtest <- function(y, Y, X, Z,
   Y <- as.matrix(Y);  if (ncol(Y) > nrow(Y)) Y <- t(Y)
   Z <- as.matrix(Z);  if (ncol(Z) > nrow(Z)) Z <- t(Z)
   X <- as.matrix(X);  if (ncol(X) > nrow(X)) X <- t(X)
+  y <- .as_numeric_matrix(y, "y")
+  Y <- .as_numeric_matrix(Y, "Y")
+  Z <- .as_numeric_matrix(Z, "Z")
+  X <- .as_numeric_matrix(X, "X")
+  if (ncol(y) != 1) {
+    stop("y must have exactly one column.", call. = FALSE)
+  }
+  if (!identical(nrow(y), nrow(Y)) || !identical(nrow(y), nrow(Z)) ||
+      !identical(nrow(y), nrow(X))) {
+    stop("y, Y, X, and Z must have the same number of rows.", call. = FALSE)
+  }
 
   # Drop missing observations
   obs_data <- cbind(y, Y, Z, X)
@@ -459,6 +492,10 @@ gweakivtest <- function(y, Y, X, Z,
   X <- X[sel, , drop = FALSE]
 
   Tobs <- nrow(y)
+  if (Tobs == 0) {
+    stop("No complete observations remain after dropping missing values.",
+         call. = FALSE)
+  }
 
   # Add constant to X if absent; remove zero-variance columns
   if (ncol(X) > 0) {
@@ -471,6 +508,13 @@ gweakivtest <- function(y, Y, X, Z,
   Nx <- ncol(X)
   N  <- ncol(Y)
   K  <- ncol(Z)
+  if (qr(X)$rank < Nx) {
+    stop("X is rank deficient after adding a constant; remove collinear controls.",
+         call. = FALSE)
+  }
+  if (qr(Z)$rank < K) {
+    stop("Z is rank deficient; remove collinear instruments.", call. = FALSE)
+  }
   if (K < N)
     stop("Not identified: require at least as many instruments as endogenous regressors.")
   if (is.numeric(target) && target > N)
@@ -485,6 +529,9 @@ gweakivtest <- function(y, Y, X, Z,
 
   Yo  <- Y - X %*% qr.solve(X, Y)
   yo  <- y - X %*% qr.solve(X, y)
+  if (qr(Yo)$rank < N) {
+    stop("Y is rank deficient after partialling out X.", call. = FALSE)
+  }
 
   PYo <- Zo %*% qr.solve(Zo, Yo)
   Pyo <- Zo %*% qr.solve(Zo, yo)

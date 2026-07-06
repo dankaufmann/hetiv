@@ -19,17 +19,31 @@
 #'
 #' @importFrom ggplot2 ggplot aes geom_line geom_hline scale_x_continuous theme_minimal theme element_text element_rect element_blank unit xlab ylab ggtitle element_line
 #'
+#' @examples
+#' pvals <- array(c(0.2, 0.08, 0.04), dim = c(3, 1, 1))
+#' dimnames(pvals)[[1]] <- 0:2
+#' plotpval(pvals, HTick = 1, Labels = "Output")
+#'
 #' @export
 plotpval <- function(pvals, HTick, Labels, sigLevels = c(0.05, 0.10)){
 
+  pvals <- .validate_irf_array(pvals, "pvals")
+  if (any(pvals < 0 | pvals > 1, na.rm = TRUE)) {
+    stop("pvals must contain values between 0 and 1.", call. = FALSE)
+  }
+  if (!is.numeric(sigLevels) || length(sigLevels) < 1 || anyNA(sigLevels) ||
+      any(sigLevels < 0 | sigLevels > 1)) {
+    stop("sigLevels must contain values between 0 and 1.", call. = FALSE)
+  }
   linetypes <- c("solid", "dashed", "dotted")
 
   myGraphs <- list()
   noDims   <- length(dim(pvals))
   HNum     <- dim(pvals)[1]
-  HSeries  <- as.numeric(dimnames(pvals)[[1]])
+  HSeries  <- .check_horizon_labels(pvals, "pvals")
 
   N <- dim(pvals)[2]
+  .validate_plot_common(HSeries, HTick, Labels, N)
   n <- 1
 
   # Handle 2-dimensional input (single shock, no E dimension)

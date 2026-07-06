@@ -123,6 +123,17 @@ of \code{y} defines the endogenous shock variables and normalizations, the
 column order of \code{Z} assigns proxies to shock dimensions, and
 \code{recursive = TRUE} imposes restrictions in that order.
 }
+\examples{
+set.seed(1)
+y <- matrix(rnorm(80), ncol = 2)
+Ind <- rep(0L, nrow(y))
+Ind[seq(5, nrow(y), by = 5)] <- 1L
+Z <- matrix(Ind * y[, 1] + rnorm(nrow(y)), ncol = 1)
+res <- proxyiv(y = y, O = y, Z = Z, Ind = Ind, P = 1, H = 3,
+               details = TRUE)
+dim(res$irf)
+
+}
 \references{
 Jordà, Ò. (2005). Estimation and inference of impulse responses by local
 projections. \emph{American Economic Review}, 95(1), 161–182.

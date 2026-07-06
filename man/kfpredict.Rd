@@ -41,6 +41,14 @@ filter formula. Given the impact matrix \code{Psi} and the covariance matrices
 of residuals on event and control days, the function recovers the latent
 shocks for each observation. Optionally rescales shocks to unit variance.
 }
+\examples{
+Sig <- diag(2)
+SigR <- diag(c(0.5, 0.5))
+Psi <- matrix(c(1, 0.5), nrow = 2)
+et <- matrix(rnorm(20), ncol = 2)
+kfpredict(Sig = Sig, SigR = SigR, Psi = Psi, et = et)
+
+}
 \references{
 Burri, M. and Kaufmann, D. (2026). Measuring monetary policy shocks.
 IRENE Working Paper 24-03, IRENE Institute of Economic Research, University of Neuchâtel.

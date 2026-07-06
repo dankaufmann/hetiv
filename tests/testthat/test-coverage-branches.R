@@ -96,7 +96,7 @@ test_that("exported functions surface validation errors clearly", {
   )
   expect_error(
     hetiv(y = y, O = y, Ind = Ind, P = 1, H = 2, cov_type = "bad"),
-    "'arg' should be"
+    "cov_type must be one of"
   )
   expect_error(
     hetiv(y = y, O = y, Ind = Ind, P = 1, H = 2, details = NA),
@@ -252,4 +252,9 @@ test_that("gweakivtest covers HAC, relative criterion, targeted beta, and helper
   expect_error(gweakivtest(y, Y, X, Z, points = 0), "points must be")
   expect_error(gweakivtest(y, Y, X, Z, seed = "bad"), "seed must be")
   expect_error(gweakivtest(y, Y, X, Z, target = 0), "target must be")
+  expect_error(
+    gweakivtest(y, Y, X, Z, cov_type = "bad"),
+    "cov_type must be one of"
+  )
+  expect_error(gweakivtest(y, Y, X, Z, crit = "bad"), "crit must be one of")
 })

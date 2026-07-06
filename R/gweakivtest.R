@@ -471,8 +471,8 @@ gweakivtest <- function(y, Y, X, Z,
                         target = "beta",
                         crit = "abs",
                         seed = 12345L) {
-  cov_type <- match.arg(cov_type, c("EHW", "NW"))
-  crit <- match.arg(crit, c("abs", "rel"))
+  cov_type <- .check_choice(cov_type, "cov_type", c("EHW", "NW"))
+  crit <- .check_choice(crit, "crit", c("abs", "rel"))
   if (!is.numeric(alfa) || length(alfa) != 1 || alfa <= 0 || alfa >= 1) {
     stop("alfa must be a numeric scalar between 0 and 1.")
   }

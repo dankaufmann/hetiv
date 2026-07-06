@@ -96,6 +96,19 @@
   x
 }
 
+.check_choice <- function(x, arg, choices) {
+  match <- pmatch(x, choices)
+  if (!is.character(x) || length(x) != 1 || is.na(x) ||
+    is.na(match) || match == 0) {
+    stop(arg, " must be one of ",
+      paste0("\"", choices, "\"", collapse = ", "), ".",
+      call. = FALSE
+    )
+  }
+
+  choices[[match]]
+}
+
 .check_indicator <- function(Ind, nobs) {
   if (length(Ind) != nobs) {
     stop("Ind must have the same length as nrow(y).", call. = FALSE)
@@ -136,7 +149,7 @@
   norm <- .check_numeric_scalar(norm, "norm")
   Ind <- .check_indicator(Ind, nrow(y))
   cum <- .check_cum(cum, ncol(y))
-  cov_type <- match.arg(cov_type, c("HC0", "NW"))
+  cov_type <- .check_choice(cov_type, "cov_type", c("HC0", "NW"))
 
   if (E > ncol(y)) {
     stop("E cannot exceed the number of columns in y.", call. = FALSE)

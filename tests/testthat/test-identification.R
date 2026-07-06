@@ -6,8 +6,10 @@ make_known_var_dgp <- function() {
 
   Phi <- array(0, dim = c(N, N, P))
   Phi[, , 1] <- matrix(
-    c(0.35, 0.10,
-      -0.05, 0.25),
+    c(
+      0.35, 0.10,
+      -0.05, 0.25
+    ),
     nrow = N,
     byrow = TRUE
   )
@@ -57,7 +59,8 @@ test_that("hetiv recovers known heteroskedastic-IV impulse responses", {
   expect_equal(dim(fit$irf), dim(truth))
   expect_equal(as.numeric(fit$Psi), as.numeric(dgp$PsiE), tolerance = 0.04)
   expect_equal(as.numeric(fit$irf[, , 1]), as.numeric(truth[, , 1]),
-               tolerance = 0.04)
+    tolerance = 0.04
+  )
 })
 
 test_that("proxyiv recovers known proxy-IV impulse responses", {
@@ -77,5 +80,6 @@ test_that("proxyiv recovers known proxy-IV impulse responses", {
   expect_equal(dim(fit$irf), dim(truth))
   expect_equal(as.numeric(fit$Psi), as.numeric(dgp$PsiE), tolerance = 0.04)
   expect_equal(as.numeric(fit$irf[, , 1]), as.numeric(truth[, , 1]),
-               tolerance = 0.04)
+    tolerance = 0.04
+  )
 })

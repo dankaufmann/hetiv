@@ -11,8 +11,8 @@ vignette: >
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
-  collapse  = TRUE,
-  comment   = "#>",
+  collapse = TRUE,
+  comment = "#>",
   fig.width = 9,
   fig.height = 5,
   out.width = "100%"
@@ -59,40 +59,44 @@ Regular shocks occur on all days. A policy event occurs every 10th period (appro
 library(hetiv)
 
 # Dimensions
-N  <- 4   # variables
-E  <- 2   # event shocks
-R  <- 2   # regular shocks
-P  <- 2   # VAR lag order
-H  <- 20  # IRF horizons
+N <- 4 # variables
+E <- 2 # event shocks
+R <- 2 # regular shocks
+P <- 2 # VAR lag order
+H <- 20 # IRF horizons
 Nevn <- 10 # Frequency of event shocks
 
 # Impact matrix for event shocks (N x E); lower triangular for recursive ID
-PsiE      <- matrix(0, N, E)
-PsiE[, 1] <- c(1.0,  0.5,  0.3,  0.2)
-PsiE[, 2] <- c(0.0,  1.0,  -0.4,  0.3)
+PsiE <- matrix(0, N, E)
+PsiE[, 1] <- c(1.0, 0.5, 0.3, 0.2)
+PsiE[, 2] <- c(0.0, 1.0, -0.4, 0.3)
 
-SigE <- 4  # event shock variance (scalar, applies to all E shocks)
+SigE <- 4 # event shock variance (scalar, applies to all E shocks)
 
 # Impact matrix for regular shocks (N x R)
-PsiR      <- matrix(0, N, R)
-PsiR[, 1] <- c( 1.0, -0.3,  0.2,  0.1)
-PsiR[, 2] <- c( 0.2,  1.0, -0.1,  0.4)
+PsiR <- matrix(0, N, R)
+PsiR[, 1] <- c(1.0, -0.3, 0.2, 0.1)
+PsiR[, 2] <- c(0.2, 1.0, -0.1, 0.4)
 
 # VAR coefficient matrices at lags 1 and 2
-Phi       <- array(0, dim = c(N, N, P))
-Phi[,, 1] <- matrix(c( 0.60,  0.05, -0.04,  0.03,
-                        0.06,  0.40,  0.05, -0.03,
-                       -0.05,  0.04,  0.50,  0.06,
-                        0.03, -0.03,  0.05,  0.70), N, N, byrow = TRUE)
-Phi[,, 2] <- matrix(c( 0.10,  0.03, -0.02,  0.02,
-                        0.04,  0.10,  0.03, -0.02,
-                       -0.03,  0.02,  0.10,  0.03,
-                        0.02, -0.02,  0.03,  0.10), N, N, byrow = TRUE)
+Phi <- array(0, dim = c(N, N, P))
+Phi[, , 1] <- matrix(c(
+  0.60, 0.05, -0.04, 0.03,
+  0.06, 0.40, 0.05, -0.03,
+  -0.05, 0.04, 0.50, 0.06,
+  0.03, -0.03, 0.05, 0.70
+), N, N, byrow = TRUE)
+Phi[, , 2] <- matrix(c(
+  0.10, 0.03, -0.02, 0.02,
+  0.04, 0.10, 0.03, -0.02,
+  -0.03, 0.02, 0.10, 0.03,
+  0.02, -0.02, 0.03, 0.10
+), N, N, byrow = TRUE)
 
 # Simulate — seed is set internally by simulatedata()
 Nobs <- 500
 Nbin <- 100
-sim  <- simulatedata(
+sim <- simulatedata(
   Phi = Phi, SigE = SigE, PsiE = PsiE, PsiR = PsiR,
   Nobs = Nobs, Nbin = Nbin, N = N, R = R, E = E,
   Nevn = Nevn, P = P, eDist = 0, seed = 42
@@ -100,7 +104,7 @@ sim  <- simulatedata(
 
 # Extract simulated data and event indicator
 y_data <- sim$y
-Ind    <- as.integer(sim$IndE[, 1])
+Ind <- as.integer(sim$IndE[, 1])
 
 # Add deterministic weekday variation into variables 3 and 4
 y_data[, 3] <- y_data[, 3] + 0.5 * seq_len(Nobs) %% 5
@@ -111,9 +115,9 @@ To illustrate the proxy-IV approach, we construct a noisy external instrument fo
 
 ```{r proxy}
 # RNG state after simulatedata(seed = 42) is deterministic, so no extra seed needed
-e_proxy       <- sim$eE
-e_proxy[, 1]  <- e_proxy[, 1] + rnorm(Nobs, sd = 1)
-e_proxy[, 2]  <- e_proxy[, 2] + rnorm(Nobs, sd = 1)
+e_proxy <- sim$eE
+e_proxy[, 1] <- e_proxy[, 1] + rnorm(Nobs, sd = 1)
+e_proxy[, 2] <- e_proxy[, 2] + rnorm(Nobs, sd = 1)
 e_proxy[Ind == 0, ] <- 0
 ```
 
@@ -141,7 +145,6 @@ res_het <- hetiv(
 Second, we estimate the correctly specified model, with $P = 2$ lags and the weekday dummies. Note that the weekday dummies absorb the deterministic pattern that we added to the data. The regressions generally include a constant term. Therefore, we only add four weekday dummies. 
 
 ```{r het-with-controls}
-
 # Weekday dummies: four indicator variables (one left out as reference)
 X_data <- matrix(0, nrow = Nobs, ncol = 4)
 for (i in 1:4) X_data[, i] <- as.integer((seq_len(Nobs)) %% 5 == (i - 1))
@@ -204,33 +207,45 @@ variables to each structural shock. We can compare the estimates across the four
 specifications against the true $\Psi$. At first sight, the differences are small. As we will see below, there are still some differences in terms of the accuracy of the estimates, the predicted shocks, and the strength of the instruments.
 
 ```{r impact-matrices}
-
 tab_1 <- round(data.frame(
-            True = PsiE[, 1], 
-            HET_IV = res_het$Psi[, 1], 
-            HET_IV_X = res_het_X$Psi[, 1],
-            Proxy_IV = res_proxy$Psi[, 1], 
-            Proxy_IV_rec = res_proxy_rec$Psi[, 1]), 2)
+  True = PsiE[, 1],
+  HET_IV = res_het$Psi[, 1],
+  HET_IV_X = res_het_X$Psi[, 1],
+  Proxy_IV = res_proxy$Psi[, 1],
+  Proxy_IV_rec = res_proxy_rec$Psi[, 1]
+), 2)
 
 knitr::kable(
   tab_1,
-  col.names = c("True", "HET-IV without controls", "HET-IV with controls", "Proxy-IV with controls", "Proxy-IV with recursive restriction"),
-  caption   = "Impact matrix estimates ($\\Psi$) for shock 1 across different specifications"
+  col.names = c(
+    "True", "HET-IV without controls", "HET-IV with controls",
+    "Proxy-IV with controls", "Proxy-IV with recursive restriction"
+  ),
+  caption = paste(
+    "Impact matrix estimates ($\\Psi$) for shock 1 across different",
+    "specifications"
+  )
 )
 
 tab_2 <- round(data.frame(
-            True = PsiE[, 2], 
-            HET_IV = res_het$Psi[, 2], 
-            HET_IV_X = res_het_X$Psi[, 2],
-            Proxy_IV = res_proxy$Psi[, 2], 
-            Proxy_IV_rec = res_proxy_rec$Psi[, 2]), 2)
+  True = PsiE[, 2],
+  HET_IV = res_het$Psi[, 2],
+  HET_IV_X = res_het_X$Psi[, 2],
+  Proxy_IV = res_proxy$Psi[, 2],
+  Proxy_IV_rec = res_proxy_rec$Psi[, 2]
+), 2)
 
 knitr::kable(
   tab_2,
-  col.names = c("True", "HET-IV without controls", "HET-IV with controls", "Proxy-IV with controls", "Proxy-IV with recursive restriction"),
-  caption   = "Impact matrix estimates ($\\Psi$) for shock 2 across different specifications"
+  col.names = c(
+    "True", "HET-IV without controls", "HET-IV with controls",
+    "Proxy-IV with controls", "Proxy-IV with recursive restriction"
+  ),
+  caption = paste(
+    "Impact matrix estimates ($\\Psi$) for shock 2 across different",
+    "specifications"
+  )
 )
-
 ```
 
 ## Impulse response functions
@@ -251,10 +266,13 @@ plots_het_X <- plotirf(
 )
 
 for (j in seq_len(E)) {
-  idx   <- ((j - 1) * N + 1):(j * N)
+  idx <- ((j - 1) * N + 1):(j * N)
   panel <- cowplot::plot_grid(plotlist = plots_het_X[idx], ncol = 2)
   title <- cowplot::ggdraw() +
-    cowplot::draw_label(paste0("HET-IV with controls — Shock ", j, " (90%, 95%, 99% CI)"), size = 11)
+    cowplot::draw_label(
+      paste0("HET-IV with controls — Shock ", j, " (90%, 95%, 99% CI)"),
+      size = 11
+    )
   print(cowplot::plot_grid(title, panel, ncol = 1, rel_heights = c(0.05, 1)))
 }
 ```
@@ -264,7 +282,7 @@ for (j in seq_len(E)) {
 We can compare the estimates to the true impulse responses. `plot2irf()` overlays two sets of IRFs. We compare the HET-IV estimate (blue) against the theoretical IRF computed from the known VAR parameters (red). The function `computeirf()` computes the theoretical IRF. The standard errors for the true IRF are set to zero, so that no confidence bands are plotted for the true IRF.
 
 ```{r plot2irf-true, fig.height = 7}
-irf_true    <- computeirf(PsiE, Phi, H, cum = FALSE)
+irf_true <- computeirf(PsiE, Phi, H, cum = FALSE)
 irf_true_se <- array(0, dim = dim(irf_true), dimnames = dimnames(irf_true))
 
 plots_vs_true <- plot2irf(
@@ -278,11 +296,13 @@ plots_vs_true <- plot2irf(
 )
 
 for (j in seq_len(E)) {
-  idx   <- ((j - 1) * N + 1):(j * N)
+  idx <- ((j - 1) * N + 1):(j * N)
   panel <- cowplot::plot_grid(plotlist = plots_vs_true[idx], ncol = 2)
   title <- cowplot::ggdraw() +
     cowplot::draw_label(
-      paste0("HET-IV with controls (blue) vs True (red) — Shock ", j, " (90% CI)"), size = 11)
+      paste0("HET-IV with controls (blue) vs True (red) — Shock ", j, " (90% CI)"),
+      size = 11
+    )
   print(cowplot::plot_grid(title, panel, ncol = 1, rel_heights = c(0.05, 1)))
 }
 ```
@@ -294,7 +314,6 @@ for (j in seq_len(E)) {
 We can also compare the accuracy of the estimates using the correct and misspecified models.
 
 ```{r plot2irf-misspecified, fig.height = 7}
-
 plots_vs_true <- plot2irf(
   IRF1   = res_het_X$irf,
   IRF1se = res_het_X$se,
@@ -306,11 +325,13 @@ plots_vs_true <- plot2irf(
 )
 
 for (j in seq_len(E)) {
-  idx   <- ((j - 1) * N + 1):(j * N)
+  idx <- ((j - 1) * N + 1):(j * N)
   panel <- cowplot::plot_grid(plotlist = plots_vs_true[idx], ncol = 2)
   title <- cowplot::ggdraw() +
     cowplot::draw_label(
-      paste0("HET-IV with controls (blue) vs without controls (red) — Shock ", j, " (90% CI)"), size = 11)
+      paste0("HET-IV with controls (blue) vs without controls (red) — Shock ", j, " (90% CI)"),
+      size = 11
+    )
   print(cowplot::plot_grid(title, panel, ncol = 1, rel_heights = c(0.05, 1)))
 }
 ```
@@ -333,11 +354,13 @@ plots_vs_proxy <- plot2irf(
 )
 
 for (j in seq_len(E)) {
-  idx   <- ((j - 1) * N + 1):(j * N)
+  idx <- ((j - 1) * N + 1):(j * N)
   panel <- cowplot::plot_grid(plotlist = plots_vs_proxy[idx], ncol = 2)
   title <- cowplot::ggdraw() +
     cowplot::draw_label(
-      paste0("HET-IV (blue) vs Proxy-IV (red) — Shock ", j, " (90% CI)"), size = 11)
+      paste0("HET-IV (blue) vs Proxy-IV (red) — Shock ", j, " (90% CI)"),
+      size = 11
+    )
   print(cowplot::plot_grid(title, panel, ncol = 1, rel_heights = c(0.05, 1)))
 }
 ```
@@ -351,17 +374,25 @@ residual covariance matrices on event and control days (`Sig`, `SigR`), and the
 residuals `et`.
 
 ```{r kfpredict}
-shocks_het   <- kfpredict(Sig = res_het$Sig,   SigR = res_het$SigR,
-                           Psi = res_het$Psi,   et   = res_het$et)
+shocks_het <- kfpredict(
+  Sig = res_het$Sig, SigR = res_het$SigR,
+  Psi = res_het$Psi, et = res_het$et
+)
 
-shocks_het_X <- kfpredict(Sig = res_het_X$Sig, SigR = res_het_X$SigR,
-                           Psi = res_het_X$Psi, et   = res_het_X$et)
+shocks_het_X <- kfpredict(
+  Sig = res_het_X$Sig, SigR = res_het_X$SigR,
+  Psi = res_het_X$Psi, et = res_het_X$et
+)
 
-shocks_proxy <- kfpredict(Sig = res_proxy$Sig, SigR = res_proxy$SigR,
-                           Psi = res_proxy$Psi, et   = res_proxy$et)
+shocks_proxy <- kfpredict(
+  Sig = res_proxy$Sig, SigR = res_proxy$SigR,
+  Psi = res_proxy$Psi, et = res_proxy$et
+)
 
-shocks_proxy_rec <- kfpredict(Sig = res_proxy_rec$Sig, SigR = res_proxy_rec$SigR,
-                           Psi = res_proxy_rec$Psi, et   = res_proxy_rec$et)
+shocks_proxy_rec <- kfpredict(
+  Sig = res_proxy_rec$Sig, SigR = res_proxy_rec$SigR,
+  Psi = res_proxy_rec$Psi, et = res_proxy_rec$et
+)
 ```
 
 We assess the accuracy of the predictions by comparing them to the true event shocks from the underlying model.
@@ -369,39 +400,41 @@ We assess the accuracy of the predictions by comparing them to the true event sh
 ```{r shock-correlation}
 true_shocks <- sim$eE
 
-cor_df1<- data.frame(
-    True       = true_shocks[, 1],
-    Proxy      = e_proxy[, 1],
-    HET_IV     = shocks_het[, 1],
-    HET_IV_X   = shocks_het_X[, 1],
-    Proxy_IV_X = shocks_proxy[, 1],
-    Proxy_IV_Rec = shocks_proxy_rec[, 1]
+cor_df1 <- data.frame(
+  True = true_shocks[, 1],
+  Proxy = e_proxy[, 1],
+  HET_IV = shocks_het[, 1],
+  HET_IV_X = shocks_het_X[, 1],
+  Proxy_IV_X = shocks_proxy[, 1],
+  Proxy_IV_Rec = shocks_proxy_rec[, 1]
 )
 
-cor_df2<- data.frame(
-    True       = true_shocks[, 2],
-    Proxy      = e_proxy[, 2],
-    HET_IV     = shocks_het[, 2],
-    HET_IV_X   = shocks_het_X[, 2],
-    Proxy_IV_X = shocks_proxy[, 2],
-    Proxy_IV_Rec = shocks_proxy_rec[, 2]
+cor_df2 <- data.frame(
+  True = true_shocks[, 2],
+  Proxy = e_proxy[, 2],
+  HET_IV = shocks_het[, 2],
+  HET_IV_X = shocks_het_X[, 2],
+  Proxy_IV_X = shocks_proxy[, 2],
+  Proxy_IV_Rec = shocks_proxy_rec[, 2]
 )
 
 tab_all <- data.frame(
-      rbind(round(cor(cor_df1, use = "complete.obs"), 2)[1, ],
-            round(cor(cor_df2, use = "complete.obs"), 2)[1, ])
-            )
+  rbind(
+    round(cor(cor_df1, use = "complete.obs"), 2)[1, ],
+    round(cor(cor_df2, use = "complete.obs"), 2)[1, ]
+  )
+)
 rownames(tab_all) <- c("Shock 1", "Shock 2")
 
-knitr::kable(tab_all,
-    col.names = c("True", "Proxy", "HET-IV without controls", "HET-IV with controls", "Proxy-IV with controls", "Proxy-IV with recursive restriction"),
-    row.names = TRUE,
-    caption   = "Correlation of predicted shocks with true shocks"
-    )
-  
-
-
-
+knitr::kable(
+  tab_all,
+  col.names = c(
+    "True", "Proxy", "HET-IV without controls", "HET-IV with controls",
+    "Proxy-IV with controls", "Proxy-IV with recursive restriction"
+  ),
+  row.names = TRUE,
+  caption = "Correlation of predicted shocks with true shocks"
+)
 ```
 
 The correlation between the true shocks and the proxy is slightly lower than one due to an attenuation bias (see Burri and Kaufmann, 2026a), which depends on the variance of the noise term affecting the proxy. The correlation of the prediction is also relatively low if we use a misspecified model. However, if we use the correct model, the correlation is close to unity for Shock 1 and 0.94 for Shock 2. Proxy-IV with controls yields a high correlation as well, at least for Shock 1. Note that the specific values depend on the exact nature of the simulated data.
@@ -423,19 +456,25 @@ run_weaktest <- function(weakdata, E) {
   # Y: first E outcome variables (endogenous regressors)
   Y <- weakdata[, paste0("y", 1:E)]
   # Z: the E instruments
-  Z <- weakdata[, paste0("Z", 1:E),]
+  Z <- weakdata[, paste0("Z", 1:E), ]
   # X: lagged ("o*"), deterministic ("x*"), and indicator ("i*") controls.
   # gweakivtest() adds a constant term if one is missing.
-  ctrl  <- startsWith(colnames(weakdata), "o") | startsWith(colnames(weakdata), "x") | startsWith(colnames(weakdata), "i")
-  X     <- if (any(ctrl)) weakdata[, ctrl, drop = FALSE] else matrix(numeric(0), nrow(weakdata), 0)
+  ctrl <- startsWith(colnames(weakdata), "o") |
+    startsWith(colnames(weakdata), "x") |
+    startsWith(colnames(weakdata), "i")
+  X <- if (any(ctrl)) {
+    weakdata[, ctrl, drop = FALSE]
+  } else {
+    matrix(numeric(0), nrow(weakdata), 0)
+  }
 
   gweakivtest(y, Y, X, Z, cov_type = "EHW")
 }
 
 specs <- list(
-  "HET-IV, no controls"                            = res_het$WeakData,
-  "HET-IV, with controls"                          = res_het_X$WeakData,
-  "Proxy-IV, with controls"                        = res_proxy$WeakData,
+  "HET-IV, no controls" = res_het$WeakData,
+  "HET-IV, with controls" = res_het_X$WeakData,
+  "Proxy-IV, with controls" = res_proxy$WeakData,
   "Proxy-IV, with controls + recursive restriction" = res_proxy_rec$WeakData
 )
 
@@ -447,19 +486,22 @@ tab <- do.call(rbind, lapply(names(wt_results), function(nm) {
   r <- wt_results[[nm]]
   data.frame(
     Specification = nm,
-    Statistic     = round(r$gmin_generalized, 2),
-    LM_CV         = round(r$gmin_generalized_critical_value, 2),
-    Strong        = ifelse(r$gmin_generalized > r$gmin_generalized_critical_value,
-                           "Yes", "No"),
+    Statistic = round(r$gmin_generalized, 2),
+    LM_CV = round(r$gmin_generalized_critical_value, 2),
+    Strong = ifelse(r$gmin_generalized > r$gmin_generalized_critical_value,
+      "Yes", "No"
+    ),
     stringsAsFactors = FALSE
   )
 }))
 
 knitr::kable(
   tab,
-  col.names = c("Specification", "Statistic", "LM critical value",
-                "Strong instruments?"),
-  caption   = "Weak instrument test results (Lewis-Mertens generalised minimum eigenvalue test)"
+  col.names = c(
+    "Specification", "Statistic", "LM critical value",
+    "Strong instruments?"
+  ),
+  caption = "Weak instrument test results (Lewis-Mertens generalised minimum eigenvalue test)"
 )
 ```
 

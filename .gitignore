@@ -4,3 +4,13 @@
 .Ruserdata
 *.Rproj
 inst/doc
+.DS_Store
+docs/
+figure/
+literature/
+vignettes/*.html
+*.tar.gz
+*.Rcheck/
+README_cache/
+README_files/
+man/figures/README-*

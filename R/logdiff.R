@@ -15,7 +15,8 @@
 #' @export
 logdiff <- function(TS) {
   if (!is.numeric(TS)) stop("TS must be numeric.", call. = FALSE)
-  if (any(TS <= 0, na.rm = TRUE))
+  if (any(TS <= 0, na.rm = TRUE)) {
     warning("Non-positive values in TS; log-differences will contain NaN.")
+  }
   log(TS) - dplyr::lag(log(TS), 1)
 }

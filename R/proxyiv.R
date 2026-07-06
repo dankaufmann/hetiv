@@ -111,15 +111,16 @@
 #' Ind <- rep(0L, nrow(y))
 #' Ind[seq(5, nrow(y), by = 5)] <- 1L
 #' Z <- matrix(Ind * y[, 1] + rnorm(nrow(y)), ncol = 1)
-#' res <- proxyiv(y = y, O = y, Z = Z, Ind = Ind, P = 1, H = 3,
-#'                details = TRUE)
+#' res <- proxyiv(
+#'   y = y, O = y, Z = Z, Ind = Ind, P = 1, H = 3,
+#'   details = TRUE
+#' )
 #' dim(res$irf)
 #'
 #' @export
 proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
                     cum = FALSE, Hstep = 1, cov_type = "HC0",
                     recursive = FALSE, details = FALSE) {
-
   args <- .validate_estimator_inputs(
     y = y, O = O, X = X, Ind = Ind, P = P, H = H, E = E, norm = norm,
     cum = cum, Hstep = Hstep, cov_type = cov_type
@@ -141,24 +142,26 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
 
   # Collect properties of the data
   Nobs <- dim(y)[1]
-  beg  <- P + 1
-  end  <- Nobs - H + 1
-  N    <- dim(y)[2]
-  M    <- dim(O)[2]
-  K    <- if (!is.null(X)) dim(X)[2] else 0
+  beg <- P + 1
+  end <- Nobs - H + 1
+  N <- dim(y)[2]
+  M <- dim(O)[2]
+  K <- if (!is.null(X)) dim(X)[2] else 0
 
-  if (ncol(Z) < E)
+  if (ncol(Z) < E) {
     stop("Z must have at least E columns (one instrument per shock dimension).",
-         call. = FALSE)
+      call. = FALSE
+    )
+  }
 
-  if (sum(is.na(y)) > 0)   warning("Missing values in y")
-  if (sum(is.na(O)) > 0)   warning("Missing values in O")
+  if (sum(is.na(y)) > 0) warning("Missing values in y")
+  if (sum(is.na(O)) > 0) warning("Missing values in O")
   if (sum(is.na(Ind)) > 0) warning("Missing values in Ind")
   if (!is.null(X) && sum(is.na(X)) > 0) warning("Missing values in X")
 
   # Horizons at which IRFs are estimated
   HSeries <- seq(1, H, Hstep)
-  HNum    <- length(HSeries)
+  HNum <- length(HSeries)
 
   # Build main data frame
   if (is.null(X)) {
@@ -166,12 +169,15 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
     colnames(DataM) <- c(paste0("y", 1:N), paste0("o", 1:M), "Ind", paste0("z", 1:E))
   } else {
     DataM <- data.frame(y, O, X, Ind, Z)
-    colnames(DataM) <- c(paste0("y", 1:N), paste0("o", 1:M), paste0("x", 1:K), "Ind", paste0("z", 1:E))
+    colnames(DataM) <- c(
+      paste0("y", 1:N), paste0("o", 1:M), paste0("x", 1:K),
+      "Ind", paste0("z", 1:E)
+    )
   }
 
   irfest <- array(NA, dim = c(HNum, N, E))
-  irfse  <- array(NA, dim = c(HNum, N, E))
-  IVRes  <- list()
+  irfse <- array(NA, dim = c(HNum, N, E))
+  IVRes <- list()
   OLSRes <- list()
 
   # Build information set: lags of O
@@ -218,13 +224,13 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
     }
 
     controls.info <- unique(infoVars[infoVars != ""])
-    controls.lp   <- unique(c(infoVars, recVars))
-    controls.lp   <- controls.lp[controls.lp != ""]
-    controls.iv   <- unique(c(infoVars, recInst))
-    controls.iv   <- controls.iv[controls.iv != ""]
+    controls.lp <- unique(c(infoVars, recVars))
+    controls.lp <- controls.lp[controls.lp != ""]
+    controls.iv <- unique(c(infoVars, recInst))
+    controls.iv <- controls.iv[controls.iv != ""]
 
-    DataM$Event    <- (DataM$Ind == 1)
-    DataM$NoEvent  <- (DataM$Ind == 0)
+    DataM$Event <- (DataM$Ind == 1)
+    DataM$NoEvent <- (DataM$Ind == 0)
     DataM$OthEvent <- (DataM$Ind == 2)
 
     DataMSub <- DataM[beg:end, ]
@@ -233,18 +239,18 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
     Tn <- sum(DataMSub$NoEvent)
     To <- sum(DataMSub$OthEvent)
     Tt <- Te + Tn
-    if (Te == 0 || Tn == 0)
+    if (Te == 0 || Tn == 0) {
       stop("At least one event day (Ind == 1) and one control day (Ind == 0) are required.")
+    }
 
     # Use the user-provided proxy directly as instrument (no orthogonalization;
     # 2SLS projection in ivreg handles the required partialling out)
     DataMSub$Z <- DataMSub$Ze
     DataM[beg:end, paste0("Z", e)] <- DataMSub$Z
-    DataM[beg:end, "Z"]            <- DataMSub$Z
+    DataM[beg:end, "Z"] <- DataMSub$Z
 
     # Estimate impulse responses for every outcome variable in y
     for (i in 1:N) {
-
       DataM$depVar <- DataM[, paste0("y", i)]
       cumi <- cum[i]
 
@@ -267,10 +273,12 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
         DataMSub <- DataM[beg:end, ]
 
         # Proxy-IV LP (Jordà, 2005): instrument shockVar with Z, control for information set
-        myFormula <- paste0("depVar.h ~ shockVar + ",
-                            paste(controls.lp, collapse = "+"),
-                            " | Z + ",
-                            paste(controls.iv, collapse = "+"))
+        myFormula <- paste0(
+          "depVar.h ~ shockVar + ",
+          paste(controls.lp, collapse = "+"),
+          " | Z + ",
+          paste(controls.iv, collapse = "+")
+        )
 
         # Estimate IV regression and compute local-projection standard errors
         IV.mod <- ivreg::ivreg(as.formula(myFormula), data = subset(DataMSub, Ind < 2))
@@ -279,7 +287,7 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
         } else {
           IV.vcov <- sandwich::vcovHC(IV.mod, type = "HC0")
         }
-        IV.se  <- sqrt(diag(IV.vcov))
+        IV.se <- sqrt(diag(IV.vcov))
 
         # Compute OLS residuals for covariance estimation (once per outcome variable, at e=1, h=1)
         if (details == TRUE && e == 1 && h == 1) {
@@ -316,34 +324,37 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
         }
 
         irfest[h_idx, i, e] <- IV.mod$coefficients["shockVar"] * norm
-        irfse[h_idx, i, e]  <- IV.se["shockVar"] * abs(norm)
+        irfse[h_idx, i, e] <- IV.se["shockVar"] * abs(norm)
 
         if (details == TRUE) {
           IVRes[[paste0("IV.h", h, ".n", i, ".e", e)]] <- IV.mod
         }
       }
-
     }
   }
 
   dimnames(irfest)[[1]] <- HSeries - 1
-  dimnames(irfse)[[1]]  <- HSeries - 1
+  dimnames(irfse)[[1]] <- HSeries - 1
 
   Method <- "Proxy-IV"
 
   if (details == TRUE) {
-    Sig  <- var(et, use = "complete.obs")
+    Sig <- var(et, use = "complete.obs")
     SigR <- if (sum(!is.na(vt)) > 0) var(vt, use = "complete.obs") else NA
-    Psi  <- matrix(irfest[1, , , drop = FALSE], nrow = N, ncol = E)
+    Psi <- matrix(irfest[1, , , drop = FALSE], nrow = N, ncol = E)
 
     # Data for Lewis-Mertens (2025) weak instrument test
     if (controls.info[1] != "1") {
-      WeakData <- data.frame(DataM[, paste0("y", 1:N)], DataM[, paste0("Z", 1:E)], DataM[, controls.info])
+      WeakData <- data.frame(
+        DataM[, paste0("y", 1:N)],
+        DataM[, paste0("Z", 1:E)],
+        DataM[, controls.info]
+      )
     } else {
       WeakData <- data.frame(DataM[, paste0("y", 1:N)], DataM[, paste0("Z", 1:E)])
     }
     wk_names <- c(paste0("y", seq_len(N)), paste0("Z", seq_len(E)))
-    if(controls.info[1] != "1") wk_names <- c(wk_names, controls.info)
+    if (controls.info[1] != "1") wk_names <- c(wk_names, controls.info)
     colnames(WeakData) <- wk_names
     WeakData[DataM$Ind == 2, ] <- NA
 
@@ -352,11 +363,13 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
     Tiv <- sum(complete.cases(DataMSub[DataMSub$Ind < 2, iv_vars, drop = FALSE]))
     Obs <- data.frame(Tp = Te, Tc = Tn, To = To, Tt = Tt, Tiv = Tiv)
 
-    return(list(irf = irfest, se = irfse,
-                IVRes = IVRes, OLSRes = OLSRes,
-                Obs = Obs, Method = Method,
-                et = as.matrix(et), Sig = Sig, SigR = SigR, Psi = Psi,
-                WeakData = WeakData))
+    return(list(
+      irf = irfest, se = irfse,
+      IVRes = IVRes, OLSRes = OLSRes,
+      Obs = Obs, Method = Method,
+      et = as.matrix(et), Sig = Sig, SigR = SigR, Psi = Psi,
+      WeakData = WeakData
+    ))
   } else {
     return(list(irf = irfest, se = irfse, Method = Method))
   }

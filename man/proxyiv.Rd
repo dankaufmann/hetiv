@@ -129,8 +129,10 @@ y <- matrix(rnorm(80), ncol = 2)
 Ind <- rep(0L, nrow(y))
 Ind[seq(5, nrow(y), by = 5)] <- 1L
 Z <- matrix(Ind * y[, 1] + rnorm(nrow(y)), ncol = 1)
-res <- proxyiv(y = y, O = y, Z = Z, Ind = Ind, P = 1, H = 3,
-               details = TRUE)
+res <- proxyiv(
+  y = y, O = y, Z = Z, Ind = Ind, P = 1, H = 3,
+  details = TRUE
+)
 dim(res$irf)
 
 }

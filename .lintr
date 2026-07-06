@@ -1,12 +1,7 @@
-linters: linters_with_tags(
-    c("correctness", "robustness"),
-    object_usage_linter = NULL,
-    T_and_F_symbol_linter = NULL,
-    object_overwrite_linter = NULL,
-    undesirable_function_linter = NULL
+linters: linters_with_defaults(
+    line_length_linter = line_length_linter(100),
+    object_name_linter = NULL,
+    object_usage_linter = NULL
   )
-exclusions: list(
-    "docs",
-    "vignettes/hetiv-introduction.html",
-    "vignettes/hetiv-introduction.Rmd"
-  )
+encoding: "UTF-8"
+exclusions: list("docs", "vignettes/hetiv-introduction.html")

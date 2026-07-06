@@ -58,5 +58,5 @@ computeirf <- function(Psi, Phi, H, cum) {
     }
   }
 
-  return(irf)
+  irf
 }

@@ -105,10 +105,14 @@ test_that("kfpredict validates dimensions", {
 test_that("Hstep stores selected horizons by row position", {
   dat <- make_lp_data(80)
 
-  het <- hetiv(y = dat$y, O = dat$O, Ind = dat$Ind, P = 1, H = 5,
-               Hstep = 2, details = TRUE)
-  prox <- proxyiv(y = dat$y, O = dat$O, Z = dat$Z, Ind = dat$Ind, P = 1,
-                  H = 5, Hstep = 2, details = TRUE)
+  het <- hetiv(
+    y = dat$y, O = dat$O, Ind = dat$Ind, P = 1, H = 5,
+    Hstep = 2, details = TRUE
+  )
+  prox <- proxyiv(
+    y = dat$y, O = dat$O, Z = dat$Z, Ind = dat$Ind, P = 1,
+    H = 5, Hstep = 2, details = TRUE
+  )
 
   expect_equal(dim(het$irf), c(3, 2, 1))
   expect_equal(dim(prox$irf), c(3, 2, 1))
@@ -122,8 +126,10 @@ test_that("negative normalization leaves standard errors non-negative", {
   dat <- make_lp_data(80)
 
   het <- hetiv(y = dat$y, O = dat$O, Ind = dat$Ind, P = 1, H = 2, norm = -1)
-  prox <- proxyiv(y = dat$y, O = dat$O, Z = dat$Z, Ind = dat$Ind, P = 1,
-                  H = 2, norm = -1)
+  prox <- proxyiv(
+    y = dat$y, O = dat$O, Z = dat$Z, Ind = dat$Ind, P = 1,
+    H = 2, norm = -1
+  )
 
   expect_true(all(het$se >= 0, na.rm = TRUE))
   expect_true(all(prox$se >= 0, na.rm = TRUE))
@@ -176,7 +182,8 @@ test_that("plotting functions return one ggplot per variable-shock pair", {
   p1 <- plotirf(irf, se, HTick = 1, Labels = labels)
   p2 <- plot2irf(irf, se, irf * 0.8, se, HTick = 1, Labels = labels)
   p3 <- plotpval(array(0.05, dim = dim(irf), dimnames = dimnames(irf)),
-                 HTick = 1, Labels = labels)
+    HTick = 1, Labels = labels
+  )
 
   expect_length(p1, 4)
   expect_length(p2, 4)
@@ -190,8 +197,10 @@ test_that("gweakivtest is deterministic with default seed and preserves RNG stat
   n <- 100
   Z <- cbind(rnorm(n), rnorm(n), rnorm(n))
   X <- matrix(rnorm(n), ncol = 1)
-  Y <- cbind(0.8 * Z[, 1] + 0.3 * Z[, 2] + rnorm(n),
-             0.7 * Z[, 2] + 0.2 * Z[, 3] + rnorm(n))
+  Y <- cbind(
+    0.8 * Z[, 1] + 0.3 * Z[, 2] + rnorm(n),
+    0.7 * Z[, 2] + 0.2 * Z[, 3] + rnorm(n)
+  )
   y <- 1.2 * Y[, 1] - 0.5 * Y[, 2] + X[, 1] + rnorm(n)
 
   set.seed(99)
@@ -201,8 +210,10 @@ test_that("gweakivtest is deterministic with default seed and preserves RNG stat
   out2 <- gweakivtest(y, Y, X, Z, points = 2)
 
   expect_equal(seed_after, seed_before)
-  expect_equal(out1$gmin_generalized_critical_value,
-               out2$gmin_generalized_critical_value)
+  expect_equal(
+    out1$gmin_generalized_critical_value,
+    out2$gmin_generalized_critical_value
+  )
   expect_true(is.finite(out1$gmin_generalized))
 })
 

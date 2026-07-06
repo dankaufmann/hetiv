@@ -42,15 +42,18 @@
   }
   if (!is.null(dim) && !identical(base::dim(x), as.integer(dim))) {
     stop(arg, " must have dimensions ", paste(dim, collapse = " x "), ".",
-         call. = FALSE)
+      call. = FALSE
+    )
   }
 
   x
 }
 
 .check_integerish_scalar <- function(x, arg, min = -Inf, max = Inf) {
-  if (!is.numeric(x) || length(x) != 1 || is.na(x) || !is.finite(x) ||
-      x != as.integer(x) || x < min || x > max) {
+  if (
+    !is.numeric(x) || length(x) != 1 || is.na(x) || !is.finite(x) ||
+      x != as.integer(x) || x < min || x > max
+  ) {
     range_msg <- ""
     if (is.finite(min) && is.finite(max)) {
       range_msg <- paste0(" between ", min, " and ", max)
@@ -107,7 +110,9 @@
 .check_cum <- function(cum, n) {
   if (!is.logical(cum) || anyNA(cum) || !(length(cum) %in% c(1, n))) {
     stop("cum must be a non-missing logical scalar or a logical vector of length ",
-         n, ".", call. = FALSE)
+      n, ".",
+      call. = FALSE
+    )
   }
   if (length(cum) == 1) {
     cum <- rep(cum, n)
@@ -141,7 +146,8 @@
   }
   if (sum(Ind == 1, na.rm = TRUE) == 0 || sum(Ind == 0, na.rm = TRUE) == 0) {
     stop("Ind must contain at least one event day (1) and one control day (0).",
-         call. = FALSE)
+      call. = FALSE
+    )
   }
 
   list(
@@ -154,7 +160,8 @@
   labels <- dimnames(x)[[1]]
   if (is.null(labels) || anyNA(suppressWarnings(as.numeric(labels)))) {
     stop(arg, " must have numeric horizon labels in dimnames()[[1]].",
-         call. = FALSE)
+      call. = FALSE
+    )
   }
 
   as.numeric(labels)
@@ -163,7 +170,8 @@
 .validate_irf_array <- function(x, arg) {
   if (!is.array(x) || !(length(dim(x)) %in% c(2, 3))) {
     stop(arg, " must be a numeric matrix or three-dimensional array.",
-         call. = FALSE)
+      call. = FALSE
+    )
   }
   if (!is.numeric(x)) {
     stop(arg, " must be numeric.", call. = FALSE)

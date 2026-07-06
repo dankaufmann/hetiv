@@ -41,8 +41,7 @@
 #' kfpredict(Sig = Sig, SigR = SigR, Psi = Psi, et = et)
 #'
 #' @export
-kfpredict <- function(Sig, SigR, Psi, et, tol = sqrt(.Machine$double.eps), scale = TRUE){
-
+kfpredict <- function(Sig, SigR, Psi, et, tol = sqrt(.Machine$double.eps), scale = TRUE) {
   Sig <- .as_numeric_matrix(Sig, "Sig", square = TRUE, allow_na = FALSE)
   scale <- .check_logical_scalar(scale, "scale")
   tol <- .check_numeric_scalar(tol, "tol", min = 0)
@@ -52,25 +51,28 @@ kfpredict <- function(Sig, SigR, Psi, et, tol = sqrt(.Machine$double.eps), scale
 
   E <- ncol(Psi)
 
-  if(scale == TRUE){
+  if (scale == TRUE) {
     SigR <- .as_numeric_matrix(SigR, "SigR", square = TRUE, allow_na = FALSE)
-    if (!identical(dim(Sig), dim(SigR)))
+    if (!identical(dim(Sig), dim(SigR))) {
       stop("Sig and SigR must have the same dimensions.", call. = FALSE)
+    }
     # Back out implied shock variances from the difference in covariance matrices
     # between event and control days (Sig - SigR = Psi * SigEps * Psi')
     # Unit impact normalization on Psi means we need to recover the scale of
     # the shocks to renormalize them to unit variance
-    q      <- as.vector(Sig - SigR)
-    A      <- sapply(seq_len(ncol(Psi)), function(i) c(Psi[, i] %*% t(Psi[, i])))
-    sig    <- c(MASS::ginv(A) %*% q)
+    q <- as.vector(Sig - SigR)
+    A <- sapply(seq_len(ncol(Psi)), function(i) c(Psi[, i] %*% t(Psi[, i])))
+    sig <- c(MASS::ginv(A) %*% q)
 
-    if(any(sig < 0))
-      warning("Some estimated shock variances are negative (weak heteroskedasticity); ",
-              "using absolute values for scaling.")
+    if (any(sig < 0)) {
+      warning(
+        "Some estimated shock variances are negative (weak heteroskedasticity); ",
+        "using absolute values for scaling."
+      )
+    }
 
     myScale <- diag(sqrt(abs(sig)), nrow = E, ncol = E)
-
-  }else{
+  } else {
     myScale <- diag(E)
   }
 

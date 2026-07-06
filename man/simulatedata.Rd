@@ -25,7 +25,8 @@ initialise the VAR but are discarded before returning.}
 
 \item{R}{Number of regular shocks.}
 
-\item{E}{Number of event shocks. For GARCH shock distributions (\code{eDist = c(alpha, beta)}), only \code{E = 1} is supported.}
+\item{E}{Number of event shocks. For GARCH shock distributions
+(\code{eDist = c(alpha, beta)}), only \code{E = 1} is supported.}
 
 \item{Nevn}{Event frequency: an event shock occurs every \code{Nevn} periods.
 Set to \code{0} to suppress event shocks entirely (no heteroskedasticity).}

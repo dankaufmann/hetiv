@@ -26,5 +26,5 @@ filllinear <- function(DF, gap) {
   for (Stats in colnames(DF)) {
     DF[, Stats] <- zoo::na.approx(DF[, Stats], na.rm = FALSE, maxgap = gap)
   }
-  return(DF)
+  DF
 }

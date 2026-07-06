@@ -16,6 +16,7 @@ hetiv(
   interact = FALSE,
   cum = FALSE,
   Hstep = 1,
+  cov_type = "HC0",
   details = FALSE
 )
 }
@@ -59,9 +60,12 @@ to report the cumulative impulse response instead of the level response.
 If only one provided, applied to all impulse responses.}
 
 \item{Hstep}{Integer. Step size between horizons. The default \code{1} estimates
-all horizons 0 through H - 1. Values greater than 1 are intended only for
-fast testing; they are only safe when \code{Hstep >= H} (a single horizon is
-stored). For complete IRF estimation always use \code{Hstep = 1}.}
+all horizons 0 through H - 1. Values greater than 1 estimate only the
+selected horizons.}
+
+\item{cov_type}{Covariance estimator for local-projection standard errors:
+\code{"HC0"} (default) for heteroskedasticity-robust standard errors or \code{"NW"}
+for Newey-West HAC standard errors.}
 
 \item{details}{Logical. If \code{TRUE}, code saves detailed IV results, which is slightly slower.
 if set to \code{FALSE}, returns only impulse response and standard error (e.g. for bootstrap)}
@@ -70,8 +74,7 @@ if set to \code{FALSE}, returns only impulse response and standard error (e.g. f
 A named list with the following elements:
 \describe{
 \item{\code{irf}}{Array (H x N x E) of estimated impulse responses.}
-\item{\code{se}}{Array (H x N x E) of HC0 heteroscedasticity-robust standard
-errors.}
+\item{\code{se}}{Array (H x N x E) of local-projection standard errors.}
 \item{\code{IVRes}}{List of \code{ivreg} model objects, one per horizon, variable,
 and shock dimension.}
 \item{\code{Obs}}{Data frame with observation counts: \code{Tp} (policy days),
@@ -98,6 +101,11 @@ Lewis, 2022; Burri and Kaufmann, 2026a, 2026b) combined with local projections
 (Jordà, 2005). Identification exploits the difference in variance between
 policy event days and control days to construct instruments for the
 endogenous variables.
+}
+\details{
+For \code{E > 1}, identification is recursive and order-dependent: the
+column order of \code{y} defines both the shock ordering and the normalization
+variable for each shock dimension.
 }
 \references{
 Burri, M. and D. Kaufmann (2026a). Measuring monetary policy shocks.

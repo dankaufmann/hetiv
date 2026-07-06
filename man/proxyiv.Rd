@@ -16,6 +16,7 @@ proxyiv(
   norm = 1,
   cum = FALSE,
   Hstep = 1,
+  cov_type = "HC0",
   recursive = FALSE,
   details = FALSE
 )
@@ -31,10 +32,10 @@ identical to \code{y}. Included as lags 1 through \code{P}.}
 
 \item{Z}{Numeric matrix of external instruments (T x E). Column \code{e} is used
 as the proxy for shock dimension \code{e}. Missing values on control days
-(\code{Ind == 0}) are treated as contaminated and excluded from estimation;
-missing values on policy days (\code{Ind == 1}) are retained so that those
-observations remain available for shock prediction even when the instrument
-is unobserved.}
+(\code{Ind == 0}) are treated as contaminated and excluded from estimation.
+Missing values on policy days (\code{Ind == 1}) remain labelled as events for
+residual-based shock prediction, but are necessarily dropped from IV
+regressions that use the missing proxy.}
 
 \item{X}{Numeric matrix of deterministic variables (T x K), or \code{NULL}
 (default). May include a constant, time trend, or seasonal dummies.
@@ -63,9 +64,12 @@ the cumulative IRF is reported. A single value is recycled to all
 variables. Default \code{FALSE}.}
 
 \item{Hstep}{Integer. Step size between horizons. The default \code{1} estimates
-all horizons 0 through H - 1. Values greater than 1 are intended only for
-fast testing; they are only safe when \code{Hstep >= H} (a single horizon is
-stored). For complete IRF estimation always use \code{Hstep = 1}. Default \code{1}.}
+all horizons 0 through H - 1. Values greater than 1 estimate only the
+selected horizons. Default \code{1}.}
+
+\item{cov_type}{Covariance estimator for local-projection standard errors:
+\code{"HC0"} (default) for heteroskedasticity-robust standard errors or \code{"NW"}
+for Newey-West HAC standard errors.}
 
 \item{recursive}{Logical. If \code{TRUE}, imposes recursive zero restrictions
 across shock dimensions: for shock \code{e > 1}, the variables and instruments
@@ -80,8 +84,7 @@ bootstrap).}
 A named list. Always contains:
 \describe{
 \item{\code{irf}}{Array (H x N x E) of estimated impulse responses.}
-\item{\code{se}}{Array (H x N x E) of HC0 heteroscedasticity-robust standard
-errors.}
+\item{\code{se}}{Array (H x N x E) of local-projection standard errors.}
 \item{\code{Method}}{Character string \code{"Proxy-IV"}.}
 }
 With \code{details = TRUE}, additionally contains:
@@ -91,7 +94,9 @@ and shock dimension.}
 \item{\code{OLSRes}}{List of OLS model objects used for residual-based
 covariance estimation, one per outcome variable.}
 \item{\code{Obs}}{Data frame with observation counts: \code{Tp} (policy days),
-\code{Tc} (control days), \code{To} (contaminated days), \code{Tt} (total used).}
+\code{Tc} (control days), \code{To} (contaminated days), \code{Tt} (labelled event or
+control days), and \code{Tiv} (complete observations available to the IV
+regression at the impact horizon).}
 \item{\code{et}}{Data frame of OLS residuals on event days.}
 \item{\code{Sig}}{Covariance matrix of residuals on event days.}
 \item{\code{SigR}}{Covariance matrix of residuals on control days, or \code{NA}
@@ -111,7 +116,12 @@ proxy variables serve directly as instruments for the endogenous shock
 variables. Optionally imposes recursive zero restrictions across shock
 dimensions and supports deterministic controls following the same
 conventions as \code{\link[=hetiv]{hetiv()}}.
-d only).
+}
+\details{
+For \code{E > 1}, identification can be order-dependent: the column order
+of \code{y} defines the endogenous shock variables and normalizations, the
+column order of \code{Z} assigns proxies to shock dimensions, and
+\code{recursive = TRUE} imposes restrictions in that order.
 }
 \references{
 Jordà, Ò. (2005). Estimation and inference of impulse responses by local

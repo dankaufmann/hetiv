@@ -28,6 +28,8 @@ computeirf <- function(Psi, Phi, H, cum) {
   P <- dim(Phi)[3]
   R <- dim(Psi)[2]
 
+  if (!is.logical(cum) || anyNA(cum) || !(length(cum) %in% c(1, N)))
+    stop("cum must be a non-missing logical scalar or a logical vector of length nrow(Psi).")
   if (length(cum) == 1) {
     cum <- rep(cum, N)
   }

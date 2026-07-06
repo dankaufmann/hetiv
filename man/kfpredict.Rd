@@ -27,7 +27,9 @@ periods, columns to variables.}
 
 \item{scale}{Logical. If \code{TRUE} (default), shocks are rescaled to unit
 variance using the implied shock variances recovered from \code{Sig} and
-\code{SigR}. If \code{FALSE}, the raw Kalman filter projection is returned.}
+\code{SigR}. This scaling assumes that structural shock variances are diagonal,
+so that \verb{Sig - SigR = sum_i sigma_i Psi_i Psi_i'}. If \code{FALSE}, the raw
+Kalman filter projection is returned.}
 }
 \value{
 A numeric matrix (T x E) of extracted structural shocks, with the

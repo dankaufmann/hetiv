@@ -151,7 +151,8 @@ gweakivtest_critical_values <- function(W, K,
                                       tau     = 0.10,
                                       points  = 1000L,
                                       target  = "beta",
-                                      crit    = "abs") {
+                                      crit    = "abs",
+                                      seed    = 12345L) {
 
   N <- as.integer(round(nrow(W) / K - 1))
 
@@ -211,6 +212,18 @@ gweakivtest_critical_values <- function(W, K,
   }
 
   if (K > N + 1L) {
+    if (!is.na(seed)) {
+      had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
+      if (had_seed) old_seed <- get(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
+      on.exit({
+        if (had_seed) {
+          assign(".Random.seed", old_seed, envir = .GlobalEnv)
+        } else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
+          rm(".Random.seed", envir = .GlobalEnv)
+        }
+      }, add = TRUE)
+      set.seed(seed)
+    }
     opts_s   <- list(mxitr = 1000L, xtol = 1e-5, gtol = 1e-5, ftol = 1e-7)
     obj_fun  <- function(x) .objL0(x, M1, M2PsiM2, X1, N, K)
     Bmax_vec <- numeric(points)
@@ -370,6 +383,10 @@ gweakivtest_critical_values <- function(W, K,
 #' @param crit Bias criterion: `"abs"` (absolute bias, default) or `"rel"`
 #'   (relative bias). `"abs"` requires the error covariance matrix; `"rel"`
 #'   does not.
+#' @param seed Integer seed used for the random Stiefel starting points when
+#'   computing the sharp critical value. The default is fixed for reproducible
+#'   critical values and the caller's RNG state is restored afterwards. Use
+#'   `NA` to leave the RNG unmanaged.
 #'
 #' @return A named list with the following elements:
 #'   \describe{
@@ -410,7 +427,22 @@ gweakivtest <- function(y, Y, X, Z,
                       tau      = 0.10,
                       points   = 1000L,
                       target   = "beta",
-                      crit     = "abs") {
+                      crit     = "abs",
+                      seed     = 12345L) {
+  cov_type <- match.arg(cov_type, c("EHW", "NW"))
+  crit <- match.arg(crit, c("abs", "rel"))
+  if (!is.numeric(alfa) || length(alfa) != 1 || alfa <= 0 || alfa >= 1)
+    stop("alfa must be a numeric scalar between 0 and 1.")
+  if (!is.numeric(tau) || length(tau) != 1 || tau <= 0)
+    stop("tau must be a positive numeric scalar.")
+  if (length(points) != 1 || is.na(points) || points < 1)
+    stop("points must be a positive integer.")
+  points <- as.integer(points)
+  if (!is.numeric(seed) || length(seed) != 1)
+    stop("seed must be a numeric scalar or NA.")
+  if (!is.na(seed)) seed <- as.integer(seed)
+  if (!(identical(target, "beta") || (is.numeric(target) && length(target) == 1 && target >= 1)))
+    stop("target must be 'beta' or a positive integer.")
 
   # Force column orientation
   y <- as.matrix(y);  if (ncol(y) > nrow(y)) y <- t(y)
@@ -439,6 +471,12 @@ gweakivtest <- function(y, Y, X, Z,
   Nx <- ncol(X)
   N  <- ncol(Y)
   K  <- ncol(Z)
+  if (K < N)
+    stop("Not identified: require at least as many instruments as endogenous regressors.")
+  if (is.numeric(target) && target > N)
+    stop("target cannot exceed the number of endogenous regressors.")
+  if (Tobs <= K + Nx)
+    stop("Not enough complete observations for the requested model.")
 
   # Partial out exogenous regressors
   Zo  <- Z - X %*% qr.solve(X, Z)
@@ -506,7 +544,8 @@ gweakivtest <- function(y, Y, X, Z,
     tau    = tau,
     points = points,
     target = target,
-    crit   = crit
+    crit   = crit,
+    seed   = seed
   )
 
   # Stock-Yogo statistic (Nagar approximation)

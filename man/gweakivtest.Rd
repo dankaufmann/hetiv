@@ -14,7 +14,8 @@ gweakivtest(
   tau = 0.1,
   points = 1000L,
   target = "beta",
-  crit = "abs"
+  crit = "abs",
+  seed = 12345L
 )
 }
 \arguments{
@@ -46,6 +47,11 @@ or a positive integer \code{j <= N} to target the single coefficient
 \item{crit}{Bias criterion: \code{"abs"} (absolute bias, default) or \code{"rel"}
 (relative bias). \code{"abs"} requires the error covariance matrix; \code{"rel"}
 does not.}
+
+\item{seed}{Integer seed used for the random Stiefel starting points when
+computing the sharp critical value. The default is fixed for reproducible
+critical values and the caller's RNG state is restored afterwards. Use
+\code{NA} to leave the RNG unmanaged.}
 }
 \value{
 A named list with the following elements:

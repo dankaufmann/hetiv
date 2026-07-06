@@ -43,6 +43,14 @@ simulatedata <- function(Phi, SigE, PsiE, PsiR, Nobs, Nbin, N, R, E, Nevn, P, eD
   # Function to simulate VAR(P) data with heteroskedastic shocks
   # Note that this only works for E = 1. For E > 1, GARCH shocks are not independent
   # and SigE is the scale of the shocks for all shocks
+  if (P < 0)
+    stop("P must be a non-negative integer.")
+  if (dim(Phi)[1] != N || dim(Phi)[2] != N || dim(Phi)[3] != P)
+    stop("Phi must have dimensions N x N x P.")
+  if (dim(PsiE)[1] != N || dim(PsiE)[2] != E)
+    stop("PsiE must have dimensions N x E.")
+  if (dim(PsiR)[1] != N || dim(PsiR)[2] != R)
+    stop("PsiR must have dimensions N x R.")
   
   # Initialize random number generator to get always the same simulations
   if(!is.na(seed)){
@@ -56,6 +64,8 @@ simulatedata <- function(Phi, SigE, PsiE, PsiR, Nobs, Nbin, N, R, E, Nevn, P, eD
       eE <- matrix(rnorm((Nobs+Nbin)*E, mean=0, sd=sqrt(SigE)), (Nobs+Nbin), E)
     }
     if(eDist > 0){
+      if(eDist <= 2)
+        stop("Student-t shocks require eDist > 2 so the variance is finite.")
 
       # Scale required to get a variance of SigE and 1 for the two shocks
       scaleE <- sqrt(SigE * (eDist - 2) / eDist)
@@ -71,6 +81,8 @@ simulatedata <- function(Phi, SigE, PsiE, PsiR, Nobs, Nbin, N, R, E, Nevn, P, eD
     omega <- 0.1          # constant term
     alpha <- eDist[1]     # ARCH effect (impact of past shocks)
     beta  <- eDist[2]     # GARCH effect (persistence of volatility)
+    if (alpha < 0 || beta < 0 || alpha + beta >= 1)
+      stop("GARCH parameters must satisfy alpha >= 0, beta >= 0, and alpha + beta < 1.")
 
     # Initialize
     hE  <- numeric((Nobs+Nbin)*E)      # conditional variance
@@ -111,8 +123,10 @@ simulatedata <- function(Phi, SigE, PsiE, PsiR, Nobs, Nbin, N, R, E, Nevn, P, eD
   for (t in (P+1):(Nobs+Nbin)){
 
     # Accumulate lags (VAR prediction)
-    for (p in 1:P){
-      y[t, ]  <- y[t, ] + Phi[, , p] %*% y[t-p, ]
+    if (P > 0) {
+      for (p in 1:P){
+        y[t, ]  <- y[t, ] + Phi[, , p] %*% y[t-p, ]
+      }
     }
 
     # Add shocks for periods with an event (if set to 0, then no heteroskedasticity)
@@ -135,8 +149,9 @@ simulatedata <- function(Phi, SigE, PsiE, PsiR, Nobs, Nbin, N, R, E, Nevn, P, eD
 
   # Discard burn-in rows and return post-burn-in observations only
   keep <- (Nbin + 1):(Nobs + Nbin)
-  return(list(y = y[keep, ], IndE = IndE[keep, , drop = FALSE],
-              eR = eR[keep, ], eE = eE[keep, ], e = e[keep, ],
+  return(list(y = y[keep, , drop = FALSE], IndE = IndE[keep, , drop = FALSE],
+              eR = eR[keep, , drop = FALSE], eE = eE[keep, , drop = FALSE],
+              e = e[keep, , drop = FALSE],
               Phi = Phi, PsiE = PsiE, PsiR = PsiR, SigE = SigE))
 
 }

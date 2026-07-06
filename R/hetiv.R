@@ -7,6 +7,10 @@
 #' policy event days and control days to construct instruments for the 
 #' endogenous variables.
 #'
+#' @details For `E > 1`, identification is recursive and order-dependent: the
+#'   column order of `y` defines both the shock ordering and the normalization
+#'   variable for each shock dimension.
+#'
 #' @param y Numeric matrix of stationary outcome variables (T x N). The effect on 
 #'   the first variable in each dimension is normalized to unity at horizon 0. 
 #'   These variables are also used to construct heteroskedasticity-based instruments 
@@ -36,17 +40,18 @@
 #'   to report the cumulative impulse response instead of the level response.
 #'   If only one provided, applied to all impulse responses.
 #' @param Hstep Integer. Step size between horizons. The default `1` estimates
-#'   all horizons 0 through H - 1. Values greater than 1 are intended only for
-#'   fast testing; they are only safe when `Hstep >= H` (a single horizon is
-#'   stored). For complete IRF estimation always use `Hstep = 1`.
+#'   all horizons 0 through H - 1. Values greater than 1 estimate only the
+#'   selected horizons.
+#' @param cov_type Covariance estimator for local-projection standard errors:
+#'   `"HC0"` (default) for heteroskedasticity-robust standard errors or `"NW"`
+#'   for Newey-West HAC standard errors.
 #' @param details Logical. If `TRUE`, code saves detailed IV results, which is slightly slower.
 #'   if set to `FALSE`, returns only impulse response and standard error (e.g. for bootstrap)
 #'
 #' @return A named list with the following elements:
 #'   \describe{
 #'     \item{`irf`}{Array (H x N x E) of estimated impulse responses.}
-#'     \item{`se`}{Array (H x N x E) of HC0 heteroscedasticity-robust standard
-#'       errors.}
+#'     \item{`se`}{Array (H x N x E) of local-projection standard errors.}
 #'     \item{`IVRes`}{List of `ivreg` model objects, one per horizon, variable,
 #'       and shock dimension.}
 #'     \item{`Obs`}{Data frame with observation counts: `Tp` (policy days),
@@ -92,10 +97,11 @@
 #'
 #' @importFrom dplyr lag lead
 #' @importFrom ivreg ivreg
-#' @importFrom sandwich vcovHC
+#' @importFrom sandwich NeweyWest vcovHC
 #'
 #' @export
-hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, cum = FALSE, Hstep = 1, details = FALSE){
+hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
+                  cum = FALSE, Hstep = 1, cov_type = "HC0", details = FALSE){
 
   # Collect various properties of the data and observations to be used
   Nobs <- dim(y)[1]     # Number of observations in y
@@ -119,6 +125,13 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
     stop("H must be a positive integer.")
   if (Nobs <= P + H)
     stop("Not enough observations: nrow(y) must exceed P + H.")
+  if (!all(Ind %in% c(0, 1, 2, NA)))
+    stop("Ind must contain only 0, 1, 2, or NA.")
+  if (!is.numeric(norm) || length(norm) != 1 || is.na(norm))
+    stop("norm must be a non-missing numeric scalar.")
+  if (length(Hstep) != 1 || is.na(Hstep) || Hstep < 1)
+    stop("Hstep must be a positive integer.")
+  cov_type <- match.arg(cov_type, c("HC0", "NW"))
 
   if(sum(is.na(y))>0){
     warning("Missing values in y")
@@ -132,6 +145,8 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
   if (!is.null(X) && sum(is.na(X)) > 0) warning("Missing values in X")
 
   # Modify cumulation indicator if only one provided
+  if (!is.logical(cum) || anyNA(cum) || !(length(cum) %in% c(1, N)))
+    stop("cum must be a non-missing logical scalar or a logical vector of length ncol(y).")
   if(length(cum) == 1){
     cum <- rep(cum, N)
   }
@@ -201,6 +216,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
 
   # Compute heteroskedasticity-based instrument separately for every dimension
   for(e in 1:E){
+    DataM$Ind <- Ind
 
     # Set up the shock variable (instrumented variable), which is the e th variable in y
     DataM$shockVar <- DataM[, paste0("y", e)]
@@ -251,6 +267,8 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
     Tn <- sum(DataMSub$NoEvent)
     To <- sum(DataMSub$OthEvent)
     Tt <- Te+Tn
+    if (Te == 0 || Tn == 0)
+      stop("At least one event day (Ind == 1) and one control day (Ind == 0) are required.")
     DataMSub$Z <- (DataMSub$Event*Tt/Te - DataMSub$NoEvent*Tt/Tn)*DataMSub$Ze
 
     # Save instrument in original data for later use
@@ -264,7 +282,8 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
       DataM$depVar  <- DataM[, paste0("y", i)]
       cumi          <- cum[i]
 
-      for(h in HSeries){
+      for(h_idx in seq_along(HSeries)){
+        h <- HSeries[h_idx]
 
         # Compute dependent variable at horizon h (level or cumulative response)
         if(cumi == TRUE){
@@ -288,9 +307,14 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
                             paste0("| Z + ",
                                    paste(controls.iv, collapse = "+")))
 
-        # Estimate IV regression and compute HC0 standard errors
+        # Estimate IV regression and compute local-projection standard errors
         IV.mod  <- ivreg::ivreg(as.formula(myFormula), data = subset(DataMSub, Ind < 2))
-        IV.se   <- sqrt(diag(sandwich::vcovHC(IV.mod, type = "HC0")))
+        if (cov_type == "NW") {
+          IV.vcov <- sandwich::NeweyWest(IV.mod, prewhite = FALSE, adjust = TRUE)
+        } else {
+          IV.vcov <- sandwich::vcovHC(IV.mod, type = "HC0")
+        }
+        IV.se   <- sqrt(diag(IV.vcov))
 
         
         if(details == TRUE){
@@ -330,8 +354,8 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
         }
 
         # Normalizes IRFs to a specific value. Because initial response
-        irfest[h, i, e] <- IV.mod$coefficients["shockVar"]*norm
-        irfse[h, i, e]  <- IV.se["shockVar"]*norm
+        irfest[h_idx, i, e] <- IV.mod$coefficients["shockVar"]*norm
+        irfse[h_idx, i, e]  <- IV.se["shockVar"]*abs(norm)
 
         # Save IV results for every variable and every horizon
         if(details == TRUE){
@@ -364,7 +388,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE, 
     }else{
       SigR <- NA
     }
-    Psi  <- irfest[1,,]
+    Psi  <- matrix(irfest[1, , , drop = FALSE], nrow = N, ncol = E)
   
     # Save data for weak instruments test by Lewis-Mertens (2025)
     if(controls.info[1] != "1"){

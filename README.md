@@ -6,7 +6,7 @@ An R package for measuring and identifying structural shocks using heteroskedast
 
 **Authors**: Daniel Kaufmann, Marc Burri, Valentin Grob
 
-**Note**: This is work in progress. Install and use at own risk. Comments are welcome.
+Comments, bug reports, and feature requests are welcome through the GitHub issue tracker.
 
 ## Documentation
 

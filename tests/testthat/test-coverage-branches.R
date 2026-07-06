@@ -214,6 +214,8 @@ test_that("gweakivtest covers HAC, relative criterion, targeted beta, and helper
 
   spd <- nearest_spd(matrix(c(1, 2, 2, 1), 2, 2))
   expect_true(all(eigen(spd, symmetric = TRUE, only.values = TRUE)$values > 0))
+  zero_spd <- nearest_spd(matrix(0, 2, 2))
+  expect_true(all(eigen(zero_spd, symmetric = TRUE, only.values = TRUE)$values > 0))
 
   q <- my_qr(matrix(c(1, 2, 3, 4, 5, 7), nrow = 3), 2)
   expect_equal(crossprod(q), diag(2), tolerance = 1e-10)

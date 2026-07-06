@@ -39,8 +39,19 @@
     R_try <- tryCatch(chol(Ahat), error = function(e) NULL)
     if (!is.null(R_try)) break
     k_iter <- k_iter + 1L
+    if (k_iter > 100L) {
+      stop("Nearest positive definite matrix computation did not converge.",
+        call. = FALSE
+      )
+    }
     mineig <- min(eigen(Ahat, symmetric = TRUE, only.values = TRUE)$values)
-    Ahat <- Ahat + (-mineig * k_iter^2 + .Machine$double.eps * abs(mineig)) * diag(nrow(A))
+    if (!is.finite(mineig)) {
+      stop("Nearest positive definite matrix computation produced non-finite eigenvalues.",
+        call. = FALSE
+      )
+    }
+    jitter <- .Machine$double.eps * max(abs(mineig), 1)
+    Ahat <- Ahat + (-mineig * k_iter^2 + jitter) * diag(nrow(A))
   }
   Ahat
 }

@@ -1,9 +1,9 @@
 ## Test environments
 
 * Local macOS 26.5.1, R 4.4.0, Pandoc 3.4 from Quarto
-* GitHub Actions macOS, R release: pending
-* GitHub Actions Windows, R release: pending
-* GitHub Actions Ubuntu, R release: pending
+* GitHub Actions macOS, R release: pending branch/PR run
+* GitHub Actions Windows, R release: pending branch/PR run
+* GitHub Actions Ubuntu, R release: pending branch/PR run
 
 ## R CMD check results
 

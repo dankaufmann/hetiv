@@ -111,7 +111,7 @@ the Lewis-Mertens (2025) weak instrument test.}
 }
 \description{
 Estimates impulse response functions (IRFs) using user-provided external
-instruments (proxies) combined with local projections (Jordà, 2005). The
+instruments (proxies) combined with local projections (Jorda, 2005). The
 proxy variables serve directly as instruments for the endogenous shock
 variables. Optionally imposes recursive zero restrictions across shock
 dimensions and supports deterministic controls following the same
@@ -137,8 +137,8 @@ dim(res$irf)
 
 }
 \references{
-Jordà, Ò. (2005). Estimation and inference of impulse responses by local
-projections. \emph{American Economic Review}, 95(1), 161–182.
+Jorda, O. (2005). Estimation and inference of impulse responses by local
+projections. \emph{American Economic Review}, 95(1), 161-182.
 
 Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments for
 2SLS with multiple endogenous regressors. \emph{The Review of Economic Studies},
@@ -146,9 +146,9 @@ DOI: 10.1093/restud/rdaf103
 
 Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and
 corporate income tax changes in the United States. \emph{American Economic
-Review}, 103(4), 1212–1247.
+Review}, 103(4), 1212-1247.
 
 Stock, J. H. and Watson, M. W. (2018). Identification and estimation of
 dynamic causal effects in macroeconomics using external instruments.
-\emph{Economic Journal}, 128(610), 917–948.
+\emph{Economic Journal}, 128(610), 917-948.
 }

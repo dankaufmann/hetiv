@@ -92,7 +92,7 @@ gweakivtest(y = y, Y = Y, X = X, Z = Z, points = 1)
 \references{
 Lazarus, E., Lewis, D. J., Stock, J. H. and Watson, M. W. (2018).
 HAR inference: recommendations for practice. \emph{Journal of Business &
-Economic Statistics}, 36(4), 541–559.
+Economic Statistics}, 36(4), 541-559.
 
 Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments for
 2SLS with multiple endogenous regressors. \emph{The Review of Economic Studies},
@@ -101,5 +101,5 @@ DOI: 10.1093/restud/rdaf103.
 Stock, J. H. and Yogo, M. (2005). Testing for weak instruments in linear IV
 regression. In D. W. K. Andrews and J. H. Stock (Eds.), \emph{Identification and
 inference for econometric models: essays in honor of Thomas Rothenberg},
-pp. 80–108. Cambridge University Press.
+pp. 80-108. Cambridge University Press.
 }

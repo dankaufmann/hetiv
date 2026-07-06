@@ -29,7 +29,7 @@
 #'
 #' @references
 #' Burri, M. and Kaufmann, D. (2026). Measuring monetary policy shocks.
-#' IRENE Working Paper 24-03, IRENE Institute of Economic Research, University of Neuchâtel.
+#' IRENE Working Paper 24-03, IRENE Institute of Economic Research, University of Neuchatel.
 #'
 #' @importFrom MASS ginv
 #'

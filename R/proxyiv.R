@@ -1,7 +1,7 @@
 #' Estimate impulse responses via proxy-IV local projections
 #'
 #' Estimates impulse response functions (IRFs) using user-provided external
-#' instruments (proxies) combined with local projections (Jordà, 2005). The
+#' instruments (proxies) combined with local projections (Jorda, 2005). The
 #' proxy variables serve directly as instruments for the endogenous shock
 #' variables. Optionally imposes recursive zero restrictions across shock
 #' dimensions and supports deterministic controls following the same
@@ -86,8 +86,8 @@
 #'   }
 #'
 #' @references
-#' Jordà, Ò. (2005). Estimation and inference of impulse responses by local
-#' projections. *American Economic Review*, 95(1), 161–182.
+#' Jorda, O. (2005). Estimation and inference of impulse responses by local
+#' projections. *American Economic Review*, 95(1), 161-182.
 #'
 #' Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments for
 #' 2SLS with multiple endogenous regressors. *The Review of Economic Studies*,
@@ -95,11 +95,11 @@
 #'
 #' Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and
 #' corporate income tax changes in the United States. *American Economic
-#' Review*, 103(4), 1212–1247.
+#' Review*, 103(4), 1212-1247.
 #'
 #' Stock, J. H. and Watson, M. W. (2018). Identification and estimation of
 #' dynamic causal effects in macroeconomics using external instruments.
-#' *Economic Journal*, 128(610), 917–948.
+#' *Economic Journal*, 128(610), 917-948.
 #'
 #' @importFrom dplyr lag lead
 #' @importFrom ivreg ivreg
@@ -272,7 +272,7 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
 
         DataMSub <- DataM[beg:end, ]
 
-        # Proxy-IV LP (Jordà, 2005): instrument shockVar with Z, control for information set
+        # Proxy-IV LP (Jorda, 2005): instrument shockVar with Z, control for information set
         myFormula <- paste0(
           "depVar.h ~ shockVar + ",
           paste(controls.lp, collapse = "+"),

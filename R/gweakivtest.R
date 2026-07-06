@@ -173,7 +173,7 @@
 
 # Critical values (internal) ---------------------------------------------
 
-# Critical values for gweakivtest(); not exported — called internally.
+# Critical values for gweakivtest(); not exported - called internally.
 # Reference: Lewis & Mertens (2025).
 gweakivtest_critical_values <- function(W, K,
                                         Sig = NULL,
@@ -442,7 +442,7 @@ gweakivtest_critical_values <- function(W, K,
 #' @references
 #' Lazarus, E., Lewis, D. J., Stock, J. H. and Watson, M. W. (2018).
 #' HAR inference: recommendations for practice. *Journal of Business &
-#' Economic Statistics*, 36(4), 541–559.
+#' Economic Statistics*, 36(4), 541-559.
 #'
 #' Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments for
 #' 2SLS with multiple endogenous regressors. *The Review of Economic Studies*,
@@ -451,7 +451,7 @@ gweakivtest_critical_values <- function(W, K,
 #' Stock, J. H. and Yogo, M. (2005). Testing for weak instruments in linear IV
 #' regression. In D. W. K. Andrews and J. H. Stock (Eds.), *Identification and
 #' inference for econometric models: essays in honor of Thomas Rothenberg*,
-#' pp. 80–108. Cambridge University Press.
+#' pp. 80-108. Cambridge University Press.
 #'
 #' @examples
 #' set.seed(1)

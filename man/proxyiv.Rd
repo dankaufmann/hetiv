@@ -69,7 +69,11 @@ selected horizons. Default \code{1}.}
 
 \item{cov_type}{Covariance estimator for local-projection standard errors:
 \code{"HC0"} (default) for heteroskedasticity-robust standard errors or \code{"NW"}
-for Newey-West HAC standard errors.}
+for Newey-West HAC standard errors. \code{"HC0"} is the default because
+Montiel Olea et al. (2025) show that heteroskedasticity-robust standard
+errors suffice for local-projection impulse responses under weak
+conditions, even though multi-step forecast errors are typically serially
+correlated. \code{"NW"} remains available as an optional HAC robustness check.}
 
 \item{recursive}{Logical. If \code{TRUE}, imposes recursive zero restrictions
 across shock dimensions: for shock \code{e > 1}, the variables and instruments
@@ -147,6 +151,10 @@ DOI: 10.1093/restud/rdaf103
 Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and
 corporate income tax changes in the United States. \emph{American Economic
 Review}, 103(4), 1212-1247.
+
+Montiel Olea, J. L., M. Plagborg-Moller, E. Qian, and C. K. Wolf (2025).
+Local projections or VARs? A primer for macroeconomists. \emph{NBER Working
+Paper} No. 33871.
 
 Stock, J. H. and Watson, M. W. (2018). Identification and estimation of
 dynamic causal effects in macroeconomics using external instruments.

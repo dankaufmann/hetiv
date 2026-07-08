@@ -32,7 +32,12 @@ knitr::opts_chunk$set(
 
 Both approaches are implemented as local projection IV estimators following
 Jordà (2005), which directly produce impulse response functions (IRFs) across
-multiple horizons. Inference is based on HC robust standard errors (Montiel Olea et al., 2025).
+multiple horizons. Inference is based on heteroskedasticity-robust standard
+errors by default. Montiel Olea et al. (2025) show that these standard errors
+suffice for local-projection impulse responses under weak conditions, even
+though multi-step forecast errors are typically serially correlated. Newey-West
+HAC standard errors are also available via `cov_type = "NW"` as an optional
+robustness check.
 
 The package allows for multiple shocks and endogenous variables. Weak-instrument HAR inference is implemented via the generalised minimum eigenvalue test of Lewis and Mertens (2025), which nests the classical Stock-Yogo (2005) test for the univariate homoskedastic case. `gweakivtest()` is a direct port of the Matlab files by Lewis and Mertens (2025) available on **https://karelmertens.com/research/**.
 

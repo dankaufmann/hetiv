@@ -65,7 +65,11 @@ selected horizons.}
 
 \item{cov_type}{Covariance estimator for local-projection standard errors:
 \code{"HC0"} (default) for heteroskedasticity-robust standard errors or \code{"NW"}
-for Newey-West HAC standard errors.}
+for Newey-West HAC standard errors. \code{"HC0"} is the default because
+Montiel Olea et al. (2025) show that heteroskedasticity-robust standard
+errors suffice for local-projection impulse responses under weak
+conditions, even though multi-step forecast errors are typically serially
+correlated. \code{"NW"} remains available as an optional HAC robustness check.}
 
 \item{details}{Logical. If \code{TRUE}, code saves detailed IV results, which is slightly slower.
 if set to \code{FALSE}, returns only impulse response and standard error (e.g. for bootstrap)}
@@ -132,6 +136,10 @@ heteroskedasticity. \emph{Review of Economics and Statistics}, 104(3), 510-524.
 
 Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments for 2SLS with multiple
 endogenous regressors. \emph{The Review of Economic Studies}, DOI: 10.1093/restud/rdaf103
+
+Montiel Olea, J. L., M. Plagborg-Moller, E. Qian, and C. K. Wolf (2025).
+Local projections or VARs? A primer for macroeconomists. \emph{NBER Working
+Paper} No. 33871.
 
 Rigobon, R. (2003). Identification through heteroskedasticity.
 \emph{Review of Economics and Statistics}, 85(4), 777-792.

@@ -37,3 +37,20 @@ An array:
 
   Array of impulse responses, dimension `H x N x R`. Row names are
   labelled `0` to `H-1`.
+
+## Examples
+
+``` r
+Psi <- matrix(c(1, 0.5), nrow = 2)
+Phi <- array(0, dim = c(2, 2, 1))
+Phi[, , 1] <- matrix(c(0.4, 0.1, 0, 0.3), 2, 2)
+computeirf(Psi = Psi, Phi = Phi, H = 4, cum = FALSE)
+#> , , 1
+#> 
+#>    [,1]   [,2]
+#> 0 1.000 0.5000
+#> 1 0.400 0.2500
+#> 2 0.160 0.1150
+#> 3 0.064 0.0505
+#> 
+```

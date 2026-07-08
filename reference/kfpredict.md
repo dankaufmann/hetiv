@@ -49,8 +49,10 @@ kfpredict(Sig, SigR, Psi, et, tol = sqrt(.Machine$double.eps), scale = TRUE)
 - scale:
 
   Logical. If `TRUE` (default), shocks are rescaled to unit variance
-  using the implied shock variances recovered from `Sig` and `SigR`. If
-  `FALSE`, the raw Kalman filter projection is returned.
+  using the implied shock variances recovered from `Sig` and `SigR`.
+  This scaling assumes that structural shock variances are diagonal, so
+  that `Sig - SigR = sum_i sigma_i Psi_i Psi_i'`. If `FALSE`, the raw
+  Kalman filter projection is returned.
 
 ## Value
 
@@ -60,5 +62,26 @@ number of rows as `et` and one column per shock dimension.
 ## References
 
 Burri, M. and Kaufmann, D. (2026). Measuring monetary policy shocks.
-IRENE Working Paper 24-03, IRENE Institute of Economic Research,
-University of Neuchâtel.
+*Economics Letters*.
+[doi:10.1016/j.econlet.2026.113091](https://doi.org/10.1016/j.econlet.2026.113091)
+
+## Examples
+
+``` r
+Sig <- diag(2)
+SigR <- diag(c(0.5, 0.5))
+Psi <- matrix(c(1, 0.5), nrow = 2)
+et <- matrix(rnorm(20), ncol = 2)
+kfpredict(Sig = Sig, SigR = SigR, Psi = Psi, et = et)
+#>              [,1]
+#>  [1,] -0.53121758
+#>  [2,]  0.29646687
+#>  [3,]  1.11203917
+#>  [4,] -0.74216125
+#>  [5,]  0.87744535
+#>  [6,]  0.38718522
+#>  [7,]  0.26866947
+#>  [8,] -0.37366525
+#>  [9,] -0.15323607
+#> [10,]  0.01922568
+```

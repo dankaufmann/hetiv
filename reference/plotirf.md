@@ -41,3 +41,15 @@ plotirf(IRFest, IRFse = NULL, HTick, Labels, ci = c(0.9, 0.95))
 
 A list of `ggplot` objects, one per variable-shock combination, ordered
 by shock (outer loop) then variable (inner loop).
+
+## Examples
+
+``` r
+irf <- array(c(1, 0.5, 0.2, 0.1), dim = c(4, 1, 1))
+dimnames(irf)[[1]] <- 0:3
+se <- array(0.1, dim = dim(irf), dimnames = dimnames(irf))
+plotirf(irf, se, HTick = 1, Labels = "Output")
+#> [[1]]
+
+#> 
+```

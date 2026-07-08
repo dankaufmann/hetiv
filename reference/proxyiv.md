@@ -1,13 +1,12 @@
 # Estimate impulse responses via proxy-IV local projections
 
 Estimates impulse response functions (IRFs) using user-provided external
-instruments (proxies) combined with local projections (Jordà, 2005). The
+instruments (proxies) combined with local projections (Jorda, 2005). The
 proxy variables serve directly as instruments for the endogenous shock
 variables. Optionally imposes recursive zero restrictions across shock
 dimensions and supports deterministic controls following the same
 conventions as
-[`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md). d
-only).
+[`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md).
 
 ## Usage
 
@@ -24,6 +23,7 @@ proxyiv(
   norm = 1,
   cum = FALSE,
   Hstep = 1,
+  cov_type = "HC0",
   recursive = FALSE,
   details = FALSE
 )
@@ -47,10 +47,10 @@ proxyiv(
 
   Numeric matrix of external instruments (T x E). Column `e` is used as
   the proxy for shock dimension `e`. Missing values on control days
-  (`Ind == 0`) are treated as contaminated and excluded from estimation;
-  missing values on policy days (`Ind == 1`) are retained so that those
-  observations remain available for shock prediction even when the
-  instrument is unobserved.
+  (`Ind == 0`) are treated as contaminated and excluded from estimation.
+  Missing values on policy days (`Ind == 1`) remain labelled as events
+  for residual-based shock prediction, but are necessarily dropped from
+  IV regressions that use the missing proxy.
 
 - X:
 
@@ -95,10 +95,19 @@ proxyiv(
 - Hstep:
 
   Integer. Step size between horizons. The default `1` estimates all
-  horizons 0 through H - 1. Values greater than 1 are intended only for
-  fast testing; they are only safe when `Hstep >= H` (a single horizon
-  is stored). For complete IRF estimation always use `Hstep = 1`.
-  Default `1`.
+  horizons 0 through H - 1. Values greater than 1 estimate only the
+  selected horizons. Default `1`.
+
+- cov_type:
+
+  Covariance estimator for local-projection standard errors: `"HC0"`
+  (default) for heteroskedasticity-robust standard errors or `"NW"` for
+  Newey-West HAC standard errors. `"HC0"` is the default because Montiel
+  Olea et al. (2025) show that heteroskedasticity-robust standard errors
+  suffice for local-projection impulse responses under weak conditions,
+  even though multi-step forecast errors are typically serially
+  correlated. `"NW"` remains available as an optional HAC robustness
+  check.
 
 - recursive:
 
@@ -123,7 +132,7 @@ A named list. Always contains:
 
 - `se`:
 
-  Array (H x N x E) of HC0 heteroscedasticity-robust standard errors.
+  Array (H x N x E) of local-projection standard errors.
 
 - `Method`:
 
@@ -144,7 +153,9 @@ With `details = TRUE`, additionally contains:
 - `Obs`:
 
   Data frame with observation counts: `Tp` (policy days), `Tc` (control
-  days), `To` (contaminated days), `Tt` (total used).
+  days), `To` (contaminated days), `Tt` (labelled event or control
+  days), and `Tiv` (complete observations available to the IV regression
+  at the impact horizon).
 
 - `et`:
 
@@ -171,10 +182,17 @@ With `details = TRUE`, additionally contains:
   Data frame of endogenous variables and instruments for the
   Lewis-Mertens (2025) weak instrument test.
 
+## Details
+
+For `E > 1`, identification can be order-dependent: the column order of
+`y` defines the endogenous shock variables and normalizations, the
+column order of `Z` assigns proxies to shock dimensions, and
+`recursive = TRUE` imposes restrictions in that order.
+
 ## References
 
-Jordà, Ò. (2005). Estimation and inference of impulse responses by local
-projections. *American Economic Review*, 95(1), 161–182.
+Jorda, O. (2005). Estimation and inference of impulse responses by local
+projections. *American Economic Review*, 95(1), 161-182.
 
 Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments
 for 2SLS with multiple endogenous regressors. *The Review of Economic
@@ -182,8 +200,28 @@ Studies*, DOI: 10.1093/restud/rdaf103
 
 Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and
 corporate income tax changes in the United States. *American Economic
-Review*, 103(4), 1212–1247.
+Review*, 103(4), 1212-1247.
+
+Montiel Olea, J. L., M. Plagborg-Moller, E. Qian, and C. K. Wolf (2025).
+Local projections or VARs? A primer for macroeconomists. *NBER Working
+Paper* No. 33871.
 
 Stock, J. H. and Watson, M. W. (2018). Identification and estimation of
 dynamic causal effects in macroeconomics using external instruments.
-*Economic Journal*, 128(610), 917–948.
+*Economic Journal*, 128(610), 917-948.
+
+## Examples
+
+``` r
+set.seed(1)
+y <- matrix(rnorm(80), ncol = 2)
+Ind <- rep(0L, nrow(y))
+Ind[seq(5, nrow(y), by = 5)] <- 1L
+Z <- matrix(Ind * y[, 1] + rnorm(nrow(y)), ncol = 1)
+res <- proxyiv(
+  y = y, O = y, Z = Z, Ind = Ind, P = 1, H = 3,
+  details = TRUE
+)
+dim(res$irf)
+#> [1] 3 2 1
+```

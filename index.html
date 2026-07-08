@@ -13,6 +13,7 @@
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="hetiv">
 <meta name="description" content="Heteroskedasticity and Proxy-Based IV Methods">
 <meta property="og:description" content="Heteroskedasticity and Proxy-Based IV Methods">
+<meta property="og:image" content="https://dankaufmann.github.io/hetiv/logo.png">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -49,18 +50,23 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="hetiv">hetiv<a class="anchor" aria-label="anchor" href="#hetiv"></a>
-</h1></div>
+<div class="page-header">
+<img src="logo.png" class="logo" alt=""><h1 id="hetiv-">hetiv 
+<a class="anchor" aria-label="anchor" href="#hetiv-"></a>
+</h1>
+</div>
+<!-- badges: start -->
+
 <p>An R package for measuring and identifying structural shocks using heteroskedasticity- and proxy-based instrumental variable (IV) methods with daily financial market data.</p>
 <p><strong>Authors</strong>: Daniel Kaufmann, Marc Burri, Valentin Grob</p>
-<p><strong>Note</strong>: This is work in progress. Install and use at own risk. Comments are welcome.</p>
+<p>Comments, bug reports, and feature requests are welcome through the GitHub issue tracker.</p>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
 <p>Full documentation and a worked example are available at the package website: <strong><a href="https://dankaufmann.github.io/hetiv/" class="uri">https://dankaufmann.github.io/hetiv/</a></strong></p>
-<p>The introductory vignette — covering data simulation, HET-IV, Proxy-IV, IRF plots, shock extraction, and weak instrument testing — is at: <strong><a href="https://dankaufmann.github.io/hetiv/articles/hetiv-introduction.html" class="uri">https://dankaufmann.github.io/hetiv/articles/hetiv-introduction.html</a></strong></p>
+<p>The introductory vignette – covering data simulation, HET-IV, Proxy-IV, IRF plots, shock extraction, and weak instrument testing – is at: <strong><a href="https://dankaufmann.github.io/hetiv/articles/hetiv-introduction.html" class="uri">https://dankaufmann.github.io/hetiv/articles/hetiv-introduction.html</a></strong></p>
 <p>Replication files for Burri and Kaufmann (2026b), providing a real-world example, are available at: <strong><a href="https://github.com/dankaufmann/bk_2026_eclet_replication/" class="external-link uri">https://github.com/dankaufmann/bk_2026_eclet_replication/</a></strong></p>
-<p><code>gweakivtest</code>is a direct port of the Matlab files by Lewis and Mertens (2025) available on <strong><a href="https://karelmertens.com/research/" class="external-link uri">https://karelmertens.com/research/</a></strong></p>
+<p><code><a href="reference/gweakivtest.html">gweakivtest()</a></code> is a direct port of the Matlab files by Lewis and Mertens (2025) available on <strong><a href="https://karelmertens.com/research/" class="external-link uri">https://karelmertens.com/research/</a></strong>.</p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -147,10 +153,20 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dankaufmann.github.io/hetiv/">hetiv</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># y:   T x N matrix of outcome variables</span></span>
-<span><span class="co"># O:   T x M matrix of information set variables</span></span>
-<span><span class="co"># X:   T x K matrix of deterministic variables (optional; e.g. constant, trend, dummies)</span></span>
-<span><span class="co"># Ind: event indicator (0 = control day, 1 = policy day, 2 = contaminated)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
+<span><span class="va">E</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<span><span class="va">Phi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fl">0</span>, dim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">N</span>, <span class="va">N</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">Phi</span><span class="op">[</span>, , <span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.4</span>, <span class="fl">0.2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/simulatedata.html">simulatedata</a></span><span class="op">(</span></span>
+<span>  Phi <span class="op">=</span> <span class="va">Phi</span>, SigE <span class="op">=</span> <span class="fl">2</span>, PsiE <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0.5</span><span class="op">)</span>, <span class="va">N</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  PsiR <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">N</span><span class="op">)</span>, Nobs <span class="op">=</span> <span class="fl">100</span>, Nbin <span class="op">=</span> <span class="fl">20</span>, N <span class="op">=</span> <span class="va">N</span>, R <span class="op">=</span> <span class="va">N</span>, E <span class="op">=</span> <span class="va">E</span>,</span>
+<span>  Nevn <span class="op">=</span> <span class="fl">5</span>, P <span class="op">=</span> <span class="fl">1</span>, eDist <span class="op">=</span> <span class="fl">0</span>, seed <span class="op">=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">sim</span><span class="op">$</span><span class="va">y</span></span>
+<span><span class="va">O</span> <span class="op">&lt;-</span> <span class="va">y</span></span>
+<span><span class="va">Ind</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">IndE</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hetiv.html">hetiv</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">y</span>, O <span class="op">=</span> <span class="va">O</span>, Ind <span class="op">=</span> <span class="va">Ind</span>, P <span class="op">=</span> <span class="fl">1</span>, H <span class="op">=</span> <span class="fl">20</span>, E <span class="op">=</span> <span class="fl">1</span>, norm <span class="op">=</span> <span class="fl">1</span>, details <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
@@ -163,6 +179,8 @@
 </h3>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Z: T x E matrix of external instruments (proxies)</span></span>
+<span><span class="va">Z</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">eE</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">Z</span><span class="op">[</span><span class="va">Ind</span> <span class="op">==</span> <span class="fl">0</span>, <span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
 <span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/proxyiv.html">proxyiv</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">y</span>, O <span class="op">=</span> <span class="va">O</span>, Z <span class="op">=</span> <span class="va">Z</span>, Ind <span class="op">=</span> <span class="va">Ind</span>, P <span class="op">=</span> <span class="fl">1</span>, H <span class="op">=</span> <span class="fl">20</span>, E <span class="op">=</span> <span class="fl">1</span>, norm <span class="op">=</span> <span class="fl">1</span>, details <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
@@ -200,27 +218,29 @@
 <span><span class="co"># hetiv() and proxyiv() return WeakData when details = TRUE,</span></span>
 <span><span class="co"># which contains the outcome and instrument columns needed for gweakivtest(). Note that the E endogenous variables have to be ordered first</span></span>
 <span><span class="va">res</span>     <span class="op">&lt;-</span> <span class="fu"><a href="reference/hetiv.html">hetiv</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">y</span>, O <span class="op">=</span> <span class="va">O</span>, Ind <span class="op">=</span> <span class="va">Ind</span>, P <span class="op">=</span> <span class="fl">1</span>, H <span class="op">=</span> <span class="fl">20</span>, E <span class="op">=</span> <span class="fl">1</span>, details <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span> <span class="co"># y: outcome variable E+1 (not used as endogenous regressor)</span></span>
-<span>  <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">res</span><span class="op">$</span><span class="va">WeakData</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"y"</span>, <span class="va">E</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">]</span></span>
-<span>  <span class="co"># Y: first E outcome variables (endogenous regressors)</span></span>
-<span>  <span class="va">Y</span> <span class="op">&lt;-</span> <span class="va">res</span><span class="op">$</span><span class="va">WeakData</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"y"</span>, <span class="fl">1</span><span class="op">:</span><span class="va">E</span><span class="op">)</span><span class="op">]</span></span>
-<span>  <span class="co"># Z: the E instruments</span></span>
-<span>  <span class="va">Z</span> <span class="op">&lt;-</span> <span class="va">res</span><span class="op">$</span><span class="va">WeakData</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Z"</span>, <span class="fl">1</span><span class="op">:</span><span class="va">E</span><span class="op">)</span>,<span class="op">]</span></span>
-<span>  <span class="co"># X: lagged ("o*") and deterministic ("x*") and indicator variables ("i*") control columns. In any case, add a constant term as well.</span></span>
-<span>  <span class="co"># Note that gweakivtest() adds a constant term if missing</span></span>
-<span>  <span class="va">ctrl</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"o"</span><span class="op">)</span> <span class="op">|</span> <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"x"</span><span class="op">)</span> <span class="op">|</span> <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"i"</span><span class="op">)</span></span>
-<span>  <span class="va">X</span>     <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="va">ctrl</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">[</span>, <span class="va">ctrl</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">weakdata</span> <span class="op">&lt;-</span> <span class="va">res</span><span class="op">$</span><span class="va">WeakData</span></span>
 <span></span>
-<span><span class="va">wt</span>      <span class="op">&lt;-</span> <span class="fu"><a href="reference/gweakivtest.html">gweakivtest</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">y</span>,</span>
-<span>                     Y <span class="op">=</span> <span class="va">Y</span>,</span>
-<span>                     X <span class="op">=</span> <span class="va">X</span>,</span>
-<span>                     Z <span class="op">=</span> <span class="va">Z</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># y: outcome variable E + 1 (not used as endogenous regressor)</span></span>
+<span><span class="va">y_w</span> <span class="op">&lt;-</span> <span class="va">weakdata</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"y"</span>, <span class="va">E</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co"># Y: first E outcome variables (endogenous regressors)</span></span>
+<span><span class="va">Y_w</span> <span class="op">&lt;-</span> <span class="va">weakdata</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"y"</span>, <span class="fl">1</span><span class="op">:</span><span class="va">E</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co"># Z: the E instruments</span></span>
+<span><span class="va">Z_w</span> <span class="op">&lt;-</span> <span class="va">weakdata</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Z"</span>, <span class="fl">1</span><span class="op">:</span><span class="va">E</span><span class="op">)</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span><span class="co"># X: lagged ("o*"), deterministic ("x*"), and indicator ("i*") controls.</span></span>
+<span><span class="co"># gweakivtest() adds a constant term if one is missing.</span></span>
+<span><span class="va">ctrl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"o"</span><span class="op">)</span> <span class="op">|</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"x"</span><span class="op">)</span> <span class="op">|</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"i"</span><span class="op">)</span></span>
+<span><span class="va">X_w</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="va">ctrl</span><span class="op">)</span><span class="op">)</span> <span class="va">weakdata</span><span class="op">[</span>, <span class="va">ctrl</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="fl">0</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">wt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/gweakivtest.html">gweakivtest</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">y_w</span>, Y <span class="op">=</span> <span class="va">Y_w</span>, X <span class="op">=</span> <span class="va">X_w</span>, Z <span class="op">=</span> <span class="va">Z_w</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="extract-structural-shocks">Extract structural shocks<a class="anchor" aria-label="anchor" href="#extract-structural-shocks"></a>
 </h3>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># We can use estiamtes from hetiv() and proxyiv() to predict the unobserved underlying shokcs using the Kalman filter</span></span>
+<code class="sourceCode R"><span><span class="co"># Use estimates from hetiv() or proxyiv() to predict the unobserved underlying</span></span>
+<span><span class="co"># shocks with the Kalman filter.</span></span>
 <span><span class="va">shocks</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kfpredict.html">kfpredict</a></span><span class="op">(</span>Sig <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">Sig</span>, SigR <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">SigR</span>,</span>
 <span>                    Psi <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">Psi</span>, et <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">et</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -236,14 +256,14 @@
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<p>Burri, M. and D. Kaufmann (2026a). Measuring monetary policy shocks. IRENE Working Papers 24-03, IRENE Institute of Economic Research, University of Neuchâtel.</p>
+<p>Burri, M. and D. Kaufmann (2026a). Measuring monetary policy shocks. <em>Economics Letters</em>. <a href="https://doi.org/10.1016/j.econlet.2026.113091" class="external-link uri">https://doi.org/10.1016/j.econlet.2026.113091</a></p>
 <p>Burri, M. and D. Kaufmann (2026b). Multiple monetary policy shocks from daily data: A heteroskedasticity IV approach. IRENE Working Papers 26-06, IRENE Institute of Economic Research, University of Neuchâtel.</p>
-<p>Jordà, Ò. (2005). Estimation and inference of impulse responses by local projections. <em>American Economic Review</em>, 95(1), 161–182.</p>
-<p>Lewis, D. J. (2022). Robust inference in models identified via heteroskedasticity. <em>Review of Economics and Statistics</em>, 104(3), 510–524.</p>
+<p>Jordà, Ò. (2005). Estimation and inference of impulse responses by local projections. <em>American Economic Review</em>, 95(1), 161-182.</p>
+<p>Lewis, D. J. (2022). Robust inference in models identified via heteroskedasticity. <em>Review of Economics and Statistics</em>, 104(3), 510-524.</p>
 <p>Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments for 2SLS with multiple endogenous regressors. <em>The Review of Economic Studies</em>, DOI: 10.1093/restud/rdaf103.</p>
-<p>Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and corporate income tax changes in the United States. <em>American Economic Review</em>, 103(4), 1212–1247.</p>
-<p>Rigobon, R. (2003). Identification through heteroskedasticity. <em>Review of Economics and Statistics</em>, 85(4), 777–792.</p>
-<p>Stock, J. H. and Watson, M. W. (2018). Identification and estimation of dynamic causal effects in macroeconomics using external instruments. <em>Economic Journal</em>, 128(610), 917–948.</p>
+<p>Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and corporate income tax changes in the United States. <em>American Economic Review</em>, 103(4), 1212-1247.</p>
+<p>Rigobon, R. (2003). Identification through heteroskedasticity. <em>Review of Economics and Statistics</em>, 85(4), 777-792.</p>
+<p>Stock, J. H. and Watson, M. W. (2018). Identification and estimation of dynamic causal effects in macroeconomics using external instruments. <em>Economic Journal</em>, 128(610), 917-948.</p>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
@@ -267,6 +287,12 @@
 </ul>
 </div>
 
+<div class="community">
+<h2 data-toc-skip>Community</h2>
+<ul class="list-unstyled">
+<li><a href="CONTRIBUTING.html">Contributing guide</a></li>
+</ul>
+</div>
 
 <div class="citation">
 <h2 data-toc-skip>Citation</h2>
@@ -278,13 +304,21 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Daniel Kaufmann <br><small class="roles"> Author, maintainer </small>   </li>
+<li>Daniel Kaufmann <br><small class="roles"> Author, maintainer, copyright holder </small>   </li>
 <li>Marc Burri <br><small class="roles"> Author </small>   </li>
 <li>Valentin Grob <br><small class="roles"> Author </small>   </li>
 </ul>
 </div>
 
-
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/dankaufmann/hetiv/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/dankaufmann/hetiv/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="https://github.com/dankaufmann/hetiv/actions/workflows/pkgdown.yaml" class="external-link"><img src="https://github.com/dankaufmann/hetiv/actions/workflows/pkgdown.yaml/badge.svg" alt="pkgdown"></a></li>
+<li><a href="https://github.com/dankaufmann/hetiv/actions/workflows/coverage.yaml" class="external-link"><img src="https://github.com/dankaufmann/hetiv/actions/workflows/coverage.yaml/badge.svg" alt="coverage"></a></li>
+<li><a href="LICENSE.html"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a></li>
+</ul>
+</div>
 
   </aside>
 </div>
@@ -295,7 +329,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

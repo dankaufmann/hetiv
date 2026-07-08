@@ -21,3 +21,10 @@ logdiff(TS)
 
 A numeric vector of the same length as `TS`, with `NA` in the first
 position.
+
+## Examples
+
+``` r
+logdiff(c(1, 2, 4))
+#> [1]        NA 0.6931472 0.6931472
+```

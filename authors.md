@@ -2,7 +2,7 @@
 
 ## Authors
 
-- **Daniel Kaufmann**. Author, maintainer.
+- **Daniel Kaufmann**. Author, maintainer, copyright holder.
 
 - **Marc Burri**. Author.
 

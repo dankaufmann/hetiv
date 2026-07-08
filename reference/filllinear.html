@@ -3,7 +3,7 @@
 interpolation, up to a maximum of gap consecutive missing observations.
 Gaps longer than gap are left as NA."><meta property="og:description" content="Fills missing values (NA) in every column of a data frame using linear
 interpolation, up to a maximum of gap consecutive missing observations.
-Gaps longer than gap are left as NA."></head><body>
+Gaps longer than gap are left as NA."><meta property="og:image" content="https://dankaufmann.github.io/hetiv/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -32,8 +32,7 @@ Gaps longer than gap are left as NA."></head><body>
 </nav><div class="container template-reference-topic">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Linearly interpolate gaps in a data frame</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Linearly interpolate gaps in a data frame</h1>
       <small class="dont-index">Source: <a href="https://github.com/dankaufmann/hetiv/blob/main/R/filllinear.R" class="external-link"><code>R/filllinear.R</code></a></small>
       <div class="d-none name"><code>filllinear.Rd</code></div>
     </div>
@@ -66,6 +65,16 @@ Gaps longer than <code>gap</code> are left as <code>NA</code>.</p>
     <p>The data frame <code>DF</code> with short gaps linearly interpolated.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">filllinear</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="cn">NA</span>, <span class="fl">3</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="cn">NA</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span>, gap <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   x y</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 2 3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 3 4</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
@@ -75,7 +84,7 @@ Gaps longer than <code>gap</code> are left as <code>NA</code>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

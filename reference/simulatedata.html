@@ -3,7 +3,7 @@
 regular shocks (always present) and event shocks (occurring every Nevn
 periods). The shock distribution can be normal, Student-t, or GARCH(1,1)."><meta property="og:description" content="Simulates data from a VAR(P) model with two types of structural shocks:
 regular shocks (always present) and event shocks (occurring every Nevn
-periods). The shock distribution can be normal, Student-t, or GARCH(1,1)."></head><body>
+periods). The shock distribution can be normal, Student-t, or GARCH(1,1)."><meta property="og:image" content="https://dankaufmann.github.io/hetiv/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -32,8 +32,7 @@ periods). The shock distribution can be normal, Student-t, or GARCH(1,1)."></hea
 </nav><div class="container template-reference-topic">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Simulate VAR data with heteroskedastic shocks and given parameters</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Simulate VAR data with heteroskedastic shocks and given parameters</h1>
       <small class="dont-index">Source: <a href="https://github.com/dankaufmann/hetiv/blob/main/R/simulatedata.R" class="external-link"><code>R/simulatedata.R</code></a></small>
       <div class="d-none name"><code>simulatedata.Rd</code></div>
     </div>
@@ -88,7 +87,8 @@ initialise the VAR but are discarded before returning.</p></dd>
 
 
 <dt id="arg-e">E<a class="anchor" aria-label="anchor" href="#arg-e"></a></dt>
-<dd><p>Number of event shocks. For GARCH shock distributions (<code>eDist = c(alpha, beta)</code>), only <code>E = 1</code> is supported.</p></dd>
+<dd><p>Number of event shocks. For GARCH shock distributions
+(<code>eDist = c(alpha, beta)</code>), only <code>E = 1</code> is supported.</p></dd>
 
 
 <dt id="arg-nevn">Nevn<a class="anchor" aria-label="anchor" href="#arg-nevn"></a></dt>
@@ -144,6 +144,155 @@ Use <code>NA</code> to skip seeding.</p></dd>
 
 </dl></div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">2</span></span></span>
+<span class="r-in"><span><span class="va">Phi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fl">0</span>, dim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">N</span>, <span class="va">N</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">Phi</span><span class="op">[</span>, , <span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.4</span>, <span class="fl">0.2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">simulatedata</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  Phi <span class="op">=</span> <span class="va">Phi</span>, SigE <span class="op">=</span> <span class="fl">2</span>, PsiE <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0.5</span><span class="op">)</span>, <span class="va">N</span>, <span class="fl">1</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  PsiR <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">N</span><span class="op">)</span>, Nobs <span class="op">=</span> <span class="fl">20</span>, Nbin <span class="op">=</span> <span class="fl">5</span>, N <span class="op">=</span> <span class="va">N</span>, R <span class="op">=</span> <span class="va">N</span>, E <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>  Nevn <span class="op">=</span> <span class="fl">5</span>, P <span class="op">=</span> <span class="fl">1</span>, eDist <span class="op">=</span> <span class="fl">0</span>, seed <span class="op">=</span> <span class="fl">1</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $y</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]         [,2]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,]  0.3284413  1.613786725</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,]  0.6188056  0.219969618</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,]  0.9858469  0.431665535</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,]  0.9701201  0.032528066</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] -0.1083364 -1.466051970</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,]  1.4684466 -0.708204957</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,]  0.9772219 -0.535930945</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] -0.2303518 -0.166499586</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] -2.3068406  1.066725455</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] -0.8489524  0.450947313</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] -0.3845146 -0.074334134</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] -0.1699961 -0.268228507</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13,]  0.8758378  0.643317674</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [14,]  1.1715563  0.685326733</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [15,]  4.1350607  0.984578097</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16,]  2.5730017 -0.510579538</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [17,]  1.8113370  0.262466055</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [18,]  0.7990998  0.821026135</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19,] -1.6697118  0.051859015</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [20,] -1.8209643  0.005026851</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $IndE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       [,1]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,]    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,]    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [14,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [15,]    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [17,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [18,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [20,]    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $eR</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              [,1]        [,2]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] -0.82046838  1.35867955</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,]  0.48742905 -0.10278773</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,]  0.73832471  0.38767161</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,]  0.57578135 -0.05380504</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] -0.30538839 -1.37705956</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,]  1.51178117 -0.41499456</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,]  0.38984324 -0.39428995</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] -0.62124058 -0.05931340</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] -2.21469989  1.10002537</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,]  1.12493092  0.76317575</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] -0.04493361 -0.16452360</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] -0.01619026 -0.25336168</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13,]  0.94383621  0.69696338</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [14,]  0.82122120  0.55666320</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [15,]  0.59390132 -0.68875569</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16,]  0.91897737 -0.70749516</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [17,]  0.78213630  0.36458196</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [18,]  0.07456498  0.76853292</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19,] -1.98935170 -0.11234621</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [20,]  0.61982575  0.88110773</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $eE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,]  0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,]  0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,]  0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,]  0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] -0.1909961</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,]  0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,]  0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,]  0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,]  0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] -1.0511471</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,]  0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,]  0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13,]  0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [14,]  0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [15,]  3.0725369</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16,]  0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [17,]  0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [18,]  0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19,]  0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [20,] -1.7729054</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $e</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              [,1]         [,2]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] -0.82046838  1.358679552</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,]  0.48742905 -0.102787727</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,]  0.73832471  0.387671612</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,]  0.57578135 -0.053805041</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] -0.49638444 -1.472557583</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,]  1.51178117 -0.414994563</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,]  0.38984324 -0.394289954</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] -0.62124058 -0.059313397</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] -2.21469989  1.100025372</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,]  0.07378387  0.237602222</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] -0.04493361 -0.164523596</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] -0.01619026 -0.253361680</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13,]  0.94383621  0.696963375</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [14,]  0.82122120  0.556663199</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [15,]  3.66643821  0.847512750</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16,]  0.91897737 -0.707495157</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [17,]  0.78213630  0.364581962</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [18,]  0.07456498  0.768532925</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19,] -1.98935170 -0.112346212</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [20,] -1.15307961 -0.005344952</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $Phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> , , 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [,1] [,2]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]  0.4  0.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2,]  0.0  0.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $PsiE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [,1]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]  1.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2,]  0.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $PsiR</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [,1] [,2]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]    1    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2,]    0    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $SigE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
@@ -153,7 +302,7 @@ Use <code>NA</code> to skip seeding.</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

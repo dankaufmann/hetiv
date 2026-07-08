@@ -22,7 +22,7 @@ plot2irf(IRF1, IRF1se, IRF2, IRF2se, HTick, Labels, ci = 0.9)
 - IRF1se:
 
   Array (H x N x E) of standard errors for the first approach (set to 0
-  to surpress confidence intervals).
+  to suppress confidence intervals).
 
 - IRF2:
 
@@ -31,7 +31,7 @@ plot2irf(IRF1, IRF1se, IRF2, IRF2se, HTick, Labels, ci = 0.9)
 - IRF2se:
 
   Array (H x N x E) of standard errors for the second approach (set to 0
-  to surpress confidence intervals).
+  to suppress confidence intervals).
 
 - HTick:
 
@@ -50,3 +50,16 @@ plot2irf(IRF1, IRF1se, IRF2, IRF2se, HTick, Labels, ci = 0.9)
 
 A list of `ggplot` objects, one per variable-shock combination, ordered
 by shock (outer loop) then variable (inner loop).
+
+## Examples
+
+``` r
+irf1 <- array(c(1, 0.5, 0.2, 0.1), dim = c(4, 1, 1))
+dimnames(irf1)[[1]] <- 0:3
+irf2 <- irf1 * 0.8
+se <- array(0.1, dim = dim(irf1), dimnames = dimnames(irf1))
+plot2irf(irf1, se, irf2, se * 0, HTick = 1, Labels = "Output")
+#> [[1]]
+
+#> 
+```

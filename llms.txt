@@ -6,24 +6,25 @@ with daily financial market data.
 
 **Authors**: Daniel Kaufmann, Marc Burri, Valentin Grob
 
-**Note**: This is work in progress. Install and use at own risk.
-Comments are welcome.
+Comments, bug reports, and feature requests are welcome through the
+GitHub issue tracker.
 
 ## Documentation
 
 Full documentation and a worked example are available at the package
 website: **<https://dankaufmann.github.io/hetiv/>**
 
-The introductory vignette — covering data simulation, HET-IV, Proxy-IV,
-IRF plots, shock extraction, and weak instrument testing — is at:
+The introductory vignette – covering data simulation, HET-IV, Proxy-IV,
+IRF plots, shock extraction, and weak instrument testing – is at:
 **<https://dankaufmann.github.io/hetiv/articles/hetiv-introduction.html>**
 
 Replication files for Burri and Kaufmann (2026b), providing a real-world
 example, are available at:
 **<https://github.com/dankaufmann/bk_2026_eclet_replication/>**
 
-`gweakivtest`is a direct port of the Matlab files by Lewis and Mertens
-(2025) available on **<https://karelmertens.com/research/>**
+[`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md)
+is a direct port of the Matlab files by Lewis and Mertens (2025)
+available on **<https://karelmertens.com/research/>**.
 
 ## Installation
 
@@ -61,10 +62,20 @@ remotes::install_github("dankaufmann/hetiv")
 
 library(hetiv)
 
-# y:   T x N matrix of outcome variables
-# O:   T x M matrix of information set variables
-# X:   T x K matrix of deterministic variables (optional; e.g. constant, trend, dummies)
-# Ind: event indicator (0 = control day, 1 = policy day, 2 = contaminated)
+set.seed(1)
+N <- 2
+E <- 1
+Phi <- array(0, dim = c(N, N, 1))
+Phi[, , 1] <- diag(c(0.4, 0.2))
+sim <- simulatedata(
+  Phi = Phi, SigE = 2, PsiE = matrix(c(1, 0.5), N, 1),
+  PsiR = diag(N), Nobs = 100, Nbin = 20, N = N, R = N, E = E,
+  Nevn = 5, P = 1, eDist = 0, seed = 1
+)
+
+y <- sim$y
+O <- y
+Ind <- as.integer(sim$IndE[, 1])
 
 res <- hetiv(y = y, O = O, Ind = Ind, P = 1, H = 20, E = 1, norm = 1, details = TRUE)
 
@@ -78,6 +89,8 @@ res <- hetiv(y = y, O = O, X = X, Ind = Ind, P = 1, H = 20, E = 1, norm = 1, det
 ``` r
 
 # Z: T x E matrix of external instruments (proxies)
+Z <- matrix(sim$eE[, 1] + rnorm(nrow(y)), ncol = 1)
+Z[Ind == 0, ] <- 0
 
 res <- proxyiv(y = y, O = O, Z = Z, Ind = Ind, P = 1, H = 20, E = 1, norm = 1, details = TRUE)
 
@@ -117,28 +130,30 @@ wt <- gweakivtest(y = y, Y = Y, X = X, Z = Z, cov_type = "NW", tau = 0.10)
 # hetiv() and proxyiv() return WeakData when details = TRUE,
 # which contains the outcome and instrument columns needed for gweakivtest(). Note that the E endogenous variables have to be ordered first
 res     <- hetiv(y = y, O = O, Ind = Ind, P = 1, H = 20, E = 1, details = TRUE)
- # y: outcome variable E+1 (not used as endogenous regressor)
-  y <- res$WeakData[, paste0("y", E + 1)]
-  # Y: first E outcome variables (endogenous regressors)
-  Y <- res$WeakData[, paste0("y", 1:E)]
-  # Z: the E instruments
-  Z <- res$WeakData[, paste0("Z", 1:E),]
-  # X: lagged ("o*") and deterministic ("x*") and indicator variables ("i*") control columns. In any case, add a constant term as well.
-  # Note that gweakivtest() adds a constant term if missing
-  ctrl  <- startsWith(colnames(weakdata), "o") | startsWith(colnames(weakdata), "x") | startsWith(colnames(weakdata), "i")
-  X     <- if (any(ctrl)) cbind(weakdata[, ctrl], matrix(1, nrow(weakdata), 1)) else matrix(numeric(0), nrow(weakdata), 0)
+weakdata <- res$WeakData
 
-wt      <- gweakivtest(y = y,
-                     Y = Y,
-                     X = X,
-                     Z = Z)
+# y: outcome variable E + 1 (not used as endogenous regressor)
+y_w <- weakdata[, paste0("y", E + 1)]
+# Y: first E outcome variables (endogenous regressors)
+Y_w <- weakdata[, paste0("y", 1:E)]
+# Z: the E instruments
+Z_w <- weakdata[, paste0("Z", 1:E), drop = FALSE]
+# X: lagged ("o*"), deterministic ("x*"), and indicator ("i*") controls.
+# gweakivtest() adds a constant term if one is missing.
+ctrl <- startsWith(colnames(weakdata), "o") |
+  startsWith(colnames(weakdata), "x") |
+  startsWith(colnames(weakdata), "i")
+X_w <- if (any(ctrl)) weakdata[, ctrl, drop = FALSE] else matrix(numeric(0), nrow(weakdata), 0)
+
+wt <- gweakivtest(y = y_w, Y = Y_w, X = X_w, Z = Z_w)
 ```
 
 ### Extract structural shocks
 
 ``` r
 
-# We can use estiamtes from hetiv() and proxyiv() to predict the unobserved underlying shokcs using the Kalman filter
+# Use estimates from hetiv() or proxyiv() to predict the unobserved underlying
+# shocks with the Kalman filter.
 shocks <- kfpredict(Sig = res$Sig, SigR = res$SigR,
                     Psi = res$Psi, et = res$et)
 ```
@@ -155,19 +170,18 @@ sim <- simulatedata(Phi = Phi, SigE = 4, PsiE = PsiE, PsiR = PsiR,
 ## References
 
 Burri, M. and D. Kaufmann (2026a). Measuring monetary policy shocks.
-IRENE Working Papers 24-03, IRENE Institute of Economic Research,
-University of Neuchâtel.
+*Economics Letters*. <https://doi.org/10.1016/j.econlet.2026.113091>
 
 Burri, M. and D. Kaufmann (2026b). Multiple monetary policy shocks from
 daily data: A heteroskedasticity IV approach. IRENE Working Papers
 26-06, IRENE Institute of Economic Research, University of Neuchâtel.
 
 Jordà, Ò. (2005). Estimation and inference of impulse responses by local
-projections. *American Economic Review*, 95(1), 161–182.
+projections. *American Economic Review*, 95(1), 161-182.
 
 Lewis, D. J. (2022). Robust inference in models identified via
 heteroskedasticity. *Review of Economics and Statistics*, 104(3),
-510–524.
+510-524.
 
 Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments
 for 2SLS with multiple endogenous regressors. *The Review of Economic
@@ -175,14 +189,14 @@ Studies*, DOI: 10.1093/restud/rdaf103.
 
 Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and
 corporate income tax changes in the United States. *American Economic
-Review*, 103(4), 1212–1247.
+Review*, 103(4), 1212-1247.
 
 Rigobon, R. (2003). Identification through heteroskedasticity. *Review
-of Economics and Statistics*, 85(4), 777–792.
+of Economics and Statistics*, 85(4), 777-792.
 
 Stock, J. H. and Watson, M. W. (2018). Identification and estimation of
 dynamic causal effects in macroeconomics using external instruments.
-*Economic Journal*, 128(610), 917–948.
+*Economic Journal*, 128(610), 917-948.
 
 ## License
 

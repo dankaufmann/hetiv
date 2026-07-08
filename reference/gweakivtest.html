@@ -7,7 +7,7 @@ from the Matlab codes by Lewis and Mertens (2025)"><meta property="og:descriptio
 generalised minimum eigenvalue statistic of Lewis and Mertens (2025). The
 test is robust to heteroskedasticity and autocorrelation and nests the
 classical Stock-Yogo (2005) test as a special case. The function is a direct port
-from the Matlab codes by Lewis and Mertens (2025)"></head><body>
+from the Matlab codes by Lewis and Mertens (2025)"><meta property="og:image" content="https://dankaufmann.github.io/hetiv/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -36,8 +36,7 @@ from the Matlab codes by Lewis and Mertens (2025)"></head><body>
 </nav><div class="container template-reference-topic">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Generalised weak instrument test</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Generalised weak instrument test</h1>
       <small class="dont-index">Source: <a href="https://github.com/dankaufmann/hetiv/blob/main/R/gweakivtest.R" class="external-link"><code>R/gweakivtest.R</code></a></small>
       <div class="d-none name"><code>gweakivtest.Rd</code></div>
     </div>
@@ -62,7 +61,8 @@ from the Matlab codes by Lewis and Mertens (2025)</p>
 <span>  tau <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>  points <span class="op">=</span> <span class="fl">1000L</span>,</span>
 <span>  target <span class="op">=</span> <span class="st">"beta"</span>,</span>
-<span>  crit <span class="op">=</span> <span class="st">"abs"</span></span>
+<span>  crit <span class="op">=</span> <span class="st">"abs"</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">12345L</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -118,6 +118,13 @@ or a positive integer <code>j &lt;= N</code> to target the single coefficient
 (relative bias). <code>"abs"</code> requires the error covariance matrix; <code>"rel"</code>
 does not.</p></dd>
 
+
+<dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
+<dd><p>Integer seed used for the random Stiefel starting points when
+computing the sharp critical value. The default is fixed for reproducible
+critical values and the caller's RNG state is restored afterwards. Use
+<code>NA</code> to leave the RNG unmanaged.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -159,16 +166,55 @@ the Nagar approximation.</p></dd>
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Lazarus, E., Lewis, D. J., Stock, J. H. and Watson, M. W. (2018).
 HAR inference: recommendations for practice. <em>Journal of Business &amp;
-Economic Statistics</em>, 36(4), 541–559.</p>
+Economic Statistics</em>, 36(4), 541-559.</p>
 <p>Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments for
 2SLS with multiple endogenous regressors. <em>The Review of Economic Studies</em>,
 DOI: 10.1093/restud/rdaf103.</p>
 <p>Stock, J. H. and Yogo, M. (2005). Testing for weak instruments in linear IV
 regression. In D. W. K. Andrews and J. H. Stock (Eds.), <em>Identification and
 inference for econometric models: essays in honor of Thomas Rothenberg</em>,
-pp. 80–108. Cambridge University Press.</p>
+pp. 80-108. Cambridge University Press.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">80</span></span></span>
+<span class="r-in"><span><span class="va">Z</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">n</span>, <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">Y</span> <span class="op">&lt;-</span> <span class="fl">0.8</span> <span class="op">*</span> <span class="va">Z</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fl">1.5</span> <span class="op">*</span> <span class="va">Y</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">gweakivtest</span><span class="op">(</span>y <span class="op">=</span> <span class="va">y</span>, Y <span class="op">=</span> <span class="va">Y</span>, X <span class="op">=</span> <span class="va">X</span>, Z <span class="op">=</span> <span class="va">Z</span>, points <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $nobs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 80</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $beta_2SLS</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.885098</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $target</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "beta vector"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $criterion</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "abs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $gmin_generalized</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 18.31699</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $gmin_generalized_critical_value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 14.39938</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $gmin_generalized_critical_value_simplified</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 14.39938</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $stock_yogo_test_statistic</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 20.28379</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $stock_yogo_critical_value_nagar</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NaN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
@@ -178,7 +224,7 @@ pp. 80–108. Cambridge University Press.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

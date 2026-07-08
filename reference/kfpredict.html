@@ -5,7 +5,7 @@ of residuals on event and control days, the function recovers the latent
 shocks for each observation. Optionally rescales shocks to unit variance."><meta property="og:description" content="Extracts structural shocks from reduced-form residuals using the Kalman
 filter formula. Given the impact matrix Psi and the covariance matrices
 of residuals on event and control days, the function recovers the latent
-shocks for each observation. Optionally rescales shocks to unit variance."></head><body>
+shocks for each observation. Optionally rescales shocks to unit variance."><meta property="og:image" content="https://dankaufmann.github.io/hetiv/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -34,8 +34,7 @@ shocks for each observation. Optionally rescales shocks to unit variance."></hea
 </nav><div class="container template-reference-topic">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Extract monetary policy shocks via Kalman filter</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Extract monetary policy shocks via Kalman filter</h1>
       <small class="dont-index">Source: <a href="https://github.com/dankaufmann/hetiv/blob/main/R/kfpredict.R" class="external-link"><code>R/kfpredict.R</code></a></small>
       <div class="d-none name"><code>kfpredict.Rd</code></div>
     </div>
@@ -87,7 +86,9 @@ periods, columns to variables.</p></dd>
 <dt id="arg-scale">scale<a class="anchor" aria-label="anchor" href="#arg-scale"></a></dt>
 <dd><p>Logical. If <code>TRUE</code> (default), shocks are rescaled to unit
 variance using the implied shock variances recovered from <code>Sig</code> and
-<code>SigR</code>. If <code>FALSE</code>, the raw Kalman filter projection is returned.</p></dd>
+<code>SigR</code>. This scaling assumes that structural shock variances are diagonal,
+so that <code>Sig - SigR = sum_i sigma_i Psi_i Psi_i'</code>. If <code>FALSE</code>, the raw
+Kalman filter projection is returned.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -98,9 +99,30 @@ same number of rows as <code>et</code> and one column per shock dimension.</p>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Burri, M. and Kaufmann, D. (2026). Measuring monetary policy shocks.
-IRENE Working Paper 24-03, IRENE Institute of Economic Research, University of Neuchâtel.</p>
+<em>Economics Letters</em>. <a href="https://doi.org/10.1016/j.econlet.2026.113091" class="external-link">doi:10.1016/j.econlet.2026.113091</a></p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">Sig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">SigR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">Psi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0.5</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">et</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">20</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">kfpredict</span><span class="op">(</span>Sig <span class="op">=</span> <span class="va">Sig</span>, SigR <span class="op">=</span> <span class="va">SigR</span>, Psi <span class="op">=</span> <span class="va">Psi</span>, et <span class="op">=</span> <span class="va">et</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              [,1]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] -0.53121758</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,]  0.29646687</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,]  1.11203917</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] -0.74216125</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,]  0.87744535</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,]  0.38718522</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,]  0.26866947</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] -0.37366525</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] -0.15323607</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,]  0.01922568</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
@@ -110,7 +132,7 @@ IRENE Working Paper 24-03, IRENE Institute of Economic Research, University of N
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

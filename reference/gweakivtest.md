@@ -19,7 +19,8 @@ gweakivtest(
   tau = 0.1,
   points = 1000L,
   target = "beta",
-  crit = "abs"
+  crit = "abs",
+  seed = 12345L
 )
 ```
 
@@ -72,6 +73,13 @@ gweakivtest(
   Bias criterion: `"abs"` (absolute bias, default) or `"rel"` (relative
   bias). `"abs"` requires the error covariance matrix; `"rel"` does not.
 
+- seed:
+
+  Integer seed used for the random Stiefel starting points when
+  computing the sharp critical value. The default is fixed for
+  reproducible critical values and the caller's RNG state is restored
+  afterwards. Use `NA` to leave the RNG unmanaged.
+
 ## Value
 
 A named list with the following elements:
@@ -116,7 +124,7 @@ A named list with the following elements:
 
 Lazarus, E., Lewis, D. J., Stock, J. H. and Watson, M. W. (2018). HAR
 inference: recommendations for practice. *Journal of Business & Economic
-Statistics*, 36(4), 541–559.
+Statistics*, 36(4), 541-559.
 
 Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments
 for 2SLS with multiple endogenous regressors. *The Review of Economic
@@ -125,4 +133,43 @@ Studies*, DOI: 10.1093/restud/rdaf103.
 Stock, J. H. and Yogo, M. (2005). Testing for weak instruments in linear
 IV regression. In D. W. K. Andrews and J. H. Stock (Eds.),
 *Identification and inference for econometric models: essays in honor of
-Thomas Rothenberg*, pp. 80–108. Cambridge University Press.
+Thomas Rothenberg*, pp. 80-108. Cambridge University Press.
+
+## Examples
+
+``` r
+set.seed(1)
+n <- 80
+Z <- matrix(rnorm(n), ncol = 1)
+X <- matrix(1, n, 1)
+Y <- 0.8 * Z + rnorm(n)
+y <- 1.5 * Y + rnorm(n)
+gweakivtest(y = y, Y = Y, X = X, Z = Z, points = 1)
+#> $nobs
+#> [1] 80
+#> 
+#> $beta_2SLS
+#> [1] 1.885098
+#> 
+#> $target
+#> [1] "beta vector"
+#> 
+#> $criterion
+#> [1] "abs"
+#> 
+#> $gmin_generalized
+#> [1] 18.31699
+#> 
+#> $gmin_generalized_critical_value
+#> [1] 14.39938
+#> 
+#> $gmin_generalized_critical_value_simplified
+#> [1] 14.39938
+#> 
+#> $stock_yogo_test_statistic
+#> [1] 20.28379
+#> 
+#> $stock_yogo_critical_value_nagar
+#> [1] NaN
+#> 
+```

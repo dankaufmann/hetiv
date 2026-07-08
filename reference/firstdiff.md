@@ -20,3 +20,10 @@ firstdiff(TS)
 
 A numeric vector of the same length as `TS`, with `NA` in the first
 position.
+
+## Examples
+
+``` r
+firstdiff(c(1, 3, 6))
+#> [1] NA  2  3
+```

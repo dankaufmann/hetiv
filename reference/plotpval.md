@@ -38,3 +38,14 @@ plotpval(pvals, HTick, Labels, sigLevels = c(0.05, 0.1))
 
 A list of `ggplot` objects, one per variable-shock combination, ordered
 by shock (outer loop) then variable (inner loop).
+
+## Examples
+
+``` r
+pvals <- array(c(0.2, 0.08, 0.04), dim = c(3, 1, 1))
+dimnames(pvals)[[1]] <- 0:2
+plotpval(pvals, HTick = 1, Labels = "Output")
+#> [[1]]
+
+#> 
+```

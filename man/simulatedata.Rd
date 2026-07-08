@@ -25,7 +25,8 @@ initialise the VAR but are discarded before returning.}
 
 \item{R}{Number of regular shocks.}
 
-\item{E}{Number of event shocks. For GARCH shock distributions (\code{eDist = c(alpha, beta)}), only \code{E = 1} is supported.}
+\item{E}{Number of event shocks. For GARCH shock distributions
+(\code{eDist = c(alpha, beta)}), only \code{E = 1} is supported.}
 
 \item{Nevn}{Event frequency: an event shock occurs every \code{Nevn} periods.
 Set to \code{0} to suppress event shocks entirely (no heteroskedasticity).}
@@ -58,4 +59,15 @@ A named list with components:
 Simulates data from a VAR(P) model with two types of structural shocks:
 regular shocks (always present) and event shocks (occurring every \code{Nevn}
 periods). The shock distribution can be normal, Student-t, or GARCH(1,1).
+}
+\examples{
+N <- 2
+Phi <- array(0, dim = c(N, N, 1))
+Phi[, , 1] <- diag(c(0.4, 0.2))
+simulatedata(
+  Phi = Phi, SigE = 2, PsiE = matrix(c(1, 0.5), N, 1),
+  PsiR = diag(N), Nobs = 20, Nbin = 5, N = N, R = N, E = 1,
+  Nevn = 5, P = 1, eDist = 0, seed = 1
+)
+
 }

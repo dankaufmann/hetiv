@@ -1,1 +1,16 @@
 ^LICENSE\.md$
+^\.github$
+^\.lintr$
+^\.Rproj\.user$
+^.*\.Rproj$
+^\.DS_Store$
+^CONTRIBUTING\.md$
+^_pkgdown\.yml$
+^cran-comments\.md$
+^docs$
+^figure$
+^literature$
+^vignettes/.*\.html$
+^hetiv_.*\.tar\.gz$
+^hetiv\.Rcheck$
+^README\.Rmd$

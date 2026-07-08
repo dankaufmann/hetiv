@@ -11,10 +11,20 @@
 #'
 #' @importFrom zoo na.approx
 #'
+#' @examples
+#' filllinear(data.frame(x = c(1, NA, 3), y = c(2, NA, 4)), gap = 1)
+#'
 #' @export
 filllinear <- function(DF, gap) {
+  if (!is.data.frame(DF) && !is.matrix(DF)) {
+    stop("DF must be a data frame or matrix.", call. = FALSE)
+  }
+  if (!all(vapply(as.data.frame(DF), is.numeric, logical(1)))) {
+    stop("All columns in DF must be numeric.", call. = FALSE)
+  }
+  gap <- .check_integerish_scalar(gap, "gap", min = 0)
   for (Stats in colnames(DF)) {
     DF[, Stats] <- zoo::na.approx(DF[, Stats], na.rm = FALSE, maxgap = gap)
   }
-  return(DF)
+  DF
 }

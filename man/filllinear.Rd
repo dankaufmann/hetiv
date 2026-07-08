@@ -19,3 +19,7 @@ Fills missing values (\code{NA}) in every column of a data frame using linear
 interpolation, up to a maximum of \code{gap} consecutive missing observations.
 Gaps longer than \code{gap} are left as \code{NA}.
 }
+\examples{
+filllinear(data.frame(x = c(1, NA, 3), y = c(2, NA, 4)), gap = 1)
+
+}

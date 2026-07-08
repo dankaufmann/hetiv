@@ -27,3 +27,10 @@ are labelled \code{0} to \code{H-1}.}
 Recursively computes IRFs given an impact matrix and VAR coefficient array.
 Optionally cumulates responses for selected variables.
 }
+\examples{
+Psi <- matrix(c(1, 0.5), nrow = 2)
+Phi <- array(0, dim = c(2, 2, 1))
+Phi[, , 1] <- matrix(c(0.4, 0.1, 0, 0.3), 2, 2)
+computeirf(Psi = Psi, Phi = Phi, H = 4, cum = FALSE)
+
+}

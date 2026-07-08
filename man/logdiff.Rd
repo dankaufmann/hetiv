@@ -18,3 +18,7 @@ Computes the first log-difference of a numeric vector or time series,
 i.e. \verb{log(x_t) - log(x_\{t-1\})}. Gaps in dates are ignored; the difference
 is always taken with respect to the immediately preceding observation.
 }
+\examples{
+logdiff(c(1, 2, 4))
+
+}

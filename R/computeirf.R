@@ -15,22 +15,26 @@
 #'     are labelled `0` to `H-1`.}
 #' }
 #'
+#' @examples
+#' Psi <- matrix(c(1, 0.5), nrow = 2)
+#' Phi <- array(0, dim = c(2, 2, 1))
+#' Phi[, , 1] <- matrix(c(0.4, 0.1, 0, 0.3), 2, 2)
+#' computeirf(Psi = Psi, Phi = Phi, H = 4, cum = FALSE)
+#'
 #' @export
 computeirf <- function(Psi, Phi, H, cum) {
-  if (dim(Phi)[1] != dim(Phi)[2])
-    stop("Each Phi slice must be a square matrix (N x N).")
-  if (dim(Psi)[1] != dim(Phi)[1])
-    stop("Psi and Phi must have the same first dimension (N).")
-  if (H < 1)
-    stop("H must be a positive integer.")
+  Phi <- .as_numeric_array3(Phi, "Phi", allow_na = FALSE)
+  if (dim(Phi)[1] != dim(Phi)[2]) {
+    stop("Each Phi slice must be a square matrix (N x N).", call. = FALSE)
+  }
+  Psi <- .as_numeric_matrix(Psi, "Psi", nrow = dim(Phi)[1], allow_na = FALSE)
+  H <- .check_integerish_scalar(H, "H", min = 1)
 
   N <- dim(Phi)[1]
   P <- dim(Phi)[3]
   R <- dim(Psi)[2]
 
-  if (length(cum) == 1) {
-    cum <- rep(cum, N)
-  }
+  cum <- .check_cum(cum, N)
 
   irf <- array(0, dim = c(H, N, R))
 
@@ -54,5 +58,5 @@ computeirf <- function(Psi, Phi, H, cum) {
     }
   }
 
-  return(irf)
+  irf
 }

@@ -9,9 +9,14 @@
 #' @return A numeric vector of the same length as `TS`, with `NA` in the
 #'   first position.
 #'
+#' @examples
+#' logdiff(c(1, 2, 4))
+#'
 #' @export
 logdiff <- function(TS) {
-  if (any(TS <= 0, na.rm = TRUE))
+  if (!is.numeric(TS)) stop("TS must be numeric.", call. = FALSE)
+  if (any(TS <= 0, na.rm = TRUE)) {
     warning("Non-positive values in TS; log-differences will contain NaN.")
+  }
   log(TS) - dplyr::lag(log(TS), 1)
 }

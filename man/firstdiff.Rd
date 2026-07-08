@@ -18,3 +18,7 @@ Computes the first difference of a numeric vector or time series,
 i.e. \verb{x_t - x_\{t-1\}}. Gaps in dates are ignored; the difference is always
 taken with respect to the immediately preceding observation.
 }
+\examples{
+firstdiff(c(1, 3, 6))
+
+}

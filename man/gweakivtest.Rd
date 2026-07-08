@@ -14,7 +14,8 @@ gweakivtest(
   tau = 0.1,
   points = 1000L,
   target = "beta",
-  crit = "abs"
+  crit = "abs",
+  seed = 12345L
 )
 }
 \arguments{
@@ -46,6 +47,11 @@ or a positive integer \code{j <= N} to target the single coefficient
 \item{crit}{Bias criterion: \code{"abs"} (absolute bias, default) or \code{"rel"}
 (relative bias). \code{"abs"} requires the error covariance matrix; \code{"rel"}
 does not.}
+
+\item{seed}{Integer seed used for the random Stiefel starting points when
+computing the sharp critical value. The default is fixed for reproducible
+critical values and the caller's RNG state is restored afterwards. Use
+\code{NA} to leave the RNG unmanaged.}
 }
 \value{
 A named list with the following elements:
@@ -73,10 +79,20 @@ test is robust to heteroskedasticity and autocorrelation and nests the
 classical Stock-Yogo (2005) test as a special case. The function is a direct port
 from the Matlab codes by Lewis and Mertens (2025)
 }
+\examples{
+set.seed(1)
+n <- 80
+Z <- matrix(rnorm(n), ncol = 1)
+X <- matrix(1, n, 1)
+Y <- 0.8 * Z + rnorm(n)
+y <- 1.5 * Y + rnorm(n)
+gweakivtest(y = y, Y = Y, X = X, Z = Z, points = 1)
+
+}
 \references{
 Lazarus, E., Lewis, D. J., Stock, J. H. and Watson, M. W. (2018).
 HAR inference: recommendations for practice. \emph{Journal of Business &
-Economic Statistics}, 36(4), 541–559.
+Economic Statistics}, 36(4), 541-559.
 
 Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments for
 2SLS with multiple endogenous regressors. \emph{The Review of Economic Studies},
@@ -85,5 +101,5 @@ DOI: 10.1093/restud/rdaf103.
 Stock, J. H. and Yogo, M. (2005). Testing for weak instruments in linear IV
 regression. In D. W. K. Andrews and J. H. Stock (Eds.), \emph{Identification and
 inference for econometric models: essays in honor of Thomas Rothenberg},
-pp. 80–108. Cambridge University Press.
+pp. 80-108. Cambridge University Press.
 }

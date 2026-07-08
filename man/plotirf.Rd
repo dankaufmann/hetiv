@@ -31,3 +31,10 @@ with optional confidence bands. Returns a list of \code{ggplot}
 objects (one per variable-shock combination) that can be arranged with
 e.g. \code{cowplot::plot_grid()}.
 }
+\examples{
+irf <- array(c(1, 0.5, 0.2, 0.1), dim = c(4, 1, 1))
+dimnames(irf)[[1]] <- 0:3
+se <- array(0.1, dim = dim(irf), dimnames = dimnames(irf))
+plotirf(irf, se, HTick = 1, Labels = "Output")
+
+}

@@ -16,6 +16,7 @@ proxyiv(
   norm = 1,
   cum = FALSE,
   Hstep = 1,
+  cov_type = "HC0",
   recursive = FALSE,
   details = FALSE
 )
@@ -31,10 +32,10 @@ identical to \code{y}. Included as lags 1 through \code{P}.}
 
 \item{Z}{Numeric matrix of external instruments (T x E). Column \code{e} is used
 as the proxy for shock dimension \code{e}. Missing values on control days
-(\code{Ind == 0}) are treated as contaminated and excluded from estimation;
-missing values on policy days (\code{Ind == 1}) are retained so that those
-observations remain available for shock prediction even when the instrument
-is unobserved.}
+(\code{Ind == 0}) are treated as contaminated and excluded from estimation.
+Missing values on policy days (\code{Ind == 1}) remain labelled as events for
+residual-based shock prediction, but are necessarily dropped from IV
+regressions that use the missing proxy.}
 
 \item{X}{Numeric matrix of deterministic variables (T x K), or \code{NULL}
 (default). May include a constant, time trend, or seasonal dummies.
@@ -63,9 +64,16 @@ the cumulative IRF is reported. A single value is recycled to all
 variables. Default \code{FALSE}.}
 
 \item{Hstep}{Integer. Step size between horizons. The default \code{1} estimates
-all horizons 0 through H - 1. Values greater than 1 are intended only for
-fast testing; they are only safe when \code{Hstep >= H} (a single horizon is
-stored). For complete IRF estimation always use \code{Hstep = 1}. Default \code{1}.}
+all horizons 0 through H - 1. Values greater than 1 estimate only the
+selected horizons. Default \code{1}.}
+
+\item{cov_type}{Covariance estimator for local-projection standard errors:
+\code{"HC0"} (default) for heteroskedasticity-robust standard errors or \code{"NW"}
+for Newey-West HAC standard errors. \code{"HC0"} is the default because
+Montiel Olea et al. (2025) show that heteroskedasticity-robust standard
+errors suffice for local-projection impulse responses under weak
+conditions, even though multi-step forecast errors are typically serially
+correlated. \code{"NW"} remains available as an optional HAC robustness check.}
 
 \item{recursive}{Logical. If \code{TRUE}, imposes recursive zero restrictions
 across shock dimensions: for shock \code{e > 1}, the variables and instruments
@@ -80,8 +88,7 @@ bootstrap).}
 A named list. Always contains:
 \describe{
 \item{\code{irf}}{Array (H x N x E) of estimated impulse responses.}
-\item{\code{se}}{Array (H x N x E) of HC0 heteroscedasticity-robust standard
-errors.}
+\item{\code{se}}{Array (H x N x E) of local-projection standard errors.}
 \item{\code{Method}}{Character string \code{"Proxy-IV"}.}
 }
 With \code{details = TRUE}, additionally contains:
@@ -91,7 +98,9 @@ and shock dimension.}
 \item{\code{OLSRes}}{List of OLS model objects used for residual-based
 covariance estimation, one per outcome variable.}
 \item{\code{Obs}}{Data frame with observation counts: \code{Tp} (policy days),
-\code{Tc} (control days), \code{To} (contaminated days), \code{Tt} (total used).}
+\code{Tc} (control days), \code{To} (contaminated days), \code{Tt} (labelled event or
+control days), and \code{Tiv} (complete observations available to the IV
+regression at the impact horizon).}
 \item{\code{et}}{Data frame of OLS residuals on event days.}
 \item{\code{Sig}}{Covariance matrix of residuals on event days.}
 \item{\code{SigR}}{Covariance matrix of residuals on control days, or \code{NA}
@@ -106,16 +115,34 @@ the Lewis-Mertens (2025) weak instrument test.}
 }
 \description{
 Estimates impulse response functions (IRFs) using user-provided external
-instruments (proxies) combined with local projections (Jordà, 2005). The
+instruments (proxies) combined with local projections (Jorda, 2005). The
 proxy variables serve directly as instruments for the endogenous shock
 variables. Optionally imposes recursive zero restrictions across shock
 dimensions and supports deterministic controls following the same
 conventions as \code{\link[=hetiv]{hetiv()}}.
-d only).
+}
+\details{
+For \code{E > 1}, identification can be order-dependent: the column order
+of \code{y} defines the endogenous shock variables and normalizations, the
+column order of \code{Z} assigns proxies to shock dimensions, and
+\code{recursive = TRUE} imposes restrictions in that order.
+}
+\examples{
+set.seed(1)
+y <- matrix(rnorm(80), ncol = 2)
+Ind <- rep(0L, nrow(y))
+Ind[seq(5, nrow(y), by = 5)] <- 1L
+Z <- matrix(Ind * y[, 1] + rnorm(nrow(y)), ncol = 1)
+res <- proxyiv(
+  y = y, O = y, Z = Z, Ind = Ind, P = 1, H = 3,
+  details = TRUE
+)
+dim(res$irf)
+
 }
 \references{
-Jordà, Ò. (2005). Estimation and inference of impulse responses by local
-projections. \emph{American Economic Review}, 95(1), 161–182.
+Jorda, O. (2005). Estimation and inference of impulse responses by local
+projections. \emph{American Economic Review}, 95(1), 161-182.
 
 Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments for
 2SLS with multiple endogenous regressors. \emph{The Review of Economic Studies},
@@ -123,9 +150,13 @@ DOI: 10.1093/restud/rdaf103
 
 Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and
 corporate income tax changes in the United States. \emph{American Economic
-Review}, 103(4), 1212–1247.
+Review}, 103(4), 1212-1247.
+
+Montiel Olea, J. L., M. Plagborg-Moller, E. Qian, and C. K. Wolf (2025).
+Local projections or VARs? A primer for macroeconomists. \emph{NBER Working
+Paper} No. 33871.
 
 Stock, J. H. and Watson, M. W. (2018). Identification and estimation of
 dynamic causal effects in macroeconomics using external instruments.
-\emph{Economic Journal}, 128(610), 917–948.
+\emph{Economic Journal}, 128(610), 917-948.
 }

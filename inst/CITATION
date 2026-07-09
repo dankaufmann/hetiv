@@ -20,6 +20,24 @@ c(
     )
   ),
   bibentry(
+    bibtype = "TechReport",
+    title = "Measuring monetary policy shocks",
+    author = c(
+      person("Marc", "Burri"),
+      person("Daniel", "Kaufmann")
+    ),
+    year = "2026",
+    institution = "IRENE Institute of Economic Research, University of Neuchatel",
+    number = "24-03",
+    series = "IRENE Working Papers",
+    textVersion = paste(
+      "Burri, M. and Kaufmann, D. (2026).",
+      "Measuring monetary policy shocks.",
+      "IRENE Working Papers 24-03,",
+      "IRENE Institute of Economic Research, University of Neuchatel."
+    )
+  ),
+  bibentry(
     bibtype = "Article",
     title = "Multiple monetary policy shocks from daily data: A heteroskedasticity IV approach",
     author = c(

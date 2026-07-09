@@ -28,8 +28,9 @@
 #'   same number of rows as `et` and one column per shock dimension.
 #'
 #' @references
-#' Burri, M. and Kaufmann, D. (2026). Measuring monetary policy shocks.
-#' *Economics Letters*. \doi{10.1016/j.econlet.2026.113091}
+#' Burri, M. and Kaufmann, D. (2026a). Measuring monetary policy shocks.
+#' IRENE Working Papers 24-03, IRENE Institute of Economic Research,
+#' University of Neuchatel.
 #'
 #' @importFrom MASS ginv
 #'

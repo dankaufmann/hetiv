@@ -2,16 +2,18 @@ Package: hetiv
 Title: Heteroskedasticity and Proxy-Based IV Methods
 Version: 1.0.0
 Authors@R:
-    c(person("Daniel", "Kaufmann", email = "info@dankaufmann.com", role = c("aut", "cre", "cph")),
+    c(person("Daniel", "Kaufmann", email = "info@dankaufmann.com",
+        role = c("aut", "cre", "cph")),
       person("Marc", "Burri", role = "aut"),
       person("Valentin", "Grob", role = "aut"))
 Description: Tools for identifying structural shocks using heteroskedasticity-
     and proxy-based instrumental variable (IV) methods in event-study settings.
     Supports local projection impulse response estimation of Jorda (2005)
     <doi:10.1257/0002828053828518>, generalised weak instrument testing of
-    Lewis and Mertens (2025) <doi:10.1093/restud/rdaf103>, and
-    Kalman-filter shock extraction of Burri and Kaufmann (2026)
-    <doi:10.1016/j.econlet.2026.113091>.
+    Lewis and Mertens (2025) <doi:10.1093/restud/rdaf103>, recursive
+    heteroskedasticity-IV identification of Burri and Kaufmann (2026b)
+    <doi:10.1016/j.econlet.2026.113091>, and Kalman-filter shock extraction
+    of Burri and Kaufmann (2026a).
 URL: https://dankaufmann.github.io/hetiv/, https://github.com/dankaufmann/hetiv
 BugReports: https://github.com/dankaufmann/hetiv/issues
 License: MIT + file LICENSE

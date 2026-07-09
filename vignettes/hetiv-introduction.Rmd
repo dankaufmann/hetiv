@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 
 **hetiv** provides tools for measuring and identifying multi-dimensional structural shocks in dynamic models using two complementary IV approaches:
 
-- **Heteroskedasticity-IV** (Rigobon 2003, Rigobon and Sack 2004, Lewis 2022, Burri and Kaufmann, 2026a): exploits the higher
+- **Heteroskedasticity-IV** (Rigobon 2003, Rigobon and Sack 2004, Lewis 2022, Burri and Kaufmann, 2026b): exploits the higher
   variance of outcome variables on policy event days relative to control days to
   identify structural shocks without requiring external instruments.
 - **Proxy-IV** (Mertens and Ravn 2013, Stock and Watson 2018): uses an external
@@ -41,7 +41,7 @@ robustness check.
 
 The package allows for multiple shocks and endogenous variables. Weak-instrument HAR inference is implemented via the generalised minimum eigenvalue test of Lewis and Mertens (2025), which nests the classical Stock-Yogo (2005) test for the univariate homoskedastic case. `gweakivtest()` is a direct port of the Matlab files by Lewis and Mertens (2025) available on **https://karelmertens.com/research/**.
 
-In addition, the package provides `kfpredict()` for predicting the underlying unobserved shocks based on the Kalman filter, as suggested by Burri and Kaufmann (2026b).
+In addition, the package provides `kfpredict()` for predicting the underlying unobserved shocks based on the Kalman filter, as suggested by Burri and Kaufmann (2026a).
 
 This vignette demonstrates the functionality using a simulated four-variable VAR
 with two structural shocks.
@@ -57,7 +57,7 @@ $$y_t =  \Gamma v_t + \Phi(L) y_{t-1} + \beta X_t \ \ \text{for } t\in \mathcal{
 
 where $\mathcal{P}, \mathcal{C}$ denote policy event and other days, respectively, $\Psi$ is the impact matrix of $E$ policy event shocks and $\Gamma$ the impact matrix of $R$ other shocks. $\Phi(L)$ is a conformable lag polynomial, and $X_t$ is a matrix of deterministic terms.
 
-Regular shocks occur on all days. A policy event occurs every 10th period (approximately 10% of observations). The latter introduces heteroskedasticity in the variance-covariance matrix of the reduced-form residuals `hetiv()` exploits to identify the impulse response functions. Shocks are drawn from a standard normal distribution. The impact matrix is lower-triangular, corresponding to the identifying assumption by Burri and Kaufmann (2026a) that the first shock has a contemporaneous effect on all variables, while the second shock has no contemporaneous effect on the first variable. Deterministic weekday patterns are added to variables 3 and 4 to illustrate the role of controls. The event indicator `Ind` equals 1 on policy event days and 0 on control days.
+Regular shocks occur on all days. A policy event occurs every 10th period (approximately 10% of observations). The latter introduces heteroskedasticity in the variance-covariance matrix of the reduced-form residuals `hetiv()` exploits to identify the impulse response functions. Shocks are drawn from a standard normal distribution. The impact matrix is lower-triangular, corresponding to the identifying assumption by Burri and Kaufmann (2026b) that the first shock has a contemporaneous effect on all variables, while the second shock has no contemporaneous effect on the first variable. Deterministic weekday patterns are added to variables 3 and 4 to illustrate the role of controls. The event indicator `Ind` equals 1 on policy event days and 0 on control days.
 
 
 ```{r dgp}
@@ -516,11 +516,12 @@ The specification without controls is affected by a weak instrument problem. The
 ## References
 
 Burri, M. and Kaufmann, D. (2026a). Measuring monetary policy shocks.
-*Economics Letters*. <https://doi.org/10.1016/j.econlet.2026.113091>
+*IRENE Working Papers* 24-03, IRENE Institute of Economic Research,
+University of Neuchâtel.
 
 Burri, M. and Kaufmann, D. (2026b). Multiple monetary policy shocks from daily
-data: A heteroskedasticity IV approach. *IRENE Working Papers* 26-06, IRENE
-Institute of Economic Research, University of Neuchâtel.
+data: A heteroskedasticity IV approach. *Economics Letters*, 268, 113091.
+<https://doi.org/10.1016/j.econlet.2026.113091>
 
 Jordà, Ò. (2005). Estimation and inference of impulse responses by local
 projections. *American Economic Review*, 95(1), 161–182.
@@ -529,7 +530,7 @@ Lewis, D. J. (2022). Robust inference in models identified via
 heteroskedasticity. *Review of Economics and Statistics*, 104(3), 510–524.
 
 Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments for
-2SLS with multiple endogenous regressors. *The Review of Economic Studies*,
+2SLS with multiple endogenous regressors. *Review of Economic Studies*,
 DOI: 10.1093/restud/rdaf103.
 
 Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and

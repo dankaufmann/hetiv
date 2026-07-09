@@ -10,12 +10,12 @@ c(
       person("Valentin", "Grob")
     ),
     year = "2026",
-    note = "R package version 1.0.0",
+    note = "R package version 0.1.0",
     url = "https://dankaufmann.github.io/hetiv/",
     textVersion = paste(
       "Kaufmann, D., Burri, M., and Grob, V. (2026).",
       "hetiv: Heteroskedasticity and Proxy-Based IV Methods.",
-      "R package version 1.0.0.",
+      "R package version 0.1.0.",
       "https://dankaufmann.github.io/hetiv/"
     )
   ),

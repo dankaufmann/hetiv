@@ -6,15 +6,15 @@ home:
 
 template:
   bootstrap: 5
+  math-rendering: mathjax
+  light-switch: true
 
-navbar:
-  structure:
-    left:  [intro, reference, articles]
-    right: [github]
-  components:
-    github:
-      icon: fab fa-github
-      href: https://github.com/dankaufmann/hetiv
+authors:
+  Daniel Kaufmann:
+    href: https://dankaufmann.com
+  Marc Burri:
+    href: https://marcburri.github.io
+  Valentin Grob
 
 reference:
   - title: Estimation
@@ -44,9 +44,3 @@ reference:
       - logdiff
       - firstdiff
       - filllinear
-
-articles:
-  - title: Vignettes
-    navbar: ~
-    contents:
-      - hetiv-introduction

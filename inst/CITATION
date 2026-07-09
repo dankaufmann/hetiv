@@ -1,0 +1,58 @@
+citHeader("To cite hetiv in publications use:")
+
+c(
+  bibentry(
+    bibtype = "Manual",
+    title = "hetiv: Heteroskedasticity and Proxy-Based IV Methods",
+    author = c(
+      person("Daniel", "Kaufmann"),
+      person("Marc", "Burri"),
+      person("Valentin", "Grob")
+    ),
+    year = "2026",
+    note = "R package version 1.0.0",
+    url = "https://dankaufmann.github.io/hetiv/",
+    textVersion = paste(
+      "Kaufmann, D., Burri, M., and Grob, V. (2026).",
+      "hetiv: Heteroskedasticity and Proxy-Based IV Methods.",
+      "R package version 1.0.0.",
+      "https://dankaufmann.github.io/hetiv/"
+    )
+  ),
+  bibentry(
+    bibtype = "Article",
+    title = "Multiple monetary policy shocks from daily data: A heteroskedasticity IV approach",
+    author = c(
+      person("Marc", "Burri"),
+      person("Daniel", "Kaufmann")
+    ),
+    journal = "Economics Letters",
+    year = "2026",
+    volume = "268",
+    pages = "113091",
+    doi = "10.1016/j.econlet.2026.113091",
+    textVersion = paste(
+      "Burri, M. and Kaufmann, D. (2026).",
+      "Multiple monetary policy shocks from daily data: A heteroskedasticity IV approach.",
+      "Economics Letters, 268, 113091.",
+      "doi:10.1016/j.econlet.2026.113091"
+    )
+  ),
+  bibentry(
+    bibtype = "Article",
+    title = "A Robust Test for Weak Instruments for 2SLS with Multiple Endogenous Regressors",
+    author = c(
+      person("Daniel J.", "Lewis"),
+      person("Karel", "Mertens")
+    ),
+    journal = "Review of Economic Studies",
+    year = "2025",
+    doi = "10.1093/restud/rdaf103",
+    textVersion = paste(
+      "Lewis, D. J. and Mertens, K. (2025).",
+      "A robust test for weak instruments for 2SLS with multiple endogenous regressors.",
+      "Review of Economic Studies.",
+      "doi:10.1093/restud/rdaf103"
+    )
+  )
+)

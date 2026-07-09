@@ -22,13 +22,6 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Config/roxygen2/version: 7.3.3
 VignetteBuilder: knitr
-Suggests:
-    covr,
-    cowplot,
-    knitr,
-    pkgdown,
-    rmarkdown,
-    testthat (>= 3.0.0)
 Imports:
     dplyr,
     ggplot2,
@@ -38,3 +31,8 @@ Imports:
     rlang,
     sandwich,
     zoo
+Suggests:
+    cowplot,
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)

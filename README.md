@@ -7,9 +7,10 @@
 
 [![R-CMD-check](https://github.com/dankaufmann/hetiv/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/dankaufmann/hetiv/actions/workflows/R-CMD-check.yaml)
 [![pkgdown](https://github.com/dankaufmann/hetiv/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/dankaufmann/hetiv/actions/workflows/pkgdown.yaml)
-[![coverage](https://github.com/dankaufmann/hetiv/actions/workflows/coverage.yaml/badge.svg)](https://github.com/dankaufmann/hetiv/actions/workflows/coverage.yaml)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
+[![Codecov test
+coverage](https://codecov.io/gh/dankaufmann/hetiv/graph/badge.svg)](https://app.codecov.io/gh/dankaufmann/hetiv)
 <!-- badges: end -->
 
 An R package for measuring and identifying structural shocks using

@@ -42,22 +42,20 @@ four-variable VAR with two structural shocks.
 
 ## Simulated data
 
-We simulate data from a VAR(2) with $`N = 4`$ variables, $`E = 2`$ event
-(policy) shocks, $`R = 2`$ regular shocks, and $`P = 2`$ lags over
-$`T = 500`$ observations. The model reads:
+We simulate data from a VAR(2) with \\N = 4\\ variables, \\E = 2\\ event
+(policy) shocks, \\R = 2\\ regular shocks, and \\P = 2\\ lags over \\T =
+500\\ observations. The model reads:
 
-``` math
-y_t = \Psi \varepsilon_t + \Gamma v_t + \Phi(L) y_{t-1} + \beta X_t \ \ \text{for } t\in \mathcal{P}
-```
+\\y_t = \Psi \varepsilon_t + \Gamma v_t + \Phi(L) y\_{t-1} + \beta X_t
+\\ \\ \text{for } t\in \mathcal{P}\\
 
-``` math
-y_t =  \Gamma v_t + \Phi(L) y_{t-1} + \beta X_t \ \ \text{for } t\in \mathcal{C}
-```
+\\y_t = \Gamma v_t + \Phi(L) y\_{t-1} + \beta X_t \\ \\ \text{for } t\in
+\mathcal{C}\\
 
-where $`\mathcal{P}, \mathcal{C}`$ denote policy event and other days,
-respectively, $`\Psi`$ is the impact matrix of $`E`$ policy event shocks
-and $`\Gamma`$ the impact matrix of $`R`$ other shocks. $`\Phi(L)`$ is a
-conformable lag polynomial, and $`X_t`$ is a matrix of deterministic
+where \\\mathcal{P}, \mathcal{C}\\ denote policy event and other days,
+respectively, \\\Psi\\ is the impact matrix of \\E\\ policy event shocks
+and \\\Gamma\\ the impact matrix of \\R\\ other shocks. \\\Phi(L)\\ is a
+conformable lag polynomial, and \\X_t\\ is a matrix of deterministic
 terms.
 
 Regular shocks occur on all days. A policy event occurs every 10th
@@ -173,7 +171,7 @@ res_het <- hetiv(
 
 ### Heteroskedasticity-IV with controls
 
-Second, we estimate the correctly specified model, with $`P = 2`$ lags
+Second, we estimate the correctly specified model, with \\P = 2\\ lags
 and the weekday dummies. Note that the weekday dummies absorb the
 deterministic pattern that we added to the data. The regressions
 generally include a constant term. Therefore, we only add four weekday
@@ -254,9 +252,9 @@ res_proxy_rec <- proxyiv(
 
 ## Impact matrices
 
-The estimated impact matrix $`\Psi`$ gives the contemporaneous responses
-of all $`N`$ variables to each structural shock. We can compare the
-estimates across the four specifications against the true $`\Psi`$. At
+The estimated impact matrix \\\Psi\\ gives the contemporaneous responses
+of all \\N\\ variables to each structural shock. We can compare the
+estimates across the four specifications against the true \\\Psi\\. At
 first sight, the differences are small. As we will see below, there are
 still some differences in terms of the accuracy of the estimates, the
 predicted shocks, and the strength of the instruments.
@@ -291,7 +289,7 @@ knitr::kable(
 | 0.3 | 0.52 | 0.31 | 0.40 | 0.40 |
 | 0.2 | 0.20 | 0.19 | 0.24 | 0.24 |
 
-Impact matrix estimates ($`\Psi`$) for shock 1 across different
+Impact matrix estimates (\\\Psi\\) for shock 1 across different
 specifications {.table}
 
 ``` r
@@ -325,7 +323,7 @@ knitr::kable(
 | -0.4 | -0.46 | -0.31 | -0.49 | -0.45 |
 | 0.3 | 0.26 | 0.31 | 0.19 | 0.20 |
 
-Impact matrix estimates ($`\Psi`$) for shock 2 across different
+Impact matrix estimates (\\\Psi\\) for shock 2 across different
 specifications {.table}
 
 ## Impulse response functions

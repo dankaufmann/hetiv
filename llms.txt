@@ -255,7 +255,7 @@ Test for weak instruments (Lewis-Mertens 2025)
 
 # Articles
 
-### Vignettes
+### All vignettes
 
 - [Estimating Dynamic Causal Effects with
   hetiv](https://dankaufmann.github.io/hetiv/articles/hetiv-introduction.md):

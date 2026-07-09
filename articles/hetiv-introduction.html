@@ -6,7 +6,13 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Estimating Dynamic Causal Effects with hetiv • hetiv</title>
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
+  window.MathJax = {
+    chtml: {
+      fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
+    }
+  };
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
@@ -16,7 +22,7 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">hetiv</a>
 
@@ -36,9 +42,21 @@
 <li><a class="dropdown-item" href="../articles/hetiv-introduction.html">Estimating Dynamic Causal Effects with hetiv</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/dankaufmann/hetiv"><span class="fa fab fa-github"></span></a></li>
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/dankaufmann/hetiv/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
+  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
+<li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="dark"><span class="fa fa-moon"></span> Dark</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="auto"><span class="fa fa-adjust"></span> Auto</button></li>
+  </ul>
+</li>
       </ul>
 </div>
 
@@ -55,7 +73,7 @@
                         <h4 data-toc-skip class="author">Daniel
 Kaufmann, Marc Burri, Valentin Grob</h4>
             
-            <h4 data-toc-skip class="date">2026-07-08</h4>
+            <h4 data-toc-skip class="date">2026-07-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/dankaufmann/hetiv/blob/main/vignettes/hetiv-introduction.Rmd" class="external-link"><code>vignettes/hetiv-introduction.Rmd</code></a></small>
       <div class="d-none name"><code>hetiv-introduction.Rmd</code></div>
@@ -105,34 +123,20 @@ four-variable VAR with two structural shocks.</p>
 <div class="section level2">
 <h2 id="simulated-data">Simulated data<a class="anchor" aria-label="anchor" href="#simulated-data"></a>
 </h2>
-<p>We simulate data from a VAR(2) with
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>=</mo><mn>4</mn></mrow><annotation encoding="application/x-tex">N = 4</annotation></semantics></math>
-variables,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>E</mi><mo>=</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">E = 2</annotation></semantics></math>
-event (policy) shocks,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>R</mi><mo>=</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">R = 2</annotation></semantics></math>
-regular shocks, and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo>=</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">P = 2</annotation></semantics></math>
-lags over
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>=</mo><mn>500</mn></mrow><annotation encoding="application/x-tex">T = 500</annotation></semantics></math>
-observations. The model reads:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>t</mi></msub><mo>=</mo><mi mathvariant="normal">Ψ</mi><msub><mi>ε</mi><mi>t</mi></msub><mo>+</mo><mi mathvariant="normal">Γ</mi><msub><mi>v</mi><mi>t</mi></msub><mo>+</mo><mi mathvariant="normal">Φ</mi><mo stretchy="false" form="prefix">(</mo><mi>L</mi><mo stretchy="false" form="postfix">)</mo><msub><mi>y</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>+</mo><mi>β</mi><msub><mi>X</mi><mi>t</mi></msub><mspace width="0.222em"></mspace><mspace width="0.222em"></mspace><mrow><mtext mathvariant="normal">for </mtext><mspace width="0.333em"></mspace></mrow><mi>t</mi><mo>∈</mo><mi>𝒫</mi></mrow><annotation encoding="application/x-tex">y_t = \Psi \varepsilon_t + \Gamma v_t + \Phi(L) y_{t-1} + \beta X_t \ \ \text{for } t\in \mathcal{P}</annotation></semantics></math></p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>t</mi></msub><mo>=</mo><mi mathvariant="normal">Γ</mi><msub><mi>v</mi><mi>t</mi></msub><mo>+</mo><mi mathvariant="normal">Φ</mi><mo stretchy="false" form="prefix">(</mo><mi>L</mi><mo stretchy="false" form="postfix">)</mo><msub><mi>y</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>+</mo><mi>β</mi><msub><mi>X</mi><mi>t</mi></msub><mspace width="0.222em"></mspace><mspace width="0.222em"></mspace><mrow><mtext mathvariant="normal">for </mtext><mspace width="0.333em"></mspace></mrow><mi>t</mi><mo>∈</mo><mi>𝒞</mi></mrow><annotation encoding="application/x-tex">y_t =  \Gamma v_t + \Phi(L) y_{t-1} + \beta X_t \ \ \text{for } t\in \mathcal{C}</annotation></semantics></math></p>
-<p>where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝒫</mi><mo>,</mo><mi>𝒞</mi></mrow><annotation encoding="application/x-tex">\mathcal{P}, \mathcal{C}</annotation></semantics></math>
-denote policy event and other days, respectively,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Ψ</mi><annotation encoding="application/x-tex">\Psi</annotation></semantics></math>
-is the impact matrix of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>E</mi><annotation encoding="application/x-tex">E</annotation></semantics></math>
-policy event shocks and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Γ</mi><annotation encoding="application/x-tex">\Gamma</annotation></semantics></math>
-the impact matrix of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>R</mi><annotation encoding="application/x-tex">R</annotation></semantics></math>
-other shocks.
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Φ</mi><mo stretchy="false" form="prefix">(</mo><mi>L</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\Phi(L)</annotation></semantics></math>
-is a conformable lag polynomial, and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>X</mi><mi>t</mi></msub><annotation encoding="application/x-tex">X_t</annotation></semantics></math>
-is a matrix of deterministic terms.</p>
+<p>We simulate data from a VAR(2) with <span class="math inline">\(N =
+4\)</span> variables, <span class="math inline">\(E = 2\)</span> event
+(policy) shocks, <span class="math inline">\(R = 2\)</span> regular
+shocks, and <span class="math inline">\(P = 2\)</span> lags over <span class="math inline">\(T = 500\)</span> observations. The model
+reads:</p>
+<p><span class="math display">\[y_t = \Psi \varepsilon_t + \Gamma v_t +
+\Phi(L) y_{t-1} + \beta X_t \ \ \text{for } t\in
+\mathcal{P}\]</span></p>
+<p><span class="math display">\[y_t =  \Gamma v_t + \Phi(L) y_{t-1} +
+\beta X_t \ \ \text{for } t\in \mathcal{C}\]</span></p>
+<p>where <span class="math inline">\(\mathcal{P}, \mathcal{C}\)</span>
+denote policy event and other days, respectively, <span class="math inline">\(\Psi\)</span> is the impact matrix of <span class="math inline">\(E\)</span> policy event shocks and <span class="math inline">\(\Gamma\)</span> the impact matrix of <span class="math inline">\(R\)</span> other shocks. <span class="math inline">\(\Phi(L)\)</span> is a conformable lag polynomial,
+and <span class="math inline">\(X_t\)</span> is a matrix of
+deterministic terms.</p>
 <p>Regular shocks occur on all days. A policy event occurs every 10th
 period (approximately 10% of observations). The latter introduces
 heteroskedasticity in the variance-covariance matrix of the reduced-form
@@ -240,12 +244,10 @@ matrix.</p>
 <div class="section level3">
 <h3 id="heteroskedasticity-iv-with-controls">Heteroskedasticity-IV with controls<a class="anchor" aria-label="anchor" href="#heteroskedasticity-iv-with-controls"></a>
 </h3>
-<p>Second, we estimate the correctly specified model, with
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo>=</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">P = 2</annotation></semantics></math>
-lags and the weekday dummies. Note that the weekday dummies absorb the
-deterministic pattern that we added to the data. The regressions
-generally include a constant term. Therefore, we only add four weekday
-dummies.</p>
+<p>Second, we estimate the correctly specified model, with <span class="math inline">\(P = 2\)</span> lags and the weekday dummies. Note
+that the weekday dummies absorb the deterministic pattern that we added
+to the data. The regressions generally include a constant term.
+Therefore, we only add four weekday dummies.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Weekday dummies: four indicator variables (one left out as reference)</span></span>
 <span><span class="va">X_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>, nrow <span class="op">=</span> <span class="va">Nobs</span>, ncol <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
@@ -315,16 +317,13 @@ is convinced that a zero restriction is valid.</p>
 <div class="section level2">
 <h2 id="impact-matrices">Impact matrices<a class="anchor" aria-label="anchor" href="#impact-matrices"></a>
 </h2>
-<p>The estimated impact matrix
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Ψ</mi><annotation encoding="application/x-tex">\Psi</annotation></semantics></math>
-gives the contemporaneous responses of all
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>
-variables to each structural shock. We can compare the estimates across
-the four specifications against the true
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Ψ</mi><annotation encoding="application/x-tex">\Psi</annotation></semantics></math>.
-At first sight, the differences are small. As we will see below, there
-are still some differences in terms of the accuracy of the estimates,
-the predicted shocks, and the strength of the instruments.</p>
+<p>The estimated impact matrix <span class="math inline">\(\Psi\)</span>
+gives the contemporaneous responses of all <span class="math inline">\(N\)</span> variables to each structural shock. We
+can compare the estimates across the four specifications against the
+true <span class="math inline">\(\Psi\)</span>. At first sight, the
+differences are small. As we will see below, there are still some
+differences in terms of the accuracy of the estimates, the predicted
+shocks, and the strength of the instruments.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tab_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  True <span class="op">=</span> <span class="va">PsiE</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>,</span>
@@ -346,9 +345,8 @@ the predicted shocks, and the strength of the instruments.</p>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <table class="table">
-<caption>Impact matrix estimates
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Ψ</mi><annotation encoding="application/x-tex">\Psi</annotation></semantics></math>)
-for shock 1 across different specifications</caption>
+<caption>Impact matrix estimates (<span class="math inline">\(\Psi\)</span>) for shock 1 across different
+specifications</caption>
 <colgroup>
 <col width="4%">
 <col width="22%">
@@ -416,9 +414,8 @@ for shock 1 across different specifications</caption>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <table class="table">
-<caption>Impact matrix estimates
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Ψ</mi><annotation encoding="application/x-tex">\Psi</annotation></semantics></math>)
-for shock 2 across different specifications</caption>
+<caption>Impact matrix estimates (<span class="math inline">\(\Psi\)</span>) for shock 2 across different
+specifications</caption>
 <colgroup>
 <col width="4%">
 <col width="22%">
@@ -885,7 +882,7 @@ pp. 80–108. Cambridge University Press.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Daniel Kaufmann, Marc Burri, Valentin Grob.</p>
+  <p>Developed by <a href="https://dankaufmann.com" class="external-link">Daniel Kaufmann</a>, <a href="https://marcburri.github.io" class="external-link">Marc Burri</a>, Valentin Grob.</p>
 </div>
 
 <div class="pkgdown-footer-right">

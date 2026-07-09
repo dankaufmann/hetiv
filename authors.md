@@ -15,14 +15,14 @@ Source:
 [`inst/CITATION`](https://github.com/dankaufmann/hetiv/blob/main/inst/CITATION)
 
 Kaufmann, D., Burri, M., and Grob, V. (2026). hetiv: Heteroskedasticity
-and Proxy-Based IV Methods. R package version 1.0.0.
+and Proxy-Based IV Methods. R package version 0.1.0.
 https://dankaufmann.github.io/hetiv/
 
     @Manual{,
       title = {hetiv: Heteroskedasticity and Proxy-Based IV Methods},
       author = {Daniel Kaufmann and Marc Burri and Valentin Grob},
       year = {2026},
-      note = {R package version 1.0.0},
+      note = {R package version 0.1.0},
       url = {https://dankaufmann.github.io/hetiv/},
     }
 

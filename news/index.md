@@ -1,6 +1,6 @@
 # Changelog
 
-## hetiv 1.0.0
+## hetiv 0.1.0
 
 - Initial CRAN-ready release.
 - Provides heteroskedasticity-based and proxy-based instrumental

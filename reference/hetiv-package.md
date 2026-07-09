@@ -6,9 +6,10 @@ Supports local projection impulse response estimation of Jorda (2005)
 [doi:10.1257/0002828053828518](https://doi.org/10.1257/0002828053828518)
 , generalised weak instrument testing of Lewis and Mertens (2025)
 [doi:10.1093/restud/rdaf103](https://doi.org/10.1093/restud/rdaf103) ,
-and Kalman-filter shock extraction of Burri and Kaufmann (2026)
+recursive heteroskedasticity-IV identification of Burri and Kaufmann
+(2026b)
 [doi:10.1016/j.econlet.2026.113091](https://doi.org/10.1016/j.econlet.2026.113091)
-.
+, and Kalman-filter shock extraction of Burri and Kaufmann (2026a).
 
 ## See also
 

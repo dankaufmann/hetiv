@@ -90,7 +90,7 @@ complementary IV approaches:</p>
 <ul>
 <li>
 <strong>Heteroskedasticity-IV</strong> (Rigobon 2003, Rigobon and
-Sack 2004, Lewis 2022, Burri and Kaufmann, 2026a): exploits the higher
+Sack 2004, Lewis 2022, Burri and Kaufmann, 2026b): exploits the higher
 variance of outcome variables on policy event days relative to control
 days to identify structural shocks without requiring external
 instruments.</li>
@@ -116,7 +116,7 @@ Stock-Yogo (2005) test for the univariate homoskedastic case.
 and Mertens (2025) available on <strong><a href="https://karelmertens.com/research/" class="external-link uri">https://karelmertens.com/research/</a></strong>.</p>
 <p>In addition, the package provides <code><a href="../reference/kfpredict.html">kfpredict()</a></code> for
 predicting the underlying unobserved shocks based on the Kalman filter,
-as suggested by Burri and Kaufmann (2026b).</p>
+as suggested by Burri and Kaufmann (2026a).</p>
 <p>This vignette demonstrates the functionality using a simulated
 four-variable VAR with two structural shocks.</p>
 </div>
@@ -143,7 +143,7 @@ heteroskedasticity in the variance-covariance matrix of the reduced-form
 residuals <code><a href="../reference/hetiv.html">hetiv()</a></code> exploits to identify the impulse response
 functions. Shocks are drawn from a standard normal distribution. The
 impact matrix is lower-triangular, corresponding to the identifying
-assumption by Burri and Kaufmann (2026a) that the first shock has a
+assumption by Burri and Kaufmann (2026b) that the first shock has a
 contemporaneous effect on all variables, while the second shock has no
 contemporaneous effect on the first variable. Deterministic weekday
 patterns are added to variables 3 and 4 to illustrate the role of
@@ -841,11 +841,11 @@ Pflueger (2013) and Lewis (2022), which is around 23.</p>
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
 <p>Burri, M. and Kaufmann, D. (2026a). Measuring monetary policy shocks.
-<em>Economics Letters</em>. <a href="https://doi.org/10.1016/j.econlet.2026.113091" class="external-link uri">https://doi.org/10.1016/j.econlet.2026.113091</a></p>
+<em>IRENE Working Papers</em> 24-03, IRENE Institute of Economic
+Research, University of Neuchâtel.</p>
 <p>Burri, M. and Kaufmann, D. (2026b). Multiple monetary policy shocks
-from daily data: A heteroskedasticity IV approach. <em>IRENE Working
-Papers</em> 26-06, IRENE Institute of Economic Research, University of
-Neuchâtel.</p>
+from daily data: A heteroskedasticity IV approach. <em>Economics
+Letters</em>, 268, 113091. <a href="https://doi.org/10.1016/j.econlet.2026.113091" class="external-link uri">https://doi.org/10.1016/j.econlet.2026.113091</a></p>
 <p>Jordà, Ò. (2005). Estimation and inference of impulse responses by
 local projections. <em>American Economic Review</em>, 95(1),
 161–182.</p>
@@ -853,8 +853,8 @@ local projections. <em>American Economic Review</em>, 95(1),
 heteroskedasticity. <em>Review of Economics and Statistics</em>, 104(3),
 510–524.</p>
 <p>Lewis, D. J. and Mertens, K. (2025). A robust test for weak
-instruments for 2SLS with multiple endogenous regressors. <em>The Review
-of Economic Studies</em>, DOI: 10.1093/restud/rdaf103.</p>
+instruments for 2SLS with multiple endogenous regressors. <em>Review of
+Economic Studies</em>, DOI: 10.1093/restud/rdaf103.</p>
 <p>Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal
 and corporate income tax changes in the United States. <em>American
 Economic Review</em>, 103(4), 1212–1247.</p>

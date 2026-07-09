@@ -26,6 +26,19 @@ https://dankaufmann.github.io/hetiv/
       url = {https://dankaufmann.github.io/hetiv/},
     }
 
+Burri, M. and Kaufmann, D. (2026). Measuring monetary policy shocks.
+IRENE Working Papers 24-03, IRENE Institute of Economic Research,
+University of Neuchatel.
+
+    @TechReport{,
+      title = {Measuring monetary policy shocks},
+      author = {Marc Burri and Daniel Kaufmann},
+      year = {2026},
+      institution = {IRENE Institute of Economic Research, University of Neuchatel},
+      number = {24-03},
+      series = {IRENE Working Papers},
+    }
+
 Burri, M. and Kaufmann, D. (2026). Multiple monetary policy shocks from
 daily data: A heteroskedasticity IV approach. Economics Letters, 268,
 113091. doi:10.1016/j.econlet.2026.113091

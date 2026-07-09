@@ -170,11 +170,12 @@ sim <- simulatedata(Phi = Phi, SigE = 4, PsiE = PsiE, PsiR = PsiR,
 ## References
 
 Burri, M. and D. Kaufmann (2026a). Measuring monetary policy shocks.
-*Economics Letters*. <https://doi.org/10.1016/j.econlet.2026.113091>
+*IRENE Working Papers* 24-03, IRENE Institute of Economic Research,
+University of Neuchâtel.
 
 Burri, M. and D. Kaufmann (2026b). Multiple monetary policy shocks from
-daily data: A heteroskedasticity IV approach. IRENE Working Papers
-26-06, IRENE Institute of Economic Research, University of Neuchâtel.
+daily data: A heteroskedasticity IV approach. *Economics Letters*, 268,
+113091. <https://doi.org/10.1016/j.econlet.2026.113091>
 
 Jordà, Ò. (2005). Estimation and inference of impulse responses by local
 projections. *American Economic Review*, 95(1), 161-182.
@@ -184,7 +185,7 @@ heteroskedasticity. *Review of Economics and Statistics*, 104(3),
 510-524.
 
 Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments
-for 2SLS with multiple endogenous regressors. *The Review of Economic
+for 2SLS with multiple endogenous regressors. *Review of Economic
 Studies*, DOI: 10.1093/restud/rdaf103.
 
 Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and

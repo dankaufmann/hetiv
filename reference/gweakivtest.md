@@ -127,7 +127,7 @@ inference: recommendations for practice. *Journal of Business & Economic
 Statistics*, 36(4), 541-559.
 
 Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments
-for 2SLS with multiple endogenous regressors. *The Review of Economic
+for 2SLS with multiple endogenous regressors. *Review of Economic
 Studies*, DOI: 10.1093/restud/rdaf103.
 
 Stock, J. H. and Yogo, M. (2005). Testing for weak instruments in linear

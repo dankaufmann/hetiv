@@ -195,7 +195,7 @@ Jorda, O. (2005). Estimation and inference of impulse responses by local
 projections. *American Economic Review*, 95(1), 161-182.
 
 Lewis, D. J. and Mertens, K. (2025). A robust test for weak instruments
-for 2SLS with multiple endogenous regressors. *The Review of Economic
+for 2SLS with multiple endogenous regressors. *Review of Economic
 Studies*, DOI: 10.1093/restud/rdaf103
 
 Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and

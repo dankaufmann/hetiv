@@ -154,7 +154,7 @@ test_that("hetiv and proxyiv reject invalid indicators and missing groups", {
 
   expect_error(
     hetiv(y = dat$y, O = dat$O, Ind = rep(1L, 40), P = 1, H = 2),
-    "at least one event day"
+    "At least one event day"
   )
   bad_ind <- dat$Ind
   bad_ind[1] <- 9L

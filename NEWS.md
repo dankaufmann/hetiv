@@ -1,3 +1,5 @@
+# hetiv 0.1.1
+
 # hetiv 0.1.0
 
 * Initial CRAN-ready release.

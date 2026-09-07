@@ -47,12 +47,14 @@
 #'   all horizons 0 through H - 1. Values greater than 1 estimate only the
 #'   selected horizons. Default `1`.
 #' @param cov_type Covariance estimator for local-projection standard errors:
-#'   `"HC0"` (default) for heteroskedasticity-robust standard errors or `"NW"`
-#'   for Newey-West HAC standard errors. `"HC0"` is the default because
+#'   `"HC3"` (default) for heteroskedasticity-robust standard errors or `"NW"`
+#'   for Newey-West HAC standard errors. `"HC3"` is the default because
 #'   Montiel Olea et al. (2025) show that heteroskedasticity-robust standard
 #'   errors suffice for local-projection impulse responses under weak
 #'   conditions, even though multi-step forecast errors are typically serially
 #'   correlated. `"NW"` remains available as an optional HAC robustness check.
+#' @param corr_bias Logical.  If `TRUE`, the bias correction by Herbst and Johannsen (2024)
+#'   is performed
 #' @param recursive Logical. If `TRUE`, imposes recursive zero restrictions
 #'   across shock dimensions: for shock `e > 1`, the variables and instruments
 #'   from dimensions `1, ..., e-1` are added as controls. Default `FALSE`.
@@ -127,11 +129,11 @@
 #'
 #' @export
 proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
-                    cum = FALSE, Hstep = 1, cov_type = "HC0",
+                    cum = FALSE, Hstep = 1, cov_type = "HC3", corr_bias = TRUE,
                     recursive = FALSE, details = FALSE) {
   args <- .validate_estimator_inputs(
     y = y, O = O, X = X, Ind = Ind, P = P, H = H, E = E, norm = norm,
-    cum = cum, Hstep = Hstep, cov_type = cov_type
+    cum = cum, Hstep = Hstep, cov_type = cov_type, corr_bias
   )
   y <- args$y
   O <- args$O
@@ -144,6 +146,7 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
   cum <- args$cum
   Hstep <- args$Hstep
   cov_type <- args$cov_type
+  corr_bias <- args$corr_bias
   Z <- .as_numeric_matrix(Z, "Z", nrow = nrow(y))
   recursive <- .check_logical_scalar(recursive, "recursive")
   details <- .check_logical_scalar(details, "details")
@@ -247,8 +250,8 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
     Tn <- sum(DataMSub$NoEvent)
     To <- sum(DataMSub$OthEvent)
     Tt <- Te + Tn
-    if (Te == 0 || Tn == 0) {
-      stop("At least one event day (Ind == 1) and one control day (Ind == 0) are required.")
+    if (Te == 0) {
+      stop("At least one event day (Ind == 1) is required.")
     }
 
     # Use the user-provided proxy directly as instrument (no orthogonalization;
@@ -293,7 +296,7 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
         if (cov_type == "NW") {
           IV.vcov <- sandwich::NeweyWest(IV.mod, prewhite = FALSE, adjust = TRUE)
         } else {
-          IV.vcov <- sandwich::vcovHC(IV.mod, type = "HC0")
+          IV.vcov <- sandwich::vcovHC(IV.mod, type = "HC3")
         }
         IV.se <- sqrt(diag(IV.vcov))
 
@@ -343,6 +346,16 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
 
   dimnames(irfest)[[1]] <- HSeries - 1
   dimnames(irfse)[[1]] <- HSeries - 1
+  
+  
+  # Perform bias correction
+  if(corr_bias == TRUE & controls.info[1] != "1") {
+    for (e in 1:E) {
+      for (i in 1:N) {
+        irfest[, i, e] <- biascorr(irs = irfest[, i, e], w = DataM[, controls.info])
+      }
+    }
+  }
 
   Method <- "Proxy-IV"
 

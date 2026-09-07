@@ -149,7 +149,7 @@
   norm <- .check_numeric_scalar(norm, "norm")
   Ind <- .check_indicator(Ind, nrow(y))
   cum <- .check_cum(cum, ncol(y))
-  cov_type <- .check_choice(cov_type, "cov_type", c("HC0", "NW"))
+  cov_type <- .check_choice(cov_type, "cov_type", c("HC3", "NW"))
 
   if (E > ncol(y)) {
     stop("E cannot exceed the number of columns in y.", call. = FALSE)

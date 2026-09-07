@@ -400,13 +400,14 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
   dimnames(irfse)[[1]] <- HSeries - 1
   
   # Perform bias correction
-  if(corr_bias == TRUE & controls.info[1] != "1") {
-    for (e in 1:E) {
-      for (i in 1:N) {
-        irfest[, i, e] <- biascorr(irs = irfest[, i, e], w = DataM[, controls.info])
-      }
-    }
-  }
+  # TODO
+  # if(corr_bias == TRUE & controls.info[1] != "1") {
+  #   for (e in 1:E) {
+  #     for (i in 1:N) {
+  #       irfest[, i, e] <- biascorr(irs = irfest[, i, e], w = DataM[, controls.info])
+  #     }
+  #   }
+  # }
 
   if (details == TRUE) {
     # Compute variance-covariance matrix of residuals on event days, and impact matrix

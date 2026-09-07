@@ -349,13 +349,14 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
   
   
   # Perform bias correction
-  if(corr_bias == TRUE & controls.info[1] != "1") {
-    for (e in 1:E) {
-      for (i in 1:N) {
-        irfest[, i, e] <- biascorr(irs = irfest[, i, e], w = DataM[, controls.info])
-      }
-    }
-  }
+  # TODO:
+  # if(corr_bias == TRUE & controls.info[1] != "1") {
+  #   for (e in 1:E) {
+  #     for (i in 1:N) {
+  #       irfest[, i, e] <- biascorr(irs = irfest[, i, e], w = DataM[, controls.info])
+  #     }
+  #   }
+  # }
 
   Method <- "Proxy-IV"
 

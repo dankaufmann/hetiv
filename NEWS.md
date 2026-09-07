@@ -1,5 +1,7 @@
 # hetiv 0.1.1
 
+* Changes to default HC settings for local projections
+
 # hetiv 0.1.0
 
 * Initial CRAN-ready release.

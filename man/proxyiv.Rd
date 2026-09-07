@@ -16,7 +16,8 @@ proxyiv(
   norm = 1,
   cum = FALSE,
   Hstep = 1,
-  cov_type = "HC0",
+  cov_type = "HC3",
+  corr_bias = TRUE,
   recursive = FALSE,
   details = FALSE
 )
@@ -68,12 +69,15 @@ all horizons 0 through H - 1. Values greater than 1 estimate only the
 selected horizons. Default \code{1}.}
 
 \item{cov_type}{Covariance estimator for local-projection standard errors:
-\code{"HC0"} (default) for heteroskedasticity-robust standard errors or \code{"NW"}
-for Newey-West HAC standard errors. \code{"HC0"} is the default because
+\code{"HC3"} (default) for heteroskedasticity-robust standard errors or \code{"NW"}
+for Newey-West HAC standard errors. \code{"HC3"} is the default because
 Montiel Olea et al. (2025) show that heteroskedasticity-robust standard
 errors suffice for local-projection impulse responses under weak
 conditions, even though multi-step forecast errors are typically serially
 correlated. \code{"NW"} remains available as an optional HAC robustness check.}
+
+\item{corr_bias}{Logical.  If \code{TRUE}, the bias correction by Herbst and Johannsen (2024)
+is performed}
 
 \item{recursive}{Logical. If \code{TRUE}, imposes recursive zero restrictions
 across shock dimensions: for shock \code{e > 1}, the variables and instruments

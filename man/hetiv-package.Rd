@@ -23,6 +23,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Daniel Kaufmann \email{info@dankaufmann.com} [copyright holder]
   \item Marc Burri
   \item Valentin Grob
 }

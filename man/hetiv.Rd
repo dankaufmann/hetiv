@@ -16,7 +16,8 @@ hetiv(
   interact = FALSE,
   cum = FALSE,
   Hstep = 1,
-  cov_type = "HC0",
+  cov_type = "HC3",
+  corr_bias = TRUE,
   details = FALSE
 )
 }
@@ -64,12 +65,15 @@ all horizons 0 through H - 1. Values greater than 1 estimate only the
 selected horizons.}
 
 \item{cov_type}{Covariance estimator for local-projection standard errors:
-\code{"HC0"} (default) for heteroskedasticity-robust standard errors or \code{"NW"}
-for Newey-West HAC standard errors. \code{"HC0"} is the default because
+\code{"HC3"} (default) for heteroskedasticity-robust standard errors or \code{"NW"}
+for Newey-West HAC standard errors. \code{"HC3"} is the default because
 Montiel Olea et al. (2025) show that heteroskedasticity-robust standard
 errors suffice for local-projection impulse responses under weak
 conditions, even though multi-step forecast errors are typically serially
 correlated. \code{"NW"} remains available as an optional HAC robustness check.}
+
+\item{corr_bias}{Logical.  If \code{TRUE}, the bias correction by Herbst and Johannsen (2024)
+is performed}
 
 \item{details}{Logical. If \code{TRUE}, code saves detailed IV results, which is slightly slower.
 if set to \code{FALSE}, returns only impulse response and standard error (e.g. for bootstrap)}
@@ -126,8 +130,8 @@ IRENE Working Papers 24-03, IRENE Institute of Economic Research,
 University of Neuchatel.
 
 Burri, M. and D. Kaufmann (2026b). Multiple monetary policy shocks from
-daily data: A heteroskedasticity IV approach. \emph{Economics Letters},
-268, 113091. \doi{10.1016/j.econlet.2026.113091}
+daily data: A heteroskedasticity IV approach. \emph{Economics Letters}, 268,
+113091. \doi{10.1016/j.econlet.2026.113091}
 
 Jorda, O. (2005). Estimation and inference of impulse responses by local
 projections. \emph{American Economic Review}, 95(1), 161-182.

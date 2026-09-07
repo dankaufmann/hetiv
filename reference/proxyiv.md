@@ -23,7 +23,8 @@ proxyiv(
   norm = 1,
   cum = FALSE,
   Hstep = 1,
-  cov_type = "HC0",
+  cov_type = "HC3",
+  corr_bias = TRUE,
   recursive = FALSE,
   details = FALSE
 )
@@ -100,14 +101,19 @@ proxyiv(
 
 - cov_type:
 
-  Covariance estimator for local-projection standard errors: `"HC0"`
+  Covariance estimator for local-projection standard errors: `"HC3"`
   (default) for heteroskedasticity-robust standard errors or `"NW"` for
-  Newey-West HAC standard errors. `"HC0"` is the default because Montiel
+  Newey-West HAC standard errors. `"HC3"` is the default because Montiel
   Olea et al. (2025) show that heteroskedasticity-robust standard errors
   suffice for local-projection impulse responses under weak conditions,
   even though multi-step forecast errors are typically serially
   correlated. `"NW"` remains available as an optional HAC robustness
   check.
+
+- corr_bias:
+
+  Logical. If `TRUE`, the bias correction by Herbst and Johannsen (2024)
+  is performed
 
 - recursive:
 

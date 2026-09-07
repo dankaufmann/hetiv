@@ -23,7 +23,7 @@ conventions as hetiv()."><meta property="og:image" content="https://dankaufmann.
 
     <a class="navbar-brand me-2" href="../index.html">hetiv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -81,7 +81,8 @@ conventions as <code><a href="hetiv.html">hetiv()</a></code>.</p>
 <span>  norm <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  cum <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  Hstep <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  cov_type <span class="op">=</span> <span class="st">"HC0"</span>,</span>
+<span>  cov_type <span class="op">=</span> <span class="st">"HC3"</span>,</span>
+<span>  corr_bias <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  recursive <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  details <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -158,12 +159,17 @@ selected horizons. Default <code>1</code>.</p></dd>
 
 <dt id="arg-cov-type">cov_type<a class="anchor" aria-label="anchor" href="#arg-cov-type"></a></dt>
 <dd><p>Covariance estimator for local-projection standard errors:
-<code>"HC0"</code> (default) for heteroskedasticity-robust standard errors or <code>"NW"</code>
-for Newey-West HAC standard errors. <code>"HC0"</code> is the default because
+<code>"HC3"</code> (default) for heteroskedasticity-robust standard errors or <code>"NW"</code>
+for Newey-West HAC standard errors. <code>"HC3"</code> is the default because
 Montiel Olea et al. (2025) show that heteroskedasticity-robust standard
 errors suffice for local-projection impulse responses under weak
 conditions, even though multi-step forecast errors are typically serially
 correlated. <code>"NW"</code> remains available as an optional HAC robustness check.</p></dd>
+
+
+<dt id="arg-corr-bias">corr_bias<a class="anchor" aria-label="anchor" href="#arg-corr-bias"></a></dt>
+<dd><p>Logical.  If <code>TRUE</code>, the bias correction by Herbst and Johannsen (2024)
+is performed</p></dd>
 
 
 <dt id="arg-recursive">recursive<a class="anchor" aria-label="anchor" href="#arg-recursive"></a></dt>

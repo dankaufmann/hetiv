@@ -28,6 +28,8 @@ holder\]
 
 Authors:
 
+- Daniel Kaufmann <info@dankaufmann.com> \[copyright holder\]
+
 - Marc Burri
 
 - Valentin Grob

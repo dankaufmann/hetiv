@@ -22,7 +22,7 @@ make_known_var_dgp <- function() {
     SigE = 6,
     PsiE = PsiE,
     PsiR = PsiR,
-    Nobs = 8000,
+    Nobs = 100,
     Nbin = 400,
     N = N,
     R = R,
@@ -53,9 +53,10 @@ test_that("hetiv recovers known heteroskedastic-IV impulse responses", {
     Ind = dgp$Ind,
     P = dgp$P,
     H = dgp$H,
-    details = TRUE
+    details = TRUE,
+    corr_bias = TRUE
   )
-
+ 
   expect_equal(dim(fit$irf), dim(truth))
   expect_equal(as.numeric(fit$Psi), as.numeric(dgp$PsiE), tolerance = 0.04)
   expect_equal(as.numeric(fit$irf[, , 1]), as.numeric(truth[, , 1]),

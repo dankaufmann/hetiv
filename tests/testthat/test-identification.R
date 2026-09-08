@@ -22,7 +22,7 @@ make_known_var_dgp <- function() {
     SigE = 6,
     PsiE = PsiE,
     PsiR = PsiR,
-    Nobs = 100,
+    Nobs = 8000,
     Nbin = 400,
     N = N,
     R = R,

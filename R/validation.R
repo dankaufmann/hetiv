@@ -135,7 +135,7 @@
 }
 
 .validate_estimator_inputs <- function(y, O, X, Ind, P, H, E, norm, cum,
-                                       Hstep, cov_type, corr_bias) {
+                                       Hstep, cov_type) {
   y <- .as_numeric_matrix(y, "y")
   O <- .as_numeric_matrix(O, "O", nrow = nrow(y))
   if (!is.null(X)) {
@@ -150,7 +150,6 @@
   Ind <- .check_indicator(Ind, nrow(y))
   cum <- .check_cum(cum, ncol(y))
   cov_type <- .check_choice(cov_type, "cov_type", c("HC3", "NW"))
-  corr_bias <- .check_logical_scalar(corr_bias, "corr_bias")
   
   if (E > ncol(y)) {
     stop("E cannot exceed the number of columns in y.", call. = FALSE)
@@ -166,7 +165,7 @@
 
   list(
     y = y, O = O, X = X, Ind = Ind, P = P, H = H, E = E, norm = norm,
-    cum = cum, Hstep = Hstep, cov_type = cov_type, corr_bias = corr_bias
+    cum = cum, Hstep = Hstep, cov_type = cov_type
   )
 }
 

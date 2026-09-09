@@ -53,8 +53,6 @@
 #'   errors suffice for local-projection impulse responses under weak
 #'   conditions, even though multi-step forecast errors are typically serially
 #'   correlated. `"NW"` remains available as an optional HAC robustness check.
-#' @param corr_bias Logical.  If `TRUE`, the bias correction by Herbst and Johannsen (2024)
-#'   is performed
 #' @param recursive Logical. If `TRUE`, imposes recursive zero restrictions
 #'   across shock dimensions: for shock `e > 1`, the variables and instruments
 #'   from dimensions `1, ..., e-1` are added as controls. Default `FALSE`.
@@ -129,11 +127,11 @@
 #'
 #' @export
 proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
-                    cum = FALSE, Hstep = 1, cov_type = "HC3", corr_bias = TRUE,
+                    cum = FALSE, Hstep = 1, cov_type = "HC3",
                     recursive = FALSE, details = FALSE) {
   args <- .validate_estimator_inputs(
     y = y, O = O, X = X, Ind = Ind, P = P, H = H, E = E, norm = norm,
-    cum = cum, Hstep = Hstep, cov_type = cov_type, corr_bias
+    cum = cum, Hstep = Hstep, cov_type = cov_type
   )
   y <- args$y
   O <- args$O
@@ -146,7 +144,6 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
   cum <- args$cum
   Hstep <- args$Hstep
   cov_type <- args$cov_type
-  corr_bias <- args$corr_bias
   Z <- .as_numeric_matrix(Z, "Z", nrow = nrow(y))
   recursive <- .check_logical_scalar(recursive, "recursive")
   details <- .check_logical_scalar(details, "details")
@@ -347,17 +344,6 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
   dimnames(irfest)[[1]] <- HSeries - 1
   dimnames(irfse)[[1]] <- HSeries - 1
   
-  
-  # Perform bias correction
-  # TODO:
-  # if(corr_bias == TRUE & controls.info[1] != "1") {
-  #   for (e in 1:E) {
-  #     for (i in 1:N) {
-  #       irfest[, i, e] <- biascorr(irs = irfest[, i, e], w = DataM[, controls.info])
-  #     }
-  #   }
-  # }
-
   Method <- "Proxy-IV"
 
   if (details == TRUE) {

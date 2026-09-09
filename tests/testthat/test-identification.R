@@ -53,8 +53,7 @@ test_that("hetiv recovers known heteroskedastic-IV impulse responses", {
     Ind = dgp$Ind,
     P = dgp$P,
     H = dgp$H,
-    details = TRUE,
-    corr_bias = TRUE
+    details = TRUE
   )
  
   expect_equal(dim(fit$irf), dim(truth))

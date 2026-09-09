@@ -23,7 +23,6 @@ hetiv(
   cum = FALSE,
   Hstep = 1,
   cov_type = "HC3",
-  corr_bias = TRUE,
   details = FALSE
 )
 ```
@@ -105,11 +104,6 @@ hetiv(
   even though multi-step forecast errors are typically serially
   correlated. `"NW"` remains available as an optional HAC robustness
   check.
-
-- corr_bias:
-
-  Logical. If `TRUE`, the bias correction by Herbst and Johannsen (2024)
-  is performed
 
 - details:
 

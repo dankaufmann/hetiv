@@ -10,8 +10,7 @@ regression tests, and documentation fixes.
     `devtools::install_deps(dependencies = TRUE)`.
 2.  Load the package with `devtools::load_all()`.
 3.  Run tests with `devtools::test()`.
-4.  Check test coverage with
-    [`covr::package_coverage()`](http://covr.r-lib.org/reference/package_coverage.md).
+4.  Check test coverage with `covr::package_coverage()`.
 5.  Regenerate documentation after roxygen changes with
     `devtools::document()`.
 6.  Run `devtools::check()` before release-oriented changes.

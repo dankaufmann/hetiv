@@ -17,7 +17,6 @@ proxyiv(
   cum = FALSE,
   Hstep = 1,
   cov_type = "HC3",
-  corr_bias = TRUE,
   recursive = FALSE,
   details = FALSE
 )
@@ -75,9 +74,6 @@ Montiel Olea et al. (2025) show that heteroskedasticity-robust standard
 errors suffice for local-projection impulse responses under weak
 conditions, even though multi-step forecast errors are typically serially
 correlated. \code{"NW"} remains available as an optional HAC robustness check.}
-
-\item{corr_bias}{Logical.  If \code{TRUE}, the bias correction by Herbst and Johannsen (2024)
-is performed}
 
 \item{recursive}{Logical. If \code{TRUE}, imposes recursive zero restrictions
 across shock dimensions: for shock \code{e > 1}, the variables and instruments

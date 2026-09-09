@@ -17,7 +17,6 @@ hetiv(
   cum = FALSE,
   Hstep = 1,
   cov_type = "HC3",
-  corr_bias = TRUE,
   details = FALSE
 )
 }
@@ -71,9 +70,6 @@ Montiel Olea et al. (2025) show that heteroskedasticity-robust standard
 errors suffice for local-projection impulse responses under weak
 conditions, even though multi-step forecast errors are typically serially
 correlated. \code{"NW"} remains available as an optional HAC robustness check.}
-
-\item{corr_bias}{Logical.  If \code{TRUE}, the bias correction by Herbst and Johannsen (2024)
-is performed}
 
 \item{details}{Logical. If \code{TRUE}, code saves detailed IV results, which is slightly slower.
 if set to \code{FALSE}, returns only impulse response and standard error (e.g. for bootstrap)}

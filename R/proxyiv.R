@@ -299,6 +299,8 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
 
         # Compute OLS residuals for covariance estimation (once per outcome variable, at e=1, h=1)
         if (details == TRUE && e == 1 && h == 1) {
+          
+          # Workaround to exclude contaminated events from the residuals
           DataMSub$depVar.h2 <- DataMSub$depVar.h
           DataMSub$depVar.h2[DataMSub$Ind == 2] <- NA
 

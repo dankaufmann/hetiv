@@ -269,8 +269,12 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
       data = subset(DataMSub, Ind < 2),
       na.action = "na.exclude"
     )
-    DataMSub$Ze <- residuals(orthModel, na.action = "na.exclude")
-
+    
+    # Only save residuals when Ind < 2, because contaminated events (Ind == 2) are not used in the estimation
+    # Make sure that other are missing
+    DataMSub$Ze[DataMSub$Ind < 2]  <- residuals(orthModel, na.action = "na.exclude")
+    DataMSub$Ze[DataMSub$Ind == 2] <- NA
+    
     # Compute instrument and F-Statistic (see Lewis, 2022, and Rigobon and Sachs, 2004)
     Te <- sum(DataMSub$Event)
     Tn <- sum(DataMSub$NoEvent)
@@ -334,15 +338,22 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
           # Compute OLS residuals on event and control days (once per shock, at h=1)
           # Save residuals for later computation of variance-covariance matrix
           if (e == 1 && h == 1) {
+            
+            # Workaround to exclude contaminated events from the residuals
             DataMSub$depVar.h2 <- DataMSub$depVar.h
             DataMSub$depVar.h2[DataMSub$Ind == 2] <- NA
 
-            myFormula <- paste0("depVar.h2 ~", paste(controls.info, collapse = "+"))
-            OLS.mod <- lm(
-              as.formula(myFormula),
-              data = subset(DataMSub, Ind < 2),
-              na.action = "na.exclude"
-            )
+            # Note that subset produces an error and is not needed, because we replace
+            # the depvar with NA when Ind == 2
+            # myFormula <- paste0("depVar.h2 ~", paste(controls.info, collapse = "+"))
+            # OLS.mod <- lm(
+            #   as.formula(myFormula),
+            #   data = subset(DataMSub, Ind < 2),
+            #   na.action = "na.exclude"
+            # )
+            
+            myFormula.ols <- paste0("depVar.h2 ~ ", paste(controls.info, collapse = "+"))
+            OLS.mod <- lm(as.formula(myFormula.ols), data = DataMSub, na.action = "na.exclude")
 
             eti <- residuals(OLS.mod)
             eti[DataMSub$Event != 1] <- NA

@@ -128,10 +128,10 @@
 #' @export
 proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
                     cum = FALSE, Hstep = 1, cov_type = "HC3",
-                    recursive = FALSE, details = FALSE) {
+                    recursive = FALSE, hpredict = 1, details = FALSE) {
   args <- .validate_estimator_inputs(
     y = y, O = O, X = X, Ind = Ind, P = P, H = H, E = E, norm = norm,
-    cum = cum, Hstep = Hstep, cov_type = cov_type
+    cum = cum, Hstep = Hstep, cov_type = cov_type, hpredict = hpredict
   )
   y <- args$y
   O <- args$O
@@ -146,6 +146,7 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
   cov_type <- args$cov_type
   Z <- .as_numeric_matrix(Z, "Z", nrow = nrow(y))
   recursive <- .check_logical_scalar(recursive, "recursive")
+  hpredict <- args$hpredict
   details <- .check_logical_scalar(details, "details")
 
   # Collect properties of the data
@@ -300,7 +301,7 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
         IV.se <- sqrt(diag(IV.vcov))
 
         # Compute OLS residuals for covariance estimation (once per outcome variable, at e=1, h=1)
-        if (details == TRUE && e == 1 && h == 1) {
+        if (details == TRUE && e == 1 && h == hpredict) {
           
           # Workaround to exclude contaminated events from the residuals
           DataMSub$depVar.h2 <- DataMSub$depVar.h
@@ -353,8 +354,9 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
   if (details == TRUE) {
     Sig <- var(et, use = "complete.obs")
     SigR <- if (sum(!is.na(vt)) > 0) var(vt, use = "complete.obs") else NA
-    Psi <- matrix(irfest[1, , , drop = FALSE], nrow = N, ncol = E)
-
+    Psi <- matrix(irfest[hpredict, , , drop = FALSE], nrow = N, ncol = E)
+    Shocks <- kfpredict(Sig, SigR, Psi, et)
+    
     # Data for Lewis-Mertens (2025) weak instrument test
     if (controls.info[1] != "1") {
       WeakData <- data.frame(
@@ -377,6 +379,7 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
 
     return(list(
       irf = irfest, se = irfse,
+      Shocks = Shocks,
       IVRes = IVRes, OLSRes = OLSRes,
       Obs = Obs, Method = Method,
       et = as.matrix(et), Sig = Sig, SigR = SigR, Psi = Psi,

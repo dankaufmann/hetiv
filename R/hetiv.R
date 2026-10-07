@@ -117,10 +117,10 @@
 #'
 #' @export
 hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
-                  cum = FALSE, Hstep = 1, cov_type = "HC3", details = FALSE) {
+                  cum = FALSE, Hstep = 1, cov_type = "HC3", hpredict = 1, details = FALSE) {
   args <- .validate_estimator_inputs(
     y = y, O = O, X = X, Ind = Ind, P = P, H = H, E = E, norm = norm,
-    cum = cum, Hstep = Hstep, cov_type = cov_type
+    cum = cum, Hstep = Hstep, cov_type = cov_type, hpredict = hpredict
   )
   y <- args$y
   O <- args$O
@@ -134,6 +134,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
   Hstep <- args$Hstep
   cov_type <- args$cov_type
   interact <- .check_logical_scalar(interact, "interact")
+  hpredict <- args$hpredict
   details <- .check_logical_scalar(details, "details")
 
   # Collect various properties of the data and observations to be used
@@ -339,7 +340,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
         if (details == TRUE) {
           # Compute OLS residuals on event and control days (once per shock, at h=1)
           # Save residuals for later computation of variance-covariance matrix
-          if (e == 1 && h == 1) {
+          if (e == 1 && h == hpredict) {
             
             # Workaround to exclude contaminated events from the residuals
             DataMSub$depVar.h2 <- DataMSub$depVar.h
@@ -392,9 +393,6 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
           IVRes[[paste0("IV.h", h, ".n", i, ".e", e)]] <- IV.mod
 
           if (h == 1) {
-            # Save OLS and orthogonalization results for horizon 1 only to save memory
-            OLSRes[[paste0("OLS.n", i)]] <- OLS.mod
-
             if (i == e) {
               ORTHRes[[paste0("ORTH.h", h, ".n", i, ".e", e)]] <- orthModel
             }
@@ -418,8 +416,9 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
     } else {
       SigR <- NA
     }
-    Psi <- matrix(irfest[1, , , drop = FALSE], nrow = N, ncol = E)
-
+    Psi <- matrix(irfest[hpredict, , , drop = FALSE], nrow = N, ncol = E)
+    Shocks <- kfpredict(Sig, SigR, Psi, et)
+    
     # Save data for weak instruments test by Lewis-Mertens (2025)
     if (controls.info[1] != "1") {
       WeakData <- data.frame(
@@ -445,6 +444,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
   if (details == TRUE) {
     return(list(
       irf = irfest, se = irfse,
+      Shocks = Shocks,
       IVRes = IVRes, OLSRes = OLSRes, ORTHRes = ORTHRes,
       Obs = Obs, Method = Method,
       et = as.matrix(et), Sig = Sig, SigR = SigR, Psi = Psi, WeakData = WeakData

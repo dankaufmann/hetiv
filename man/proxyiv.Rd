@@ -18,6 +18,7 @@ proxyiv(
   Hstep = 1,
   cov_type = "HC3",
   recursive = FALSE,
+  hpredict = 1,
   details = FALSE
 )
 }

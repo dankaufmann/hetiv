@@ -17,6 +17,7 @@ hetiv(
   cum = FALSE,
   Hstep = 1,
   cov_type = "HC3",
+  hpredict = 1,
   details = FALSE
 )
 }

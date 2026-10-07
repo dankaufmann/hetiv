@@ -139,7 +139,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
   # Collect various properties of the data and observations to be used
   Nobs <- dim(y)[1] # Number of observations in y
   beg <- P + 1 # Start of the sample
-  end <- Nobs - H + 1 # End of the sample
+  #end <- Nobs - H + 1 # End of the sample (moved. Change with every horizon)
   N <- dim(y)[2] # Number of variables in y
   M <- dim(O)[2] # Number of variables in O
   K <- if (!is.null(X)) dim(X)[2] else 0
@@ -258,6 +258,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
     DataM$OthEvent <- (DataM$Ind == 2)
 
     # Shorten data to subset of observations without missing values at beginning or end
+    end      <- Nobs             # End of the sample (moved. Change with every horizon)
     DataMSub <- DataM[beg:end, ]
 
     # Orthogonalize the variable used to construct the instrument if we include
@@ -312,6 +313,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
         }
 
         # Shorten data to subset which contains no missing values
+        end      <- Nobs - h + 1      # End of the sample (moved. Change with every horizon)
         DataMSub <- DataM[beg:end, ]
 
         # LP (Jorda, 2005): instrument shockVar with Z, control for information set

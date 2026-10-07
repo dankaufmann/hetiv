@@ -151,7 +151,7 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
   # Collect properties of the data
   Nobs <- dim(y)[1]
   beg <- P + 1
-  end <- Nobs - H + 1
+  #end <- Nobs - H + 1 # End of the sample (moved. Change with every horizon)
   N <- dim(y)[2]
   M <- dim(O)[2]
   K <- if (!is.null(X)) dim(X)[2] else 0
@@ -241,6 +241,7 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
     DataM$NoEvent <- (DataM$Ind == 0)
     DataM$OthEvent <- (DataM$Ind == 2)
 
+    end      <- Nobs
     DataMSub <- DataM[beg:end, ]
 
     Te <- sum(DataMSub$Event)
@@ -278,6 +279,7 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
           DataM$depVar.h <- dplyr::lead(DataM$depVar, h - 1)
         }
 
+        end      <- Nobs - h + 1       # End of the sample (moved. Change with every horizon)
         DataMSub <- DataM[beg:end, ]
 
         # Proxy-IV LP (Jorda, 2005): instrument shockVar with Z, control for information set

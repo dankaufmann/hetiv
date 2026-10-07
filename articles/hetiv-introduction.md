@@ -285,9 +285,9 @@ knitr::kable(
 | True | HET-IV without controls | HET-IV with controls | Proxy-IV with controls | Proxy-IV with recursive restriction |
 |---:|---:|---:|---:|---:|
 | 1.0 | 1.00 | 1.00 | 1.00 | 1.00 |
-| 0.5 | 0.53 | 0.45 | 0.46 | 0.46 |
-| 0.3 | 0.52 | 0.31 | 0.40 | 0.40 |
-| 0.2 | 0.20 | 0.19 | 0.24 | 0.24 |
+| 0.5 | 0.53 | 0.45 | 0.44 | 0.44 |
+| 0.3 | 0.54 | 0.32 | 0.40 | 0.40 |
+| 0.2 | 0.19 | 0.18 | 0.24 | 0.24 |
 
 Impact matrix estimates (\\\Psi\\) for shock 1 across different
 specifications {.table}
@@ -318,10 +318,10 @@ knitr::kable(
 
 | True | HET-IV without controls | HET-IV with controls | Proxy-IV with controls | Proxy-IV with recursive restriction |
 |---:|---:|---:|---:|---:|
-| 0.0 | 0.00 | 0.00 | -0.07 | 0.00 |
+| 0.0 | 0.00 | 0.00 | -0.06 | 0.00 |
 | 1.0 | 1.00 | 1.00 | 1.00 | 1.00 |
-| -0.4 | -0.46 | -0.31 | -0.49 | -0.45 |
-| 0.3 | 0.26 | 0.31 | 0.19 | 0.20 |
+| -0.4 | -0.46 | -0.31 | -0.51 | -0.48 |
+| 0.3 | 0.27 | 0.31 | 0.18 | 0.19 |
 
 Impact matrix estimates (\\\Psi\\) for shock 2 across different
 specifications {.table}
@@ -551,8 +551,8 @@ knitr::kable(
 
 |  | True | Proxy | HET-IV without controls | HET-IV with controls | Proxy-IV with controls | Proxy-IV with recursive restriction |
 |:---|---:|---:|---:|---:|---:|---:|
-| Shock 1 | 1 | 0.91 | 0.70 | 1.00 | 0.78 | 0.78 |
-| Shock 2 | 1 | 0.80 | 0.85 | 0.94 | 0.64 | 0.64 |
+| Shock 1 | 1 | 0.91 | 0.68 | 1.00 | 0.79 | 0.79 |
+| Shock 2 | 1 | 0.80 | 0.85 | 0.94 | 0.63 | 0.63 |
 
 Correlation of predicted shocks with true shocks {.table}
 
@@ -649,10 +649,10 @@ knitr::kable(
 
 | Specification | Statistic | LM critical value | Strong instruments? |
 |:---|---:|---:|:---|
-| HET-IV, no controls | 15.55 | 38.28 | No |
-| HET-IV, with controls | 88.68 | 47.23 | Yes |
-| Proxy-IV, with controls | 30.37 | 25.25 | Yes |
-| Proxy-IV, with controls + recursive restriction | 30.37 | 25.25 | Yes |
+| HET-IV, no controls | 14.34 | 38.48 | No |
+| HET-IV, with controls | 84.51 | 46.43 | Yes |
+| Proxy-IV, with controls | 29.12 | 25.41 | Yes |
+| Proxy-IV, with controls + recursive restriction | 29.12 | 25.41 | Yes |
 
 Weak instrument test results (Lewis-Mertens generalised minimum
 eigenvalue test) {.table}

@@ -80,6 +80,9 @@ correlated. \code{"NW"} remains available as an optional HAC robustness check.}
 across shock dimensions: for shock \code{e > 1}, the variables and instruments
 from dimensions \verb{1, ..., e-1} are added as controls. Default \code{FALSE}.}
 
+\item{hpredict}{Integer Forecast horizon for the residuals to be used for shock
+prediction. Defaults to 1 (one-step-ahead residual)}
+
 \item{details}{Logical. If \code{TRUE}, returns detailed results including IV
 model objects, OLS residuals, and covariance matrices. If \code{FALSE} (default),
 returns only impulse responses and standard errors (faster; use for

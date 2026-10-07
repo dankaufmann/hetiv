@@ -49,6 +49,8 @@
 #'   errors suffice for local-projection impulse responses under weak
 #'   conditions, even though multi-step forecast errors are typically serially
 #'   correlated. `"NW"` remains available as an optional HAC robustness check.
+#' @param hpredict Integer Forecast horizon for the residuals to be used for shock
+#'    prediction. Defaults to 1 (one-step-ahead residual)
 #' @param details Logical. If `TRUE`, code saves detailed IV results, which is slightly slower.
 #'   if set to `FALSE`, returns only impulse response and standard error (e.g. for bootstrap)
 #'

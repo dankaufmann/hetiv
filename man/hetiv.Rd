@@ -72,6 +72,9 @@ errors suffice for local-projection impulse responses under weak
 conditions, even though multi-step forecast errors are typically serially
 correlated. \code{"NW"} remains available as an optional HAC robustness check.}
 
+\item{hpredict}{Integer Forecast horizon for the residuals to be used for shock
+prediction. Defaults to 1 (one-step-ahead residual)}
+
 \item{details}{Logical. If \code{TRUE}, code saves detailed IV results, which is slightly slower.
 if set to \code{FALSE}, returns only impulse response and standard error (e.g. for bootstrap)}
 }

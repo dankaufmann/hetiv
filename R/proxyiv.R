@@ -56,6 +56,8 @@
 #' @param recursive Logical. If `TRUE`, imposes recursive zero restrictions
 #'   across shock dimensions: for shock `e > 1`, the variables and instruments
 #'   from dimensions `1, ..., e-1` are added as controls. Default `FALSE`.
+#' @param hpredict Integer Forecast horizon for the residuals to be used for shock
+#'    prediction. Defaults to 1 (one-step-ahead residual)
 #' @param details Logical. If `TRUE`, returns detailed results including IV
 #'   model objects, OLS residuals, and covariance matrices. If `FALSE` (default),
 #'   returns only impulse responses and standard errors (faster; use for

@@ -214,6 +214,9 @@ Estimate impulse response functions via IV local projections
   projections
 - [`proxyiv()`](https://dankaufmann.github.io/hetiv/reference/proxyiv.md)
   : Estimate impulse responses via proxy-IV local projections
+- [`recols()`](https://dankaufmann.github.io/hetiv/reference/recols.md)
+  : Estimate impulse responses via recursive (Cholesky) local
+  projections
 
 ## Weak instrument test
 
@@ -237,6 +240,8 @@ Test for weak instruments (Lewis-Mertens 2025)
   : Plot and compare impulse responses from two estimation approaches
 - [`plotpval()`](https://dankaufmann.github.io/hetiv/reference/plotpval.md)
   : Plot p-values across horizons
+- [`arrangeirf()`](https://dankaufmann.github.io/hetiv/reference/arrangeirf.md)
+  : Arrange impulse response plots into one figure per shock
 
 ## Simulation
 

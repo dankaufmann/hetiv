@@ -1,3 +1,11 @@
+# hetiv 0.1.2
+
+* New `recols()`: recursive (Cholesky) local projections estimated by OLS, with
+  the same interface and output as `hetiv()`, as a benchmark identification.
+* New `arrangeirf()`: arranges IRF panels from `plotirf()`/`plot2irf()` into one
+  figure per shock and optionally saves them as PDF. Adds `gridExtra` to Imports.
+* Various smaller improvements and additional options in `hetiv()` and `proxyiv()`
+
 # hetiv 0.1.1
 
 * Changes to default HC settings for local projections

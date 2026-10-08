@@ -22,6 +22,7 @@ reference:
     contents:
       - hetiv
       - proxyiv
+      - recols
   - title: Weak instrument test
     desc: Test for weak instruments (Lewis-Mertens 2025)
     contents:
@@ -35,6 +36,7 @@ reference:
       - plotirf
       - plot2irf
       - plotpval
+      - arrangeirf
   - title: Simulation
     contents:
       - simulatedata

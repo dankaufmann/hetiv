@@ -25,6 +25,7 @@ proxyiv(
   Hstep = 1,
   cov_type = "HC3",
   recursive = FALSE,
+  hpredict = 1,
   details = FALSE
 )
 ```
@@ -114,6 +115,11 @@ proxyiv(
   Logical. If `TRUE`, imposes recursive zero restrictions across shock
   dimensions: for shock `e > 1`, the variables and instruments from
   dimensions `1, ..., e-1` are added as controls. Default `FALSE`.
+
+- hpredict:
+
+  Integer Forecast horizon for the residuals to be used for shock
+  prediction. Defaults to 1 (one-step-ahead residual)
 
 - details:
 

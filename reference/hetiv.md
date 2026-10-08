@@ -23,6 +23,7 @@ hetiv(
   cum = FALSE,
   Hstep = 1,
   cov_type = "HC3",
+  hpredict = 1,
   details = FALSE
 )
 ```
@@ -104,6 +105,11 @@ hetiv(
   even though multi-step forecast errors are typically serially
   correlated. `"NW"` remains available as an optional HAC robustness
   check.
+
+- hpredict:
+
+  Integer Forecast horizon for the residuals to be used for shock
+  prediction. Defaults to 1 (one-step-ahead residual)
 
 - details:
 
@@ -210,6 +216,7 @@ y <- matrix(rnorm(80), ncol = 2)
 Ind <- rep(0L, nrow(y))
 Ind[seq(5, nrow(y), by = 5)] <- 1L
 res <- hetiv(y = y, O = y, Ind = Ind, P = 1, H = 3, details = TRUE)
+#> Warning: Some estimated shock variances are negative (weak heteroskedasticity); using absolute values for scaling.
 dim(res$irf)
 #> [1] 3 2 1
 ```

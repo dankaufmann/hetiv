@@ -18,11 +18,12 @@ authors:
 
 reference:
   - title: Estimation
-    desc: Estimate impulse response functions via IV local projections
+    desc: Estimate impulse response functions via IV local projections or a proxy SVAR
     contents:
       - hetiv
       - proxyiv
       - recols
+      - svariv
   - title: Weak instrument test
     desc: Test for weak instruments (Lewis-Mertens 2025)
     contents:

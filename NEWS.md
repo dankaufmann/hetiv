@@ -1,5 +1,10 @@
 # hetiv 0.1.2
 
+* New `svariv()`: proxy SVAR (SVAR-IV) following Mertens and Ravn (2013).
+  Estimates a VAR(P) by OLS, identifies the first `E` shocks with external
+  instruments, computes IRFs by recursion, and optionally returns wild-bootstrap
+  percentile bands and standard deviations that work with `plotirf()` and
+  `plot2irf()`.
 * New `recols()`: recursive (Cholesky) local projections estimated by OLS, with
   the same interface and output as `hetiv()`, as a benchmark identification.
 * New `arrangeirf()`: arranges IRF panels from `plotirf()`/`plot2irf()` into one

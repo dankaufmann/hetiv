@@ -54,6 +54,7 @@ remotes::install_github("dankaufmann/hetiv")
 |---|---|
 | `hetiv()` | Estimates impulse response functions via heteroskedasticity-based IV local projections |
 | `proxyiv()` | Estimates impulse response functions via proxy-IV local projections |
+| `svariv()` | Estimates impulse response functions via a proxy SVAR (SVAR-IV) with optional wild-bootstrap bands |
 | `gweakivtest()` | Tests for weak instruments using the generalised minimum eigenvalue statistic of Lewis and Mertens (2025) |
 | `kfpredict()` | Extracts structural shocks from reduced-form residuals via Kalman filter |
 | `computeirf()` | Recursively computes IRFs from an impact matrix and VAR coefficients |

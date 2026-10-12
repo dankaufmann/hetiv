@@ -2,7 +2,8 @@
 
 ## Estimation
 
-Estimate impulse response functions via IV local projections
+Estimate impulse response functions via IV local projections or a proxy
+SVAR
 
 - [`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md) :
   Estimate impulse responses via heteroskedasticity-based IV local
@@ -12,6 +13,8 @@ Estimate impulse response functions via IV local projections
 - [`recols()`](https://dankaufmann.github.io/hetiv/reference/recols.md)
   : Estimate impulse responses via recursive (Cholesky) local
   projections
+- [`svariv()`](https://dankaufmann.github.io/hetiv/reference/svariv.md)
+  : Estimate impulse responses via a proxy SVAR (SVAR-IV)
 
 ## Weak instrument test
 

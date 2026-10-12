@@ -3,6 +3,15 @@
 ## hetiv 0.1.2
 
 - New
+  [`svariv()`](https://dankaufmann.github.io/hetiv/reference/svariv.md):
+  proxy SVAR (SVAR-IV) following Mertens and Ravn (2013). Estimates a
+  VAR(P) by OLS, identifies the first `E` shocks with external
+  instruments, computes IRFs by recursion, and optionally returns
+  wild-bootstrap percentile bands and standard deviations that work with
+  [`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md)
+  and
+  [`plot2irf()`](https://dankaufmann.github.io/hetiv/reference/plot2irf.md).
+- New
   [`recols()`](https://dankaufmann.github.io/hetiv/reference/recols.md):
   recursive (Cholesky) local projections estimated by OLS, with the same
   interface and output as

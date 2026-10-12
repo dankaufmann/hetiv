@@ -49,7 +49,8 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.2" id="hetiv-012">hetiv 0.1.2<a class="anchor" aria-label="anchor" href="#hetiv-012"></a></h2>
-<ul><li>New <code><a href="../reference/recols.html">recols()</a></code>: recursive (Cholesky) local projections estimated by OLS, with the same interface and output as <code><a href="../reference/hetiv.html">hetiv()</a></code>, as a benchmark identification.</li>
+<ul><li>New <code><a href="../reference/svariv.html">svariv()</a></code>: proxy SVAR (SVAR-IV) following Mertens and Ravn (2013). Estimates a VAR(P) by OLS, identifies the first <code>E</code> shocks with external instruments, computes IRFs by recursion, and optionally returns wild-bootstrap percentile bands and standard deviations that work with <code><a href="../reference/plotirf.html">plotirf()</a></code> and <code><a href="../reference/plot2irf.html">plot2irf()</a></code>.</li>
+<li>New <code><a href="../reference/recols.html">recols()</a></code>: recursive (Cholesky) local projections estimated by OLS, with the same interface and output as <code><a href="../reference/hetiv.html">hetiv()</a></code>, as a benchmark identification.</li>
 <li>New <code><a href="../reference/arrangeirf.html">arrangeirf()</a></code>: arranges IRF panels from <code><a href="../reference/plotirf.html">plotirf()</a></code>/<code><a href="../reference/plot2irf.html">plot2irf()</a></code> into one figure per shock and optionally saves them as PDF. Adds <code>gridExtra</code> to Imports.</li>
 <li>Various smaller improvements and additional options in <code><a href="../reference/hetiv.html">hetiv()</a></code> and <code><a href="../reference/proxyiv.html">proxyiv()</a></code>
 </li>

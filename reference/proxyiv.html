@@ -23,7 +23,7 @@ conventions as hetiv()."><meta property="og:image" content="https://dankaufmann.
 
     <a class="navbar-brand me-2" href="../index.html">hetiv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -80,10 +80,9 @@ conventions as <code><a href="hetiv.html">hetiv()</a></code>.</p>
 <span>  E <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  norm <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  cum <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  Hstep <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  cov_type <span class="op">=</span> <span class="st">"HC3"</span>,</span>
 <span>  recursive <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  hpredict <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  hpredict <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  details <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -106,11 +105,19 @@ identical to <code>y</code>. Included as lags 1 through <code>P</code>.</p></dd>
 
 <dt id="arg-z">Z<a class="anchor" aria-label="anchor" href="#arg-z"></a></dt>
 <dd><p>Numeric matrix of external instruments (T x E). Column <code>e</code> is used
-as the proxy for shock dimension <code>e</code>. Missing values on control days
-(<code>Ind == 0</code>) are treated as contaminated and excluded from estimation.
-Missing values on policy days (<code>Ind == 1</code>) remain labelled as events for
-residual-based shock prediction, but are necessarily dropped from IV
-regressions that use the missing proxy.</p></dd>
+as the proxy for shock dimension <code>e</code>. Following the proxy-SVAR literature
+(Mertens and Ravn, 2013), the recommended convention is to set the proxy
+to zero on control days (<code>Ind == 0</code>): these days then remain in the IV
+sample and sharpen the estimates of the control coefficients, while the
+identifying moments are unaffected. Alternatively, missing values on
+control days are treated as contaminated and excluded from estimation,
+which reproduces the event-day sample of the event-study literature
+(Nakamura and Steinsson, 2018). With zeros, prefer the robust first-stage
+statistics (<code>F_rob</code>, <code>WeakTest</code>) over the homoskedastic F, which treats
+the zero observations as informative. Missing values on policy days
+(<code>Ind == 1</code>) remain labelled as events for residual-based shock
+prediction, but are necessarily dropped from IV regressions that use the
+missing proxy.</p></dd>
 
 
 <dt id="arg-x">X<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
@@ -151,12 +158,6 @@ the cumulative IRF is reported. A single value is recycled to all
 variables. Default <code>FALSE</code>.</p></dd>
 
 
-<dt id="arg-hstep">Hstep<a class="anchor" aria-label="anchor" href="#arg-hstep"></a></dt>
-<dd><p>Integer. Step size between horizons. The default <code>1</code> estimates
-all horizons 0 through H - 1. Values greater than 1 estimate only the
-selected horizons. Default <code>1</code>.</p></dd>
-
-
 <dt id="arg-cov-type">cov_type<a class="anchor" aria-label="anchor" href="#arg-cov-type"></a></dt>
 <dd><p>Covariance estimator for local-projection standard errors:
 <code>"HC3"</code> (default) for heteroskedasticity-robust standard errors or <code>"NW"</code>
@@ -174,8 +175,10 @@ from dimensions <code>1, ..., e-1</code> are added as controls. Default <code>FA
 
 
 <dt id="arg-hpredict">hpredict<a class="anchor" aria-label="anchor" href="#arg-hpredict"></a></dt>
-<dd><p>Integer Forecast horizon for the residuals to be used for shock
-prediction. Defaults to 1 (one-step-ahead residual)</p></dd>
+<dd><p>Integer. Horizon of the responses and forecast errors used
+for shock prediction, on the same scale as the row labels of <code>irf</code>.
+Defaults to 0 (impact response and one-step-ahead residual). Must lie
+between 0 and <code>H - 1</code>.</p></dd>
 
 
 <dt id="arg-details">details<a class="anchor" aria-label="anchor" href="#arg-details"></a></dt>
@@ -197,7 +200,11 @@ bootstrap).</p></dd>
 <dd><p>Character string <code>"Proxy-IV"</code>.</p></dd>
 
 
-</dl><p>With <code>details = TRUE</code>, additionally contains:</p><dl><dt><code>IVRes</code></dt>
+</dl><p>With <code>details = TRUE</code>, additionally contains:</p><dl><dt><code>Shocks</code></dt>
+<dd><p>Predicted structural shocks on event days from
+<code><a href="kfpredict.html">kfpredict()</a></code>, based on the responses at horizon <code>hpredict</code>.</p></dd>
+
+<dt><code>IVRes</code></dt>
 <dd><p>List of <code>ivreg</code> model objects, one per horizon, variable,
 and shock dimension.</p></dd>
 
@@ -209,7 +216,28 @@ covariance estimation, one per outcome variable.</p></dd>
 <dd><p>Data frame with observation counts: <code>Tp</code> (policy days),
 <code>Tc</code> (control days), <code>To</code> (contaminated days), <code>Tt</code> (labelled event or
 control days), and <code>Tiv</code> (complete observations available to the IV
-regression at the impact horizon).</p></dd>
+regression of the first shock at the impact horizon).</p></dd>
+
+<dt><code>FirstStage</code></dt>
+<dd><p>For <code>E = 1</code>: data frame with one row per horizon
+<code>h</code> giving the number of observations <code>Tobs</code>, the homoskedastic
+first-stage F statistic <code>F_hom</code> (the squared t statistic of the
+proxy; Stock and Yogo, 2005) and the robust effective F statistic
+<code>F_rob</code> of Montiel Olea and Pflueger (2013), computed with the
+covariance estimator in <code>cov_type</code>. The statistics do not depend on
+the outcome variable. <code>NULL</code> for <code>E &gt; 1</code>.</p></dd>
+
+<dt><code>WeakTest</code></dt>
+<dd><p>For <code>E &gt; 1</code>: data frame with one row per horizon <code>h</code>
+and outcome variable <code>i</code> giving the results of <code><a href="gweakivtest.html">gweakivtest()</a></code> for
+the system with <code>E</code> endogenous policy variables and <code>E</code> proxies:
+<code>gmin</code> (generalized minimum eigenvalue statistic, which depends on
+the horizon only through the sample), <code>cv</code> and <code>cv_simplified</code>
+(sharp and simplified critical values, which depend on the outcome
+and horizon), and the Stock-Yogo statistic <code>sy_stat</code> with its
+critical value <code>sy_cv</code> (<code>NaN</code> unless over-identified). Rows where
+the outcome is a policy variable on impact are omitted. <code>NULL</code> for
+<code>E = 1</code>.</p></dd>
 
 <dt><code>et</code></dt>
 <dd><p>Data frame of OLS residuals on event days.</p></dd>
@@ -222,10 +250,9 @@ regression at the impact horizon).</p></dd>
 if unavailable.</p></dd>
 
 <dt><code>Psi</code></dt>
-<dd><p>Impact matrix (N x E), equal to <code>irf[1, , ]</code>. By the
-package's indexing convention <code>HSeries</code> starts at 1, so the first LP
-uses <code>lead(y, 0)</code> (the contemporaneous value) and is labelled horizon
-0; <code>irf[1, , ]</code> is therefore always the impact response.</p></dd>
+<dd><p>Response matrix (N x E) used for shock prediction: the
+response at horizon <code>hpredict</code>, i.e. <code>irf[hpredict + 1, , ]</code>. With
+the default <code>hpredict = 0</code> this is the impact response.</p></dd>
 
 <dt><code>WeakData</code></dt>
 <dd><p>Data frame of endogenous variables and instruments for
@@ -253,6 +280,9 @@ Review</em>, 103(4), 1212-1247.</p>
 <p>Montiel Olea, J. L., M. Plagborg-Moller, E. Qian, and C. K. Wolf (2025).
 Local projections or VARs? A primer for macroeconomists. <em>NBER Working
 Paper</em> No. 33871.</p>
+<p>Nakamura, E. and Steinsson, J. (2018). High-frequency identification of
+monetary non-neutrality: The information effect. <em>Quarterly Journal of
+Economics</em>, 133(3), 1283-1330.</p>
 <p>Stock, J. H. and Watson, M. W. (2018). Identification and estimation of
 dynamic causal effects in macroeconomics using external instruments.
 <em>Economic Journal</em>, 128(610), 917-948.</p>

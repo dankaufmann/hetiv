@@ -1,10 +1,11 @@
 # Plot and compare impulse responses from two estimation approaches
 
-Produces a panel of IRF plots comparing two sets of impulse responses.
-Each panel shows the point estimates and confidence bands at level `ci`
-for both approaches. Returns a list of `ggplot` objects (one per
-variable-shock combination) that can be arranged with e.g.
-[`cowplot::plot_grid()`](https://wilkelab.org/cowplot/reference/plot_grid.html).
+Produces a panel of IRF plots comparing two sets of impulse responses
+with normal confidence bands at level `ci`. This function is kept for
+backward compatibility and is a thin wrapper around
+[`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md),
+which accepts up to three sets of impulse responses as well as bootstrap
+draws.
 
 ## Usage
 
@@ -50,6 +51,10 @@ plot2irf(IRF1, IRF1se, IRF2, IRF2se, HTick, Labels, ci = 0.9)
 
 A list of `ggplot` objects, one per variable-shock combination, ordered
 by shock (outer loop) then variable (inner loop).
+
+## See also
+
+[`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md)
 
 ## Examples
 

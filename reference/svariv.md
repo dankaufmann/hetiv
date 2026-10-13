@@ -4,8 +4,8 @@ Estimates a reduced-form VAR(P) by OLS, identifies the impact matrix of
 the first `E` structural shocks with external instruments (proxies)
 following Mertens and Ravn (2013) and Stock and Watson (2018), and
 computes impulse responses by recursion through the VAR. Optionally
-computes confidence bands with a wild bootstrap (Rademacher weights
-applied jointly to the VAR residuals and the proxies).
+computes confidence bands with a wild bootstrap following Mertens and
+Ravn (2013).
 
 ## Usage
 
@@ -21,6 +21,7 @@ svariv(
   cum = FALSE,
   nboot = 0,
   ci = c(0.9, 0.95),
+  cov_type = "HC0",
   details = FALSE
 )
 ```
@@ -80,10 +81,16 @@ svariv(
   Numeric vector of confidence levels in (0, 1) for the percentile
   bands. Default `c(0.90, 0.95)`.
 
+- cov_type:
+
+  Covariance estimator for the robust first-stage F statistic reported
+  with `details = TRUE`: `"HC0"` (default, Eicker-Huber-White), `"HC1"`,
+  `"HC3"`, or `"NW"` for Newey-West HAC.
+
 - details:
 
-  Logical. If `TRUE`, additionally returns the VAR estimates, residuals,
-  first-stage statistics, and the bootstrap draws.
+  Logical. If `TRUE`, additionally returns the VAR estimates, residuals
+  and first-stage statistics.
 
 ## Value
 
@@ -104,6 +111,11 @@ A named list. Always contains:
   Arrays (H x N x E x length(ci)) of percentile bands, one slice per
   level in `ci` (labelled in the fourth dimension), or `NULL` if
   `nboot = 0`.
+
+- `boot`:
+
+  Array (H x N x E x nboot) of bootstrap draws (`NA` for failed
+  replications), or `NULL` if `nboot = 0`.
 
 - `Method`:
 
@@ -132,20 +144,17 @@ With `details = TRUE`, additionally contains:
 
   Matrix ((T - P) x N) of reduced-form residuals.
 
-- `FStat`, `R2`:
+- `FStat`, `FStatRobust`, `R2`:
 
-  First-stage F statistics and R-squared of the regressions of each
-  policy residual on the proxies.
+  Vectors of length E with the homoskedastic first-stage F statistic,
+  the robust effective F statistic (Montiel Olea and Pflueger, 2013) and
+  the R-squared of the regressions of each policy residual on the
+  proxies (see Details).
 
 - `Obs`:
 
   Data frame with `T` (sample size), `Test` (VAR estimation sample), and
   `Tiv` (identification sample).
-
-- `boot`:
-
-  Array (H x N x E x nboot) of bootstrap draws (`NA` for failed
-  replications), or `NULL` if `nboot = 0`.
 
 - `nfail`:
 
@@ -168,9 +177,20 @@ with `recursive = TRUE`.
 
 All columns of `Z` are used jointly as instruments in the first-stage
 regressions of the policy residuals on the proxies. Rows of `Z` with
-missing values are excluded from the identification step only; the VAR
-itself is estimated on the full sample. The residual covariance used for
-identification is computed on the identification sample.
+missing values are excluded from the identification step only: the VAR
+and the reduced-form residual covariance `Sigma` are estimated on the
+full sample, as in Mertens and Ravn (2013), whereas the 2SLS step that
+recovers the relative impact responses uses only the observations with
+non-missing proxies (the identification sample).
+
+With `details = TRUE`, first-stage diagnostics are reported for every
+policy residual: the homoskedastic F statistic of the proxies (`FStat`,
+equal to the squared t statistic when `M = 1`; Stock and Yogo, 2005) and
+the robust effective F statistic of Montiel Olea and Pflueger (2013)
+(`FStatRobust`), computed with the covariance estimator in `cov_type`.
+For `E > 1` these are equation-by-equation statistics; use
+[`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md)
+for a joint test.
 
 The bootstrap follows Mertens and Ravn (2013): in every replication, the
 VAR residuals and the proxies are multiplied by the same Rademacher
@@ -178,12 +198,12 @@ draw, artificial data are generated recursively from the first `P`
 observations, and the VAR is re-estimated and re-identified. Each draw
 is normalized in the same way as the point estimate. Percentile bands
 are reported for every level in `ci`; `se` is the bootstrap standard
-deviation, which allows the result to be used directly with
-[`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md)
-and
-[`plot2irf()`](https://dankaufmann.github.io/hetiv/reference/plot2irf.md).
-Replications in which identification fails (e.g. a non-positive-definite
-policy block) are dropped with a warning.
+deviation and `boot` holds the raw draws, so the result can be passed
+directly to
+[`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md),
+which draws recentred percentile bands from the draws. Replications in
+which identification fails (e.g. a non-positive-definite policy block)
+are dropped with a warning.
 
 ## References
 
@@ -191,9 +211,18 @@ Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and
 corporate income tax changes in the United States. *American Economic
 Review*, 103(4), 1212-1247.
 
+Montiel Olea, J. L. and Pflueger, C. (2013). A robust test for weak
+instruments. *Journal of Business & Economic Statistics*, 31(3),
+358-369.
+
 Stock, J. H. and Watson, M. W. (2018). Identification and estimation of
 dynamic causal effects in macroeconomics using external instruments.
 *Economic Journal*, 128(610), 917-948.
+
+Stock, J. H. and Yogo, M. (2005). Testing for weak instruments in linear
+IV regression. In D. W. K. Andrews and J. H. Stock (Eds.),
+*Identification and inference for econometric models: Essays in honor of
+Thomas Rothenberg* (pp. 80-108). Cambridge University Press.
 
 ## See also
 

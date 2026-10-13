@@ -132,9 +132,16 @@ y_data[, 4] <- y_data[, 4] + 0.3 * seq_len(Nobs) %% 5
 To illustrate the proxy-IV approach, we construct a noisy external
 instrument for the two event shocks by adding Gaussian noise to the true
 shocks. The proxy is set to zero on control days. This mirrors the
-typical situation in high-frequency identification of monetary policy
-shocks, where high-frequency surprises are recorded around policy
-announcement windows and are zero otherwise in the event-study sample.
+convention of the proxy-SVAR literature (Mertens and Ravn, 2013; Gertler
+and Karadi, 2015), where high-frequency surprises are recorded around
+policy announcement windows and set to zero otherwise. Setting the proxy
+to `NA` on control days instead excludes those days from the proxy-IV
+regressions and reproduces the announcement-day sample of the
+event-study literature (Nakamura and Steinsson, 2018). Both conventions
+use the same identifying moments, because the first-stage and
+reduced-form cross products involve event days only; they differ in the
+sample used to estimate the control coefficients. We use zeros as the
+default convention.
 
 ``` r
 
@@ -333,76 +340,69 @@ specifications {.table}
 We can assess the accuracy of the estimates, and the dynamic causal
 effects, using
 [`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md).
-The function plots IRFs with shaded confidence bands for one estimation
-approach. The confidence levels can be chosen freely. Here, we show the
-90%, 95%, and 99% confidence intervals for the HET-IV estimates with
-controls.
+The function plots IRFs with shaded confidence bands for up to three
+estimation approaches. For each approach, the bands are computed from
+standard errors (normal bands) or from bootstrap draws (percentile bands
+centred on the point estimate by default; `boot_type = "percentile"`
+gives raw percentile bands), or suppressed if neither is supplied. By
+default a single 90% band is drawn; up to two confidence levels can be
+chosen. Here, we show the 90% and 95% confidence intervals for the
+HET-IV estimates with controls.
+[`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md)
+returns one panel per variable and shock;
+[`arrangeirf()`](https://dankaufmann.github.io/hetiv/reference/arrangeirf.md)
+arranges them into one figure per shock.
 
 ``` r
 
 var_labels <- paste0("Variable ", 1:N)
 
 plots_het_X <- plotirf(
-  IRFest = res_het_X$irf,
-  IRFse  = res_het_X$se,
+  IRF    = res_het_X,
   HTick  = 5,
   Labels = var_labels,
-  ci     = c(0.90, 0.95, 0.99)
+  ci     = c(0.90, 0.95)
 )
 
-for (j in seq_len(E)) {
-  idx <- ((j - 1) * N + 1):(j * N)
-  panel <- cowplot::plot_grid(plotlist = plots_het_X[idx], ncol = 2)
-  title <- cowplot::ggdraw() +
-    cowplot::draw_label(
-      paste0("HET-IV with controls — Shock ", j, " (90%, 95%, 99% CI)"),
-      size = 11
-    )
-  print(cowplot::plot_grid(title, panel, ncol = 1, rel_heights = c(0.05, 1)))
-}
+invisible(arrangeirf(
+  plots_het_X, E = E, N = N, nRows = 2,
+  title = paste0("HET-IV with controls — Shock ", seq_len(E), " (90%, 95% CI)")
+))
 ```
 
 ![](hetiv-introduction_files/figure-html/plotirf-1.png)![](hetiv-introduction_files/figure-html/plotirf-2.png)
 
 ### HET-IV estimates versus true IRF
 
-We can compare the estimates to the true impulse responses.
-[`plot2irf()`](https://dankaufmann.github.io/hetiv/reference/plot2irf.md)
-overlays two sets of IRFs. We compare the HET-IV estimate (blue) against
-the theoretical IRF computed from the known VAR parameters (red). The
-function
+We can compare the estimates to the true impulse responses by passing a
+list of IRFs to
+[`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md).
+We compare the HET-IV estimate (blue) against the theoretical IRF
+computed from the known VAR parameters (red). The function
 [`computeirf()`](https://dankaufmann.github.io/hetiv/reference/computeirf.md)
-computes the theoretical IRF. The standard errors for the true IRF are
-set to zero, so that no confidence bands are plotted for the true IRF.
+computes the theoretical IRF. No standard errors are supplied for the
+true IRF, so no confidence bands are plotted for it.
 
 ``` r
 
 irf_true <- computeirf(PsiE, Phi, H, cum = FALSE)
-irf_true_se <- array(0, dim = dim(irf_true), dimnames = dimnames(irf_true))
 
-plots_vs_true <- plot2irf(
-  IRF1   = res_het_X$irf,
-  IRF1se = res_het_X$se,
-  IRF2   = irf_true,
-  IRF2se = irf_true_se,
+plots_vs_true <- plotirf(
+  IRF    = list(res_het_X, irf_true),
   HTick  = 5,
   Labels = var_labels,
-  ci     = 0.90
+  ci     = 0.90,
+  names  = c("HET-IV with controls", "True"),
+  legend = TRUE
 )
 
-for (j in seq_len(E)) {
-  idx <- ((j - 1) * N + 1):(j * N)
-  panel <- cowplot::plot_grid(plotlist = plots_vs_true[idx], ncol = 2)
-  title <- cowplot::ggdraw() +
-    cowplot::draw_label(
-      paste0("HET-IV with controls (blue) vs True (red) — Shock ", j, " (90% CI)"),
-      size = 11
-    )
-  print(cowplot::plot_grid(title, panel, ncol = 1, rel_heights = c(0.05, 1)))
-}
+invisible(arrangeirf(
+  plots_vs_true, E = E, N = N, nRows = 2,
+  title = paste0("HET-IV with controls vs true IRF — Shock ", seq_len(E), " (90% CI)")
+))
 ```
 
-![](hetiv-introduction_files/figure-html/plot2irf-true-1.png)![](hetiv-introduction_files/figure-html/plot2irf-true-2.png)
+![](hetiv-introduction_files/figure-html/plotirf-true-1.png)![](hetiv-introduction_files/figure-html/plotirf-true-2.png)
 
 ### HET-IV estimates versus misspecified model
 
@@ -411,29 +411,22 @@ misspecified models.
 
 ``` r
 
-plots_vs_true <- plot2irf(
-  IRF1   = res_het_X$irf,
-  IRF1se = res_het_X$se,
-  IRF2   = res_het$irf,
-  IRF2se = res_het$se,
+plots_vs_missp <- plotirf(
+  IRF    = list(res_het_X, res_het),
   HTick  = 5,
   Labels = var_labels,
-  ci     = 0.90
+  ci     = 0.90,
+  names  = c("With controls", "Without controls"),
+  legend = TRUE
 )
 
-for (j in seq_len(E)) {
-  idx <- ((j - 1) * N + 1):(j * N)
-  panel <- cowplot::plot_grid(plotlist = plots_vs_true[idx], ncol = 2)
-  title <- cowplot::ggdraw() +
-    cowplot::draw_label(
-      paste0("HET-IV with controls (blue) vs without controls (red) — Shock ", j, " (90% CI)"),
-      size = 11
-    )
-  print(cowplot::plot_grid(title, panel, ncol = 1, rel_heights = c(0.05, 1)))
-}
+invisible(arrangeirf(
+  plots_vs_missp, E = E, N = N, nRows = 2,
+  title = paste0("HET-IV with vs without controls — Shock ", seq_len(E), " (90% CI)")
+))
 ```
 
-![](hetiv-introduction_files/figure-html/plot2irf-misspecified-1.png)![](hetiv-introduction_files/figure-html/plot2irf-misspecified-2.png)
+![](hetiv-introduction_files/figure-html/plotirf-misspecified-1.png)![](hetiv-introduction_files/figure-html/plotirf-misspecified-2.png)
 
 We see that the confidence intervals are wider using the misspecified
 model (red). This is especially true for the third and fourth variables
@@ -450,29 +443,68 @@ obtain relatively similar point estimates across the two approaches.
 
 ``` r
 
-plots_vs_proxy <- plot2irf(
-  IRF1   = res_het_X$irf,
-  IRF1se = res_het_X$se,
-  IRF2   = res_proxy$irf,
-  IRF2se = res_proxy$se,
+plots_vs_proxy <- plotirf(
+  IRF    = list(res_het_X, res_proxy),
   HTick  = 5,
   Labels = var_labels,
-  ci     = 0.90
+  ci     = 0.90,
+  names  = c("HET-IV", "Proxy-IV"),
+  legend = TRUE
 )
 
-for (j in seq_len(E)) {
-  idx <- ((j - 1) * N + 1):(j * N)
-  panel <- cowplot::plot_grid(plotlist = plots_vs_proxy[idx], ncol = 2)
-  title <- cowplot::ggdraw() +
-    cowplot::draw_label(
-      paste0("HET-IV (blue) vs Proxy-IV (red) — Shock ", j, " (90% CI)"),
-      size = 11
-    )
-  print(cowplot::plot_grid(title, panel, ncol = 1, rel_heights = c(0.05, 1)))
-}
+invisible(arrangeirf(
+  plots_vs_proxy, E = E, N = N, nRows = 2,
+  title = paste0("HET-IV vs Proxy-IV — Shock ", seq_len(E), " (90% CI)")
+))
 ```
 
-![](hetiv-introduction_files/figure-html/plot2irf-het-proxy-1.png)![](hetiv-introduction_files/figure-html/plot2irf-het-proxy-2.png)
+![](hetiv-introduction_files/figure-html/plotirf-het-proxy-1.png)![](hetiv-introduction_files/figure-html/plotirf-het-proxy-2.png)
+
+### Proxy-SVAR with bootstrap bands
+
+Finally,
+[`svariv()`](https://dankaufmann.github.io/hetiv/reference/svariv.md)
+estimates a proxy SVAR (SVAR-IV) following Mertens and Ravn (2013): a
+VAR with \\P\\ lags is estimated by OLS on the full sample, the impact
+matrix of the first \\E\\ shocks is identified with the external
+instruments on the sample where the proxies are observed, and the
+impulse responses follow by recursion. With `nboot > 0`, the function
+returns the bootstrap draws, from which
+[`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md)
+computes percentile bands centred on the point estimate (or raw
+percentile bands with `boot_type = "percentile"`). We compare the
+SVAR-IV estimates to the Proxy-IV local projections.
+
+``` r
+
+set.seed(42)
+res_svar <- svariv(
+  y     = y_data,
+  Z     = e_proxy,
+  X     = X_data,
+  P     = P,
+  H     = H,
+  E     = E,
+  norm  = 1,
+  nboot = 200
+)
+
+plots_svar <- plotirf(
+  IRF    = list(res_svar, res_proxy),
+  HTick  = 5,
+  Labels = var_labels,
+  ci     = 0.90,
+  names  = c("SVAR-IV (bootstrap)", "Proxy-IV"),
+  legend = TRUE
+)
+
+invisible(arrangeirf(
+  plots_svar, E = E, N = N, nRows = 2,
+  title = paste0("SVAR-IV vs Proxy-IV — Shock ", seq_len(E), " (90% CI)")
+))
+```
+
+![](hetiv-introduction_files/figure-html/svariv-1.png)![](hetiv-introduction_files/figure-html/svariv-2.png)
 
 ## Shock extraction
 
@@ -480,29 +512,30 @@ for (j in seq_len(E)) {
 recovers structural shocks from reduced-form residuals via a Kalman
 filter prediction. It requires the estimated impact matrix `Psi`, the
 residual covariance matrices on event and control days (`Sig`, `SigR`),
-and the residuals `et`.
+and the residuals `et`. With `details = TRUE`, the estimators call
+[`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md)
+automatically and return the predicted shocks as `Shocks`. By default,
+the prediction is based on the one-step-ahead residuals and the impact
+responses; the option `hpredict` selects a longer horizon instead
+(`hpredict = 0` is the impact horizon, matching the row labels of
+`irf`).
 
 ``` r
 
-shocks_het <- kfpredict(
-  Sig = res_het$Sig, SigR = res_het$SigR,
-  Psi = res_het$Psi, et = res_het$et
-)
+shocks_het <- res_het$Shocks
+shocks_het_X <- res_het_X$Shocks
+shocks_proxy <- res_proxy$Shocks
+shocks_proxy_rec <- res_proxy_rec$Shocks
 
-shocks_het_X <- kfpredict(
-  Sig = res_het_X$Sig, SigR = res_het_X$SigR,
-  Psi = res_het_X$Psi, et = res_het_X$et
+# The same prediction can be obtained by calling kfpredict() directly
+all.equal(
+  shocks_het_X,
+  kfpredict(
+    Sig = res_het_X$Sig, SigR = res_het_X$SigR,
+    Psi = res_het_X$Psi, et = res_het_X$et
+  )
 )
-
-shocks_proxy <- kfpredict(
-  Sig = res_proxy$Sig, SigR = res_proxy$SigR,
-  Psi = res_proxy$Psi, et = res_proxy$et
-)
-
-shocks_proxy_rec <- kfpredict(
-  Sig = res_proxy_rec$Sig, SigR = res_proxy_rec$SigR,
-  Psi = res_proxy_rec$Psi, et = res_proxy_rec$et
-)
+#> [1] TRUE
 ```
 
 We assess the accuracy of the predictions by comparing them to the true
@@ -575,64 +608,53 @@ applicable to multiple endogenous regressors and multiple instruments.
 Note that classical Stock-Yogo (2005) test is applicable only for the
 homoskedastic case.
 
-Both [`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md)
-and
+With `details = TRUE`,
+[`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md) and
 [`proxyiv()`](https://dankaufmann.github.io/hetiv/reference/proxyiv.md)
-return a `WeakData` object when `details = TRUE`. This data frame
-contains the data expected by
-[`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md).
-The code below extracts the relevant columns from the `WeakData` data
-frame and runs the weak instrument test for each of the four
-specifications. For illustration, we use the heteroskedasticity-robust
-version (`EHW`). For the HAR (Newey West) version, use the option `NW`.
-By default, the function uses a bias tolerance of 10% at a significance
-level of 5%.
+run the weak instrument tests automatically on the sample of every local
+projection. For a single shock (`E = 1`), the data frame `FirstStage`
+reports, by horizon, the homoskedastic first-stage F statistic (the
+squared t statistic of the instrument; Stock and Yogo, 2005) and the
+robust effective F statistic of Montiel Olea and Pflueger (2013),
+computed with the same covariance estimator as the standard errors
+(`cov_type`; HC3 by default, Newey West with `cov_type = "NW"`). When
+the proxy is set to zero on control days, the robust statistic should be
+preferred: the homoskedastic F treats the many zero observations as
+informative and overstates the strength of the instrument.
+[`svariv()`](https://dankaufmann.github.io/hetiv/reference/svariv.md)
+reports the same two statistics with `details = TRUE`, using HC0 by
+default. For several shocks (`E > 1`), as in this example, the data
+frame `WeakTest` reports the generalised minimum eigenvalue statistic
+together with its critical values for every horizon `h` and outcome
+variable `i`. The statistic depends on the horizon only through the
+estimation sample, whereas the critical values differ across outcomes
+and horizons. The heteroskedasticity-robust version is used if
+`cov_type = "HC3"` (the default), the HAR (Newey West) version if
+`cov_type = "NW"`. The test uses a bias tolerance of 10% at a
+significance level of 5%. The estimators also return a `WeakData` data
+frame with the variables expected by
+[`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md)
+for custom tests.
+
+The table below shows the test on impact (`h = 0`) for the third
+variable for each of the four specifications.
 
 ``` r
-
-# Helper: extract y, Y, X, Z from WeakData and run gweakivtest
-run_weaktest <- function(weakdata, E) {
-  # y: outcome variable E+1 (not used as endogenous regressor)
-  y <- weakdata[, paste0("y", E + 1)]
-  # Y: first E outcome variables (endogenous regressors)
-  Y <- weakdata[, paste0("y", 1:E)]
-  # Z: the E instruments
-  Z <- weakdata[, paste0("Z", 1:E), ]
-  # X: lagged ("o*"), deterministic ("x*"), and indicator ("i*") controls.
-  # gweakivtest() adds a constant term if one is missing.
-  ctrl <- startsWith(colnames(weakdata), "o") |
-    startsWith(colnames(weakdata), "x") |
-    startsWith(colnames(weakdata), "i")
-  X <- if (any(ctrl)) {
-    weakdata[, ctrl, drop = FALSE]
-  } else {
-    matrix(numeric(0), nrow(weakdata), 0)
-  }
-
-  gweakivtest(y, Y, X, Z, cov_type = "EHW")
-}
 
 specs <- list(
-  "HET-IV, no controls" = res_het$WeakData,
-  "HET-IV, with controls" = res_het_X$WeakData,
-  "Proxy-IV, with controls" = res_proxy$WeakData,
-  "Proxy-IV, with controls + recursive restriction" = res_proxy_rec$WeakData
+  "HET-IV, no controls" = res_het$WeakTest,
+  "HET-IV, with controls" = res_het_X$WeakTest,
+  "Proxy-IV, with controls" = res_proxy$WeakTest,
+  "Proxy-IV, with controls + recursive restriction" = res_proxy_rec$WeakTest
 )
 
-wt_results <- lapply(specs, run_weaktest, E = E)
-```
-
-``` r
-
-tab <- do.call(rbind, lapply(names(wt_results), function(nm) {
-  r <- wt_results[[nm]]
+tab <- do.call(rbind, lapply(names(specs), function(nm) {
+  r <- specs[[nm]][specs[[nm]]$h == 0 & specs[[nm]]$i == 3, ]
   data.frame(
     Specification = nm,
-    Statistic = round(r$gmin_generalized, 2),
-    LM_CV = round(r$gmin_generalized_critical_value, 2),
-    Strong = ifelse(r$gmin_generalized > r$gmin_generalized_critical_value,
-      "Yes", "No"
-    ),
+    Statistic = round(r$gmin, 2),
+    LM_CV = round(r$cv, 2),
+    Strong = ifelse(r$gmin > r$cv, "Yes", "No"),
     stringsAsFactors = FALSE
   )
 }))
@@ -643,7 +665,7 @@ knitr::kable(
     "Specification", "Statistic", "LM critical value",
     "Strong instruments?"
   ),
-  caption = "Weak instrument test results (Lewis-Mertens generalised minimum eigenvalue test)"
+  caption = "Weak instrument test results on impact (Lewis-Mertens generalised minimum eigenvalue test)"
 )
 ```
 
@@ -654,20 +676,56 @@ knitr::kable(
 | Proxy-IV, with controls | 29.12 | 25.41 | Yes |
 | Proxy-IV, with controls + recursive restriction | 29.12 | 25.41 | Yes |
 
-Weak instrument test results (Lewis-Mertens generalised minimum
-eigenvalue test) {.table}
+Weak instrument test results on impact (Lewis-Mertens generalised
+minimum eigenvalue test) {.table}
 
 The specification without controls is affected by a weak instrument
 problem. The correctly specified model passes the weak instrument tests.
-Proxy-IV fails the test. However, note that this depends on the degree
-of noise used to construct the proxy and does not suggest that
+Proxy-IV passes the test as well, but with a smaller margin. Note that
+this depends on the degree of noise used to construct the proxy and does
+not suggest that
 [`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md) is
 generally superior to
 [`proxyiv()`](https://dankaufmann.github.io/hetiv/reference/proxyiv.md).
+The recursive restriction does not change the test, because the test is
+for the full system with `E` endogenous variables and `E` instruments.
 Interestingly, at least for HET-IV, the critical values are much higher
 than the common rule of thumb for the Stock and Yogo (2005) test and
 higher than in the HAR test for the univariate case by Montiel Olea and
 Pflueger (2013) and Lewis (2022), which is around 23.
+
+Because the critical values depend on the outcome variable and the
+horizon, it is useful to inspect the full `WeakTest` data frame. The
+following table shows, for HET-IV with controls, the statistic and the
+critical value for the third and fourth variables at selected horizons.
+
+``` r
+
+wt <- res_het_X$WeakTest
+wt <- wt[wt$i %in% c(3, 4) & wt$h %in% c(0, 5, 10, 19), ]
+wt$Strong <- ifelse(wt$gmin > wt$cv, "Yes", "No")
+
+knitr::kable(
+  wt[, c("h", "i", "Tobs", "gmin", "cv", "Strong")],
+  digits = 2, row.names = FALSE,
+  col.names = c("Horizon", "Variable", "Obs.", "Statistic", "LM critical value", "Strong instruments?"),
+  caption = "Weak instrument test by horizon and outcome variable (HET-IV with controls)"
+)
+```
+
+| Horizon | Variable | Obs. | Statistic | LM critical value | Strong instruments? |
+|--------:|---------:|-----:|----------:|------------------:|:--------------------|
+|       0 |        3 |  498 |     84.51 |             46.43 | Yes                 |
+|       5 |        3 |  493 |     88.21 |             35.96 | Yes                 |
+|      10 |        3 |  488 |     88.41 |             35.91 | Yes                 |
+|      19 |        3 |  479 |     89.14 |             36.09 | Yes                 |
+|       0 |        4 |  498 |     84.51 |             36.59 | Yes                 |
+|       5 |        4 |  493 |     88.21 |             35.76 | Yes                 |
+|      10 |        4 |  488 |     88.41 |             35.95 | Yes                 |
+|      19 |        4 |  479 |     89.14 |             35.98 | Yes                 |
+
+Weak instrument test by horizon and outcome variable (HET-IV with
+controls) {.table style="width:100%;"}
 
 ## References
 
@@ -678,6 +736,10 @@ University of Neuchâtel.
 Burri, M. and Kaufmann, D. (2026b). Multiple monetary policy shocks from
 daily data: A heteroskedasticity IV approach. *Economics Letters*, 268,
 113091. <https://doi.org/10.1016/j.econlet.2026.113091>
+
+Gertler, M. and Karadi, P. (2015). Monetary policy surprises, credit
+costs, and economic activity. *American Economic Journal:
+Macroeconomics*, 7(1), 44–76.
 
 Jordà, Ò. (2005). Estimation and inference of impulse responses by local
 projections. *American Economic Review*, 95(1), 161–182.
@@ -702,6 +764,10 @@ Montiel Olea, J. L., M. Plagborg-Møller, E. Qian, C. K. Wolf (2025).
 *Local projections or VARs? A primer for macroeconomists*. NBER
 Macroeconomics Annual 2025, vol. 40, pp. 1-64, National Bureau of
 Economic Research.
+
+Nakamura, E. and Steinsson, J. (2018). High-frequency identification of
+monetary non-neutrality: The information effect. *Quarterly Journal of
+Economics*, 133(3), 1283–1330.
 
 Rigobon, R. (2003). Identification through heteroskedasticity. *Review
 of Economics and Statistics*, 85(4), 777–792.

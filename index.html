@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">hetiv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -120,6 +120,10 @@
 <td>Estimates impulse response functions via a proxy SVAR (SVAR-IV) with optional wild-bootstrap bands</td>
 </tr>
 <tr>
+<td><code><a href="reference/recols.html">recols()</a></code></td>
+<td>Estimates impulse response functions via recursive (Cholesky) local projections, as a benchmark</td>
+</tr>
+<tr>
 <td><code><a href="reference/gweakivtest.html">gweakivtest()</a></code></td>
 <td>Tests for weak instruments using the generalised minimum eigenvalue statistic of Lewis and Mertens (2025)</td>
 </tr>
@@ -149,11 +153,15 @@
 </tr>
 <tr>
 <td><code><a href="reference/plotirf.html">plotirf()</a></code></td>
-<td>Plots IRFs with confidence bands for a single estimation approach</td>
+<td>Plots IRFs of up to three estimation approaches with confidence bands from standard errors or bootstrap draws</td>
 </tr>
 <tr>
 <td><code><a href="reference/plot2irf.html">plot2irf()</a></code></td>
-<td>Plots and compares IRFs from two estimation approaches</td>
+<td>Plots and compares IRFs from two estimation approaches (wrapper around <code><a href="reference/plotirf.html">plotirf()</a></code>, kept for backward compatibility)</td>
+</tr>
+<tr>
+<td><code><a href="reference/arrangeirf.html">arrangeirf()</a></code></td>
+<td>Arranges IRF panels into one figure per shock and optionally saves them as PDF</td>
 </tr>
 <tr>
 <td><code><a href="reference/plotpval.html">plotpval()</a></code></td>
@@ -214,9 +222,16 @@
 <h3 id="plot-impulse-responses">Plot impulse responses<a class="anchor" aria-label="anchor" href="#plot-impulse-responses"></a>
 </h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">plots</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plotirf.html">plotirf</a></span><span class="op">(</span>IRFest <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">irf</span>, IRFse <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">se</span>,</span>
-<span>                 HTick <span class="op">=</span> <span class="fl">5</span>, Labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Var 1"</span>, <span class="st">"Var 2"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span>plotlist <span class="op">=</span> <span class="va">plots</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># One estimator: normal bands at two confidence levels</span></span>
+<span><span class="va">plots</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plotirf.html">plotirf</a></span><span class="op">(</span><span class="va">res</span>, HTick <span class="op">=</span> <span class="fl">5</span>, Labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Var 1"</span>, <span class="st">"Var 2"</span><span class="op">)</span>, ci <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.90</span>, <span class="fl">0.95</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/arrangeirf.html">arrangeirf</a></span><span class="op">(</span><span class="va">plots</span>, E <span class="op">=</span> <span class="fl">1</span>, N <span class="op">=</span> <span class="fl">2</span>, nRows <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Up to three estimators in the same panels (bands from standard errors or,</span></span>
+<span><span class="co"># as for svariv() with nboot &gt; 0, from the bootstrap draws)</span></span>
+<span><span class="va">plots</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plotirf.html">plotirf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">res_het</span>, <span class="va">res_proxy</span>, <span class="va">res_svar</span><span class="op">)</span>, HTick <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                 Labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Var 1"</span>, <span class="st">"Var 2"</span><span class="op">)</span>, ci <span class="op">=</span> <span class="fl">0.90</span>,</span>
+<span>                 names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HET-IV"</span>, <span class="st">"Proxy-IV"</span>, <span class="st">"SVAR-IV"</span><span class="op">)</span>, legend <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/arrangeirf.html">arrangeirf</a></span><span class="op">(</span><span class="va">plots</span>, E <span class="op">=</span> <span class="fl">1</span>, N <span class="op">=</span> <span class="fl">2</span>, nRows <span class="op">=</span> <span class="fl">1</span>, title <span class="op">=</span> <span class="st">"Shock 1"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="test-for-weak-instruments-lewis-mertens-2025">Test for weak instruments (Lewis-Mertens, 2025)<a class="anchor" aria-label="anchor" href="#test-for-weak-instruments-lewis-mertens-2025"></a>

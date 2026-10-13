@@ -33,7 +33,7 @@ Test for weak instruments (Lewis-Mertens 2025)
 ## Plotting
 
 - [`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md)
-  : Plot impulse responses from a single estimation approach
+  : Plot impulse responses from one or several estimation approaches
 - [`plot2irf()`](https://dankaufmann.github.io/hetiv/reference/plot2irf.md)
   : Plot and compare impulse responses from two estimation approaches
 - [`plotpval()`](https://dankaufmann.github.io/hetiv/reference/plotpval.md)

@@ -43,6 +43,7 @@ remotes::install_github("dankaufmann/hetiv")
 | [`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md) | Estimates impulse response functions via heteroskedasticity-based IV local projections |
 | [`proxyiv()`](https://dankaufmann.github.io/hetiv/reference/proxyiv.md) | Estimates impulse response functions via proxy-IV local projections |
 | [`svariv()`](https://dankaufmann.github.io/hetiv/reference/svariv.md) | Estimates impulse response functions via a proxy SVAR (SVAR-IV) with optional wild-bootstrap bands |
+| [`recols()`](https://dankaufmann.github.io/hetiv/reference/recols.md) | Estimates impulse response functions via recursive (Cholesky) local projections, as a benchmark |
 | [`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md) | Tests for weak instruments using the generalised minimum eigenvalue statistic of Lewis and Mertens (2025) |
 | [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md) | Extracts structural shocks from reduced-form residuals via Kalman filter |
 | [`computeirf()`](https://dankaufmann.github.io/hetiv/reference/computeirf.md) | Recursively computes IRFs from an impact matrix and VAR coefficients |
@@ -50,8 +51,9 @@ remotes::install_github("dankaufmann/hetiv")
 | [`logdiff()`](https://dankaufmann.github.io/hetiv/reference/logdiff.md) | Computes the log-difference of a time series |
 | [`firstdiff()`](https://dankaufmann.github.io/hetiv/reference/firstdiff.md) | Computes the first difference of a time series |
 | [`filllinear()`](https://dankaufmann.github.io/hetiv/reference/filllinear.md) | Linearly interpolates short gaps of missing values in a data frame |
-| [`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md) | Plots IRFs with confidence bands for a single estimation approach |
-| [`plot2irf()`](https://dankaufmann.github.io/hetiv/reference/plot2irf.md) | Plots and compares IRFs from two estimation approaches |
+| [`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md) | Plots IRFs of up to three estimation approaches with confidence bands from standard errors or bootstrap draws |
+| [`plot2irf()`](https://dankaufmann.github.io/hetiv/reference/plot2irf.md) | Plots and compares IRFs from two estimation approaches (wrapper around [`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md), kept for backward compatibility) |
+| [`arrangeirf()`](https://dankaufmann.github.io/hetiv/reference/arrangeirf.md) | Arranges IRF panels into one figure per shock and optionally saves them as PDF |
 | [`plotpval()`](https://dankaufmann.github.io/hetiv/reference/plotpval.md) | Plots p-values of IRF coefficients across horizons with significance reference lines |
 | [`simulatedata()`](https://dankaufmann.github.io/hetiv/reference/simulatedata.md) | Simulates VAR data with heteroskedastic event shocks |
 
@@ -104,9 +106,16 @@ res <- proxyiv(y = y, O = O, Z = Z, Ind = Ind, P = 1, H = 20, E = 2,
 
 ``` r
 
-plots <- plotirf(IRFest = res$irf, IRFse = res$se,
-                 HTick = 5, Labels = c("Var 1", "Var 2"))
-cowplot::plot_grid(plotlist = plots)
+# One estimator: normal bands at two confidence levels
+plots <- plotirf(res, HTick = 5, Labels = c("Var 1", "Var 2"), ci = c(0.90, 0.95))
+arrangeirf(plots, E = 1, N = 2, nRows = 1)
+
+# Up to three estimators in the same panels (bands from standard errors or,
+# as for svariv() with nboot > 0, from the bootstrap draws)
+plots <- plotirf(list(res_het, res_proxy, res_svar), HTick = 5,
+                 Labels = c("Var 1", "Var 2"), ci = 0.90,
+                 names = c("HET-IV", "Proxy-IV", "SVAR-IV"), legend = TRUE)
+arrangeirf(plots, E = 1, N = 2, nRows = 1, title = "Shock 1")
 ```
 
 ### Test for weak instruments (Lewis-Mertens, 2025)
@@ -239,7 +248,7 @@ Test for weak instruments (Lewis-Mertens 2025)
 ## Plotting
 
 - [`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md)
-  : Plot impulse responses from a single estimation approach
+  : Plot impulse responses from one or several estimation approaches
 - [`plot2irf()`](https://dankaufmann.github.io/hetiv/reference/plot2irf.md)
   : Plot and compare impulse responses from two estimation approaches
 - [`plotpval()`](https://dankaufmann.github.io/hetiv/reference/plotpval.md)

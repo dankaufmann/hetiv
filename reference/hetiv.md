@@ -21,9 +21,8 @@ hetiv(
   norm = 1,
   interact = FALSE,
   cum = FALSE,
-  Hstep = 1,
   cov_type = "HC3",
-  hpredict = 1,
+  hpredict = 0,
   details = FALSE
 )
 ```
@@ -89,12 +88,6 @@ hetiv(
   report the cumulative impulse response instead of the level response.
   If only one provided, applied to all impulse responses.
 
-- Hstep:
-
-  Integer. Step size between horizons. The default `1` estimates all
-  horizons 0 through H - 1. Values greater than 1 estimate only the
-  selected horizons.
-
 - cov_type:
 
   Covariance estimator for local-projection standard errors: `"HC3"`
@@ -108,18 +101,21 @@ hetiv(
 
 - hpredict:
 
-  Integer Forecast horizon for the residuals to be used for shock
-  prediction. Defaults to 1 (one-step-ahead residual)
+  Integer. Horizon of the responses and forecast errors used for shock
+  prediction, on the same scale as the row labels of `irf`. Defaults to
+  0 (impact response and one-step-ahead residual). Must lie between 0
+  and `H - 1`.
 
 - details:
 
-  Logical. If `TRUE`, code saves detailed IV results, which is slightly
-  slower. if set to `FALSE`, returns only impulse response and standard
-  error (e.g. for bootstrap)
+  Logical. If `TRUE`, saves detailed IV results and predicts the shocks,
+  which is slightly slower. If `FALSE`, returns only impulse responses
+  and standard errors (e.g. for bootstrap).
 
 ## Value
 
-A named list with the following elements:
+A named list. If `details = FALSE`, it contains `irf`, `se` and
+`Method`. If `details = TRUE`, it contains:
 
 - `irf`:
 
@@ -129,10 +125,50 @@ A named list with the following elements:
 
   Array (H x N x E) of local-projection standard errors.
 
+- `Shocks`:
+
+  Predicted structural shocks on event days from
+  [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md),
+  based on the responses at horizon `hpredict`.
+
 - `IVRes`:
 
   List of `ivreg` model objects, one per horizon, variable, and shock
   dimension.
+
+- `OLSRes`:
+
+  List of OLS model objects used for residual-based covariance
+  estimation, one per outcome variable.
+
+- `ORTHRes`:
+
+  List of OLS models used to orthogonalize the variable underlying the
+  instrument, one per shock dimension.
+
+- `FirstStage`:
+
+  For `E = 1`: data frame with one row per horizon `h` giving the number
+  of observations `Tobs`, the homoskedastic first-stage F statistic
+  `F_hom` (the squared t statistic of the instrument; Stock and
+  Yogo, 2005) and the robust effective F statistic `F_rob` of Montiel
+  Olea and Pflueger (2013), computed with the covariance estimator in
+  `cov_type`. The statistics do not depend on the outcome variable.
+  `NULL` for `E > 1`.
+
+- `WeakTest`:
+
+  For `E > 1`: data frame with one row per horizon `h` and outcome
+  variable `i` giving the results of
+  [`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md)
+  for the system with `E` endogenous policy variables and `E`
+  instruments: `gmin` (generalized minimum eigenvalue statistic, which
+  depends on the horizon only through the sample), `cv` and
+  `cv_simplified` (sharp and simplified critical values, which depend on
+  the outcome and horizon), and the Stock-Yogo statistic `sy_stat` with
+  its critical value `sy_cv` (`NaN` unless over-identified). Rows where
+  the outcome is a policy variable on impact are omitted. `NULL` for
+  `E = 1`.
 
 - `Obs`:
 
@@ -160,10 +196,9 @@ A named list with the following elements:
 
 - `Psi`:
 
-  Impact matrix (N x E), equal to `irf[1, , ]`. By the package's
-  indexing convention `HSeries` starts at 1, so the first LP uses
-  `lead(y, 0)` (the contemporaneous value) and is labelled horizon 0;
-  `irf[1, , ]` is therefore always the impact response.
+  Response matrix (N x E) used for shock prediction: the response at
+  horizon `hpredict`, i.e. `irf[hpredict + 1, , ]`. With the default
+  `hpredict = 0` this is the impact response.
 
 - `WeakData`:
 

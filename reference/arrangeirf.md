@@ -16,6 +16,7 @@ arrangeirf(
   N,
   nRows,
   xLab = "Horizon",
+  title = NULL,
   file = NA,
   figScaleW = 3.5,
   figScaleH = 2.5
@@ -48,6 +49,11 @@ arrangeirf(
 - xLab:
 
   Character. Common x-axis label printed below the panels.
+
+- title:
+
+  Character vector of length `E` (or `1`, recycled) with a title printed
+  above each figure, or `NULL` (default) for no title.
 
 - file:
 

@@ -114,6 +114,15 @@ A named list with components:
 
   Event shock variance (returned unchanged).
 
+## Details
+
+Unless `seed = NA`, the function calls
+[`set.seed()`](https://rdrr.io/r/base/Random.html) and does not restore
+the previous state of the random number generator. Any random draws made
+after the call (e.g. a simulated proxy) therefore follow
+deterministically from `seed`; set a new seed explicitly if independent
+draws are required.
+
 ## Examples
 
 ``` r

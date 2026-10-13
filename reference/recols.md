@@ -23,9 +23,8 @@ recols(
   E = 1,
   norm = 1,
   cum = FALSE,
-  Hstep = 1,
   cov_type = "HC3",
-  hpredict = 1,
+  hpredict = 0,
   details = FALSE
 )
 ```
@@ -88,12 +87,6 @@ recols(
   report the cumulative impulse response instead of the level response.
   If only one provided, applied to all impulse responses.
 
-- Hstep:
-
-  Integer. Step size between horizons. The default `1` estimates all
-  horizons 0 through H - 1. Values greater than 1 estimate only the
-  selected horizons.
-
 - cov_type:
 
   Covariance estimator for local-projection standard errors: `"HC3"`
@@ -107,9 +100,10 @@ recols(
 
 - hpredict:
 
-  Integer. Forecast horizon of the residuals used for shock prediction.
-  Defaults to 1 (one-step-ahead residual). Must be one of the estimated
-  horizons in `seq(1, H, Hstep)`.
+  Integer. Horizon of the responses and forecast errors used for shock
+  prediction, on the same scale as the row labels of `irf`. Defaults to
+  0 (impact response and one-step-ahead residual). Must lie between 0
+  and `H - 1`.
 
 - details:
 
@@ -166,8 +160,9 @@ A named list. If `details = FALSE`, it contains `irf`, `se`, and
 
 - `Psi`:
 
-  Impact matrix (N x E) at horizon `hpredict - 1`; with the default
-  `hpredict = 1` this equals `irf[1, , ]`.
+  Response matrix (N x E) at horizon `hpredict`, i.e.
+  `irf[hpredict + 1, , ]`; with the default `hpredict = 0` this is the
+  impact response.
 
 ## Details
 

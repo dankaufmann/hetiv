@@ -1,5 +1,66 @@
 # Changelog
 
+## hetiv 0.1.3
+
+- [`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md)
+  now plots up to three sets of impulse responses in the same panels.
+  Each set is supplied as an array or as an estimator result (a list
+  with `irf` and optionally `se` and `boot`) and is drawn without bands,
+  with normal bands from standard errors, or with percentile bands
+  computed from bootstrap draws and recentred on the point estimate
+  (`boot_type = "recentred"`; `"percentile"` gives raw percentile
+  bands). The default is a single 90% band (`ci = 0.90`); up to two
+  confidence levels can be supplied. New arguments `names`, `colors`,
+  `boot_type` and `legend`.
+  [`plot2irf()`](https://dankaufmann.github.io/hetiv/reference/plot2irf.md)
+  is now a thin wrapper around
+  [`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md)
+  kept for backward compatibility. Fixed: two-dimensional `IRFest` with
+  `IRFse` no longer errors.
+- [`svariv()`](https://dankaufmann.github.io/hetiv/reference/svariv.md)
+  returns the bootstrap draws (`boot`) also when `details = FALSE`.
+- [`svariv()`](https://dankaufmann.github.io/hetiv/reference/svariv.md)
+  now computes the reduced-form residual covariance on the full VAR
+  sample, as in Mertens and Ravn (2013); only the 2SLS step uses the
+  observations with non-missing proxies. With `details = TRUE` it
+  reports, for each policy residual, the homoskedastic first-stage F
+  statistic (`FStat`) and the robust effective F statistic of Montiel
+  Olea and Pflueger
+  2013. (`FStatRobust`, new argument `cov_type`). Identification
+        failures now raise an informative error.
+- [`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md)
+  and
+  [`proxyiv()`](https://dankaufmann.github.io/hetiv/reference/proxyiv.md)
+  with `details = TRUE` now report weak-instrument diagnostics on the
+  sample of every local projection: for `E = 1`, a data frame
+  `FirstStage` with the homoskedastic first-stage F statistic (squared t
+  statistic of the instrument) and the robust effective F statistic of
+  Montiel Olea and Pflueger (2013) by horizon; for `E > 1`, a data frame
+  `WeakTest` with the generalized Lewis and Mertens (2025) test from
+  [`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md)
+  by horizon and outcome variable.
+  [`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md)
+  now also returns the OLS residual models in `OLSRes`, and
+  [`proxyiv()`](https://dankaufmann.github.io/hetiv/reference/proxyiv.md)
+  computes `Tiv` on impact as documented.
+- Removed the `Hstep` argument from
+  [`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md),
+  [`proxyiv()`](https://dankaufmann.github.io/hetiv/reference/proxyiv.md)
+  and
+  [`recols()`](https://dankaufmann.github.io/hetiv/reference/recols.md).
+  All horizons `0, ..., H - 1` are always estimated. Previously,
+  `Hstep > 1` combined with `hpredict > 1` selected the wrong horizon
+  for the shock prediction.
+- Breaking: `hpredict` in
+  [`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md),
+  [`proxyiv()`](https://dankaufmann.github.io/hetiv/reference/proxyiv.md)
+  and
+  [`recols()`](https://dankaufmann.github.io/hetiv/reference/recols.md)
+  is now a horizon on the scale of the row labels of `irf`
+  (`0, ..., H - 1`, default `0` = impact) instead of a 1-based row
+  index. Callers who passed a non-default value must subtract one. `Psi`
+  equals `irf[hpredict + 1, , ]`.
+
 ## hetiv 0.1.2
 
 - New

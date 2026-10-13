@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hetiv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,7 +73,7 @@
                         <h4 data-toc-skip class="author">Daniel
 Kaufmann, Marc Burri, Valentin Grob</h4>
             
-            <h4 data-toc-skip class="date">2026-10-12</h4>
+            <h4 data-toc-skip class="date">2026-10-13</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/dankaufmann/hetiv/blob/main/vignettes/hetiv-introduction.Rmd" class="external-link"><code>vignettes/hetiv-introduction.Rmd</code></a></small>
       <div class="d-none name"><code>hetiv-introduction.Rmd</code></div>
@@ -206,10 +206,16 @@ days and 0 on control days.</p>
 <p>To illustrate the proxy-IV approach, we construct a noisy external
 instrument for the two event shocks by adding Gaussian noise to the true
 shocks. The proxy is set to zero on control days. This mirrors the
-typical situation in high-frequency identification of monetary policy
-shocks, where high-frequency surprises are recorded around policy
-announcement windows and are zero otherwise in the event-study
-sample.</p>
+convention of the proxy-SVAR literature (Mertens and Ravn, 2013; Gertler
+and Karadi, 2015), where high-frequency surprises are recorded around
+policy announcement windows and set to zero otherwise. Setting the proxy
+to <code>NA</code> on control days instead excludes those days from the
+proxy-IV regressions and reproduces the announcement-day sample of the
+event-study literature (Nakamura and Steinsson, 2018). Both conventions
+use the same identifying moments, because the first-stage and
+reduced-form cross products involve event days only; they differ in the
+sample used to estimate the control coefficients. We use zeros as the
+default convention.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># RNG state after simulatedata(seed = 42) is deterministic, so no extra seed needed</span></span>
 <span><span class="va">e_proxy</span> <span class="op">&lt;-</span> <span class="va">sim</span><span class="op">$</span><span class="va">eE</span></span>
@@ -470,66 +476,58 @@ specifications</caption>
 </h3>
 <p>We can assess the accuracy of the estimates, and the dynamic causal
 effects, using <code><a href="../reference/plotirf.html">plotirf()</a></code>. The function plots IRFs with
-shaded confidence bands for one estimation approach. The confidence
-levels can be chosen freely. Here, we show the 90%, 95%, and 99%
-confidence intervals for the HET-IV estimates with controls.</p>
+shaded confidence bands for up to three estimation approaches. For each
+approach, the bands are computed from standard errors (normal bands) or
+from bootstrap draws (percentile bands centred on the point estimate by
+default; <code>boot_type = "percentile"</code> gives raw percentile
+bands), or suppressed if neither is supplied. By default a single 90%
+band is drawn; up to two confidence levels can be chosen. Here, we show
+the 90% and 95% confidence intervals for the HET-IV estimates with
+controls. <code><a href="../reference/plotirf.html">plotirf()</a></code> returns one panel per variable and
+shock; <code><a href="../reference/arrangeirf.html">arrangeirf()</a></code> arranges them into one figure per
+shock.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">var_labels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Variable "</span>, <span class="fl">1</span><span class="op">:</span><span class="va">N</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">plots_het_X</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plotirf.html">plotirf</a></span><span class="op">(</span></span>
-<span>  IRFest <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">irf</span>,</span>
-<span>  IRFse  <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">se</span>,</span>
+<span>  IRF    <span class="op">=</span> <span class="va">res_het_X</span>,</span>
 <span>  HTick  <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  Labels <span class="op">=</span> <span class="va">var_labels</span>,</span>
-<span>  ci     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.90</span>, <span class="fl">0.95</span>, <span class="fl">0.99</span><span class="op">)</span></span>
+<span>  ci     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.90</span>, <span class="fl">0.95</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">E</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">idx</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="op">(</span><span class="va">j</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="va">N</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="op">(</span><span class="va">j</span> <span class="op">*</span> <span class="va">N</span><span class="op">)</span></span>
-<span>  <span class="va">panel</span> <span class="op">&lt;-</span> <span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span>plotlist <span class="op">=</span> <span class="va">plots_het_X</span><span class="op">[</span><span class="va">idx</span><span class="op">]</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span>  <span class="va">title</span> <span class="op">&lt;-</span> <span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/ggdraw.html" class="external-link">ggdraw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/draw_label.html" class="external-link">draw_label</a></span><span class="op">(</span></span>
-<span>      <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"HET-IV with controls — Shock "</span>, <span class="va">j</span>, <span class="st">" (90%, 95%, 99% CI)"</span><span class="op">)</span>,</span>
-<span>      size <span class="op">=</span> <span class="fl">11</span></span>
-<span>    <span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">title</span>, <span class="va">panel</span>, ncol <span class="op">=</span> <span class="fl">1</span>, rel_heights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="fu"><a href="../reference/arrangeirf.html">arrangeirf</a></span><span class="op">(</span></span>
+<span>  <span class="va">plots_het_X</span>, E <span class="op">=</span> <span class="va">E</span>, N <span class="op">=</span> <span class="va">N</span>, nRows <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"HET-IV with controls — Shock "</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">E</span><span class="op">)</span>, <span class="st">" (90%, 95% CI)"</span><span class="op">)</span></span>
+<span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="hetiv-introduction_files/figure-html/plotirf-1.png" class="r-plt" alt="" width="100%"><img src="hetiv-introduction_files/figure-html/plotirf-2.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level3">
 <h3 id="het-iv-estimates-versus-true-irf">HET-IV estimates versus true IRF<a class="anchor" aria-label="anchor" href="#het-iv-estimates-versus-true-irf"></a>
 </h3>
-<p>We can compare the estimates to the true impulse responses.
-<code><a href="../reference/plot2irf.html">plot2irf()</a></code> overlays two sets of IRFs. We compare the HET-IV
-estimate (blue) against the theoretical IRF computed from the known VAR
+<p>We can compare the estimates to the true impulse responses by passing
+a list of IRFs to <code><a href="../reference/plotirf.html">plotirf()</a></code>. We compare the HET-IV estimate
+(blue) against the theoretical IRF computed from the known VAR
 parameters (red). The function <code><a href="../reference/computeirf.html">computeirf()</a></code> computes the
-theoretical IRF. The standard errors for the true IRF are set to zero,
-so that no confidence bands are plotted for the true IRF.</p>
+theoretical IRF. No standard errors are supplied for the true IRF, so no
+confidence bands are plotted for it.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">irf_true</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/computeirf.html">computeirf</a></span><span class="op">(</span><span class="va">PsiE</span>, <span class="va">Phi</span>, <span class="va">H</span>, cum <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">irf_true_se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fl">0</span>, dim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">irf_true</span><span class="op">)</span>, dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/dimnames.html" class="external-link">dimnames</a></span><span class="op">(</span><span class="va">irf_true</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">plots_vs_true</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot2irf.html">plot2irf</a></span><span class="op">(</span></span>
-<span>  IRF1   <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">irf</span>,</span>
-<span>  IRF1se <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">se</span>,</span>
-<span>  IRF2   <span class="op">=</span> <span class="va">irf_true</span>,</span>
-<span>  IRF2se <span class="op">=</span> <span class="va">irf_true_se</span>,</span>
+<span><span class="va">plots_vs_true</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plotirf.html">plotirf</a></span><span class="op">(</span></span>
+<span>  IRF    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">res_het_X</span>, <span class="va">irf_true</span><span class="op">)</span>,</span>
 <span>  HTick  <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  Labels <span class="op">=</span> <span class="va">var_labels</span>,</span>
-<span>  ci     <span class="op">=</span> <span class="fl">0.90</span></span>
+<span>  ci     <span class="op">=</span> <span class="fl">0.90</span>,</span>
+<span>  names  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HET-IV with controls"</span>, <span class="st">"True"</span><span class="op">)</span>,</span>
+<span>  legend <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">E</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">idx</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="op">(</span><span class="va">j</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="va">N</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="op">(</span><span class="va">j</span> <span class="op">*</span> <span class="va">N</span><span class="op">)</span></span>
-<span>  <span class="va">panel</span> <span class="op">&lt;-</span> <span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span>plotlist <span class="op">=</span> <span class="va">plots_vs_true</span><span class="op">[</span><span class="va">idx</span><span class="op">]</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span>  <span class="va">title</span> <span class="op">&lt;-</span> <span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/ggdraw.html" class="external-link">ggdraw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/draw_label.html" class="external-link">draw_label</a></span><span class="op">(</span></span>
-<span>      <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"HET-IV with controls (blue) vs True (red) — Shock "</span>, <span class="va">j</span>, <span class="st">" (90% CI)"</span><span class="op">)</span>,</span>
-<span>      size <span class="op">=</span> <span class="fl">11</span></span>
-<span>    <span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">title</span>, <span class="va">panel</span>, ncol <span class="op">=</span> <span class="fl">1</span>, rel_heights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-<p><img src="hetiv-introduction_files/figure-html/plot2irf-true-1.png" class="r-plt" alt="" width="100%"><img src="hetiv-introduction_files/figure-html/plot2irf-true-2.png" class="r-plt" alt="" width="100%"></p>
+<span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="fu"><a href="../reference/arrangeirf.html">arrangeirf</a></span><span class="op">(</span></span>
+<span>  <span class="va">plots_vs_true</span>, E <span class="op">=</span> <span class="va">E</span>, N <span class="op">=</span> <span class="va">N</span>, nRows <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"HET-IV with controls vs true IRF — Shock "</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">E</span><span class="op">)</span>, <span class="st">" (90% CI)"</span><span class="op">)</span></span>
+<span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="hetiv-introduction_files/figure-html/plotirf-true-1.png" class="r-plt" alt="" width="100%"><img src="hetiv-introduction_files/figure-html/plotirf-true-2.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level3">
 <h3 id="het-iv-estimates-versus-misspecified-model">HET-IV estimates versus misspecified model<a class="anchor" aria-label="anchor" href="#het-iv-estimates-versus-misspecified-model"></a>
@@ -537,27 +535,20 @@ so that no confidence bands are plotted for the true IRF.</p>
 <p>We can also compare the accuracy of the estimates using the correct
 and misspecified models.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">plots_vs_true</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot2irf.html">plot2irf</a></span><span class="op">(</span></span>
-<span>  IRF1   <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">irf</span>,</span>
-<span>  IRF1se <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">se</span>,</span>
-<span>  IRF2   <span class="op">=</span> <span class="va">res_het</span><span class="op">$</span><span class="va">irf</span>,</span>
-<span>  IRF2se <span class="op">=</span> <span class="va">res_het</span><span class="op">$</span><span class="va">se</span>,</span>
+<code class="sourceCode R"><span><span class="va">plots_vs_missp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plotirf.html">plotirf</a></span><span class="op">(</span></span>
+<span>  IRF    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">res_het_X</span>, <span class="va">res_het</span><span class="op">)</span>,</span>
 <span>  HTick  <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  Labels <span class="op">=</span> <span class="va">var_labels</span>,</span>
-<span>  ci     <span class="op">=</span> <span class="fl">0.90</span></span>
+<span>  ci     <span class="op">=</span> <span class="fl">0.90</span>,</span>
+<span>  names  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"With controls"</span>, <span class="st">"Without controls"</span><span class="op">)</span>,</span>
+<span>  legend <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">E</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">idx</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="op">(</span><span class="va">j</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="va">N</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="op">(</span><span class="va">j</span> <span class="op">*</span> <span class="va">N</span><span class="op">)</span></span>
-<span>  <span class="va">panel</span> <span class="op">&lt;-</span> <span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span>plotlist <span class="op">=</span> <span class="va">plots_vs_true</span><span class="op">[</span><span class="va">idx</span><span class="op">]</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span>  <span class="va">title</span> <span class="op">&lt;-</span> <span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/ggdraw.html" class="external-link">ggdraw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/draw_label.html" class="external-link">draw_label</a></span><span class="op">(</span></span>
-<span>      <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"HET-IV with controls (blue) vs without controls (red) — Shock "</span>, <span class="va">j</span>, <span class="st">" (90% CI)"</span><span class="op">)</span>,</span>
-<span>      size <span class="op">=</span> <span class="fl">11</span></span>
-<span>    <span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">title</span>, <span class="va">panel</span>, ncol <span class="op">=</span> <span class="fl">1</span>, rel_heights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-<p><img src="hetiv-introduction_files/figure-html/plot2irf-misspecified-1.png" class="r-plt" alt="" width="100%"><img src="hetiv-introduction_files/figure-html/plot2irf-misspecified-2.png" class="r-plt" alt="" width="100%"></p>
+<span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="fu"><a href="../reference/arrangeirf.html">arrangeirf</a></span><span class="op">(</span></span>
+<span>  <span class="va">plots_vs_missp</span>, E <span class="op">=</span> <span class="va">E</span>, N <span class="op">=</span> <span class="va">N</span>, nRows <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"HET-IV with vs without controls — Shock "</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">E</span><span class="op">)</span>, <span class="st">" (90% CI)"</span><span class="op">)</span></span>
+<span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="hetiv-introduction_files/figure-html/plotirf-misspecified-1.png" class="r-plt" alt="" width="100%"><img src="hetiv-introduction_files/figure-html/plotirf-misspecified-2.png" class="r-plt" alt="" width="100%"></p>
 <p>We see that the confidence intervals are wider using the misspecified
 model (red). This is especially true for the third and fourth variables
 that are affected by the deterministic weekday pattern. The misspecified
@@ -572,27 +563,61 @@ variables.</p>
 <p>Next, we compare the HET-IV estimates to the Proxy-IV estimates. We
 obtain relatively similar point estimates across the two approaches.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">plots_vs_proxy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot2irf.html">plot2irf</a></span><span class="op">(</span></span>
-<span>  IRF1   <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">irf</span>,</span>
-<span>  IRF1se <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">se</span>,</span>
-<span>  IRF2   <span class="op">=</span> <span class="va">res_proxy</span><span class="op">$</span><span class="va">irf</span>,</span>
-<span>  IRF2se <span class="op">=</span> <span class="va">res_proxy</span><span class="op">$</span><span class="va">se</span>,</span>
+<code class="sourceCode R"><span><span class="va">plots_vs_proxy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plotirf.html">plotirf</a></span><span class="op">(</span></span>
+<span>  IRF    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">res_het_X</span>, <span class="va">res_proxy</span><span class="op">)</span>,</span>
 <span>  HTick  <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  Labels <span class="op">=</span> <span class="va">var_labels</span>,</span>
-<span>  ci     <span class="op">=</span> <span class="fl">0.90</span></span>
+<span>  ci     <span class="op">=</span> <span class="fl">0.90</span>,</span>
+<span>  names  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HET-IV"</span>, <span class="st">"Proxy-IV"</span><span class="op">)</span>,</span>
+<span>  legend <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">E</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">idx</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="op">(</span><span class="va">j</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="va">N</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="op">(</span><span class="va">j</span> <span class="op">*</span> <span class="va">N</span><span class="op">)</span></span>
-<span>  <span class="va">panel</span> <span class="op">&lt;-</span> <span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span>plotlist <span class="op">=</span> <span class="va">plots_vs_proxy</span><span class="op">[</span><span class="va">idx</span><span class="op">]</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span>  <span class="va">title</span> <span class="op">&lt;-</span> <span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/ggdraw.html" class="external-link">ggdraw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/draw_label.html" class="external-link">draw_label</a></span><span class="op">(</span></span>
-<span>      <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"HET-IV (blue) vs Proxy-IV (red) — Shock "</span>, <span class="va">j</span>, <span class="st">" (90% CI)"</span><span class="op">)</span>,</span>
-<span>      size <span class="op">=</span> <span class="fl">11</span></span>
-<span>    <span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">title</span>, <span class="va">panel</span>, ncol <span class="op">=</span> <span class="fl">1</span>, rel_heights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-<p><img src="hetiv-introduction_files/figure-html/plot2irf-het-proxy-1.png" class="r-plt" alt="" width="100%"><img src="hetiv-introduction_files/figure-html/plot2irf-het-proxy-2.png" class="r-plt" alt="" width="100%"></p>
+<span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="fu"><a href="../reference/arrangeirf.html">arrangeirf</a></span><span class="op">(</span></span>
+<span>  <span class="va">plots_vs_proxy</span>, E <span class="op">=</span> <span class="va">E</span>, N <span class="op">=</span> <span class="va">N</span>, nRows <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"HET-IV vs Proxy-IV — Shock "</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">E</span><span class="op">)</span>, <span class="st">" (90% CI)"</span><span class="op">)</span></span>
+<span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="hetiv-introduction_files/figure-html/plotirf-het-proxy-1.png" class="r-plt" alt="" width="100%"><img src="hetiv-introduction_files/figure-html/plotirf-het-proxy-2.png" class="r-plt" alt="" width="100%"></p>
+</div>
+<div class="section level3">
+<h3 id="proxy-svar-with-bootstrap-bands">Proxy-SVAR with bootstrap bands<a class="anchor" aria-label="anchor" href="#proxy-svar-with-bootstrap-bands"></a>
+</h3>
+<p>Finally, <code><a href="../reference/svariv.html">svariv()</a></code> estimates a proxy SVAR (SVAR-IV)
+following Mertens and Ravn (2013): a VAR with <span class="math inline">\(P\)</span> lags is estimated by OLS on the full
+sample, the impact matrix of the first <span class="math inline">\(E\)</span> shocks is identified with the external
+instruments on the sample where the proxies are observed, and the
+impulse responses follow by recursion. With <code>nboot &gt; 0</code>,
+the function returns the bootstrap draws, from which
+<code><a href="../reference/plotirf.html">plotirf()</a></code> computes percentile bands centred on the point
+estimate (or raw percentile bands with
+<code>boot_type = "percentile"</code>). We compare the SVAR-IV estimates
+to the Proxy-IV local projections.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">res_svar</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/svariv.html">svariv</a></span><span class="op">(</span></span>
+<span>  y     <span class="op">=</span> <span class="va">y_data</span>,</span>
+<span>  Z     <span class="op">=</span> <span class="va">e_proxy</span>,</span>
+<span>  X     <span class="op">=</span> <span class="va">X_data</span>,</span>
+<span>  P     <span class="op">=</span> <span class="va">P</span>,</span>
+<span>  H     <span class="op">=</span> <span class="va">H</span>,</span>
+<span>  E     <span class="op">=</span> <span class="va">E</span>,</span>
+<span>  norm  <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  nboot <span class="op">=</span> <span class="fl">200</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">plots_svar</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plotirf.html">plotirf</a></span><span class="op">(</span></span>
+<span>  IRF    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">res_svar</span>, <span class="va">res_proxy</span><span class="op">)</span>,</span>
+<span>  HTick  <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  Labels <span class="op">=</span> <span class="va">var_labels</span>,</span>
+<span>  ci     <span class="op">=</span> <span class="fl">0.90</span>,</span>
+<span>  names  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SVAR-IV (bootstrap)"</span>, <span class="st">"Proxy-IV"</span><span class="op">)</span>,</span>
+<span>  legend <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="fu"><a href="../reference/arrangeirf.html">arrangeirf</a></span><span class="op">(</span></span>
+<span>  <span class="va">plots_svar</span>, E <span class="op">=</span> <span class="va">E</span>, N <span class="op">=</span> <span class="va">N</span>, nRows <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"SVAR-IV vs Proxy-IV — Shock "</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">E</span><span class="op">)</span>, <span class="st">" (90% CI)"</span><span class="op">)</span></span>
+<span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="hetiv-introduction_files/figure-html/svariv-1.png" class="r-plt" alt="" width="100%"><img src="hetiv-introduction_files/figure-html/svariv-2.png" class="r-plt" alt="" width="100%"></p>
 </div>
 </div>
 <div class="section level2">
@@ -602,30 +627,31 @@ obtain relatively similar point estimates across the two approaches.</p>
 residuals via a Kalman filter prediction. It requires the estimated
 impact matrix <code>Psi</code>, the residual covariance matrices on
 event and control days (<code>Sig</code>, <code>SigR</code>), and the
-residuals <code>et</code>.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">shocks_het</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kfpredict.html">kfpredict</a></span><span class="op">(</span></span>
-<span>  Sig <span class="op">=</span> <span class="va">res_het</span><span class="op">$</span><span class="va">Sig</span>, SigR <span class="op">=</span> <span class="va">res_het</span><span class="op">$</span><span class="va">SigR</span>,</span>
-<span>  Psi <span class="op">=</span> <span class="va">res_het</span><span class="op">$</span><span class="va">Psi</span>, et <span class="op">=</span> <span class="va">res_het</span><span class="op">$</span><span class="va">et</span></span>
-<span><span class="op">)</span></span>
+residuals <code>et</code>. With <code>details = TRUE</code>, the
+estimators call <code><a href="../reference/kfpredict.html">kfpredict()</a></code> automatically and return the
+predicted shocks as <code>Shocks</code>. By default, the prediction is
+based on the one-step-ahead residuals and the impact responses; the
+option <code>hpredict</code> selects a longer horizon instead
+(<code>hpredict = 0</code> is the impact horizon, matching the row
+labels of <code>irf</code>).</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">shocks_het</span> <span class="op">&lt;-</span> <span class="va">res_het</span><span class="op">$</span><span class="va">Shocks</span></span>
+<span><span class="va">shocks_het_X</span> <span class="op">&lt;-</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">Shocks</span></span>
+<span><span class="va">shocks_proxy</span> <span class="op">&lt;-</span> <span class="va">res_proxy</span><span class="op">$</span><span class="va">Shocks</span></span>
+<span><span class="va">shocks_proxy_rec</span> <span class="op">&lt;-</span> <span class="va">res_proxy_rec</span><span class="op">$</span><span class="va">Shocks</span></span>
 <span></span>
-<span><span class="va">shocks_het_X</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kfpredict.html">kfpredict</a></span><span class="op">(</span></span>
-<span>  Sig <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">Sig</span>, SigR <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">SigR</span>,</span>
-<span>  Psi <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">Psi</span>, et <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">et</span></span>
+<span><span class="co"># The same prediction can be obtained by calling kfpredict() directly</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span></span>
+<span>  <span class="va">shocks_het_X</span>,</span>
+<span>  <span class="fu"><a href="../reference/kfpredict.html">kfpredict</a></span><span class="op">(</span></span>
+<span>    Sig <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">Sig</span>, SigR <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">SigR</span>,</span>
+<span>    Psi <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">Psi</span>, et <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">et</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">shocks_proxy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kfpredict.html">kfpredict</a></span><span class="op">(</span></span>
-<span>  Sig <span class="op">=</span> <span class="va">res_proxy</span><span class="op">$</span><span class="va">Sig</span>, SigR <span class="op">=</span> <span class="va">res_proxy</span><span class="op">$</span><span class="va">SigR</span>,</span>
-<span>  Psi <span class="op">=</span> <span class="va">res_proxy</span><span class="op">$</span><span class="va">Psi</span>, et <span class="op">=</span> <span class="va">res_proxy</span><span class="op">$</span><span class="va">et</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">shocks_proxy_rec</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kfpredict.html">kfpredict</a></span><span class="op">(</span></span>
-<span>  Sig <span class="op">=</span> <span class="va">res_proxy_rec</span><span class="op">$</span><span class="va">Sig</span>, SigR <span class="op">=</span> <span class="va">res_proxy_rec</span><span class="op">$</span><span class="va">SigR</span>,</span>
-<span>  Psi <span class="op">=</span> <span class="va">res_proxy_rec</span><span class="op">$</span><span class="va">Psi</span>, et <span class="op">=</span> <span class="va">res_proxy_rec</span><span class="op">$</span><span class="va">et</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
 <p>We assess the accuracy of the predictions by comparing them to the
 true event shocks from the underlying model.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">true_shocks</span> <span class="op">&lt;-</span> <span class="va">sim</span><span class="op">$</span><span class="va">eE</span></span>
 <span></span>
 <span><span class="va">cor_df1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -723,56 +749,49 @@ heteroskedasticity and autocorrelation and applicable to multiple
 endogenous regressors and multiple instruments. Note that classical
 Stock-Yogo (2005) test is applicable only for the homoskedastic
 case.</p>
-<p>Both <code><a href="../reference/hetiv.html">hetiv()</a></code> and <code><a href="../reference/proxyiv.html">proxyiv()</a></code> return a
-<code>WeakData</code> object when <code>details = TRUE</code>. This data
-frame contains the data expected by <code><a href="../reference/gweakivtest.html">gweakivtest()</a></code>. The code
-below extracts the relevant columns from the <code>WeakData</code> data
-frame and runs the weak instrument test for each of the four
-specifications. For illustration, we use the heteroskedasticity-robust
-version (<code>EHW</code>). For the HAR (Newey West) version, use the
-option <code>NW</code>. By default, the function uses a bias tolerance
-of 10% at a significance level of 5%.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Helper: extract y, Y, X, Z from WeakData and run gweakivtest</span></span>
-<span><span class="va">run_weaktest</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">weakdata</span>, <span class="va">E</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="co"># y: outcome variable E+1 (not used as endogenous regressor)</span></span>
-<span>  <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">weakdata</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"y"</span>, <span class="va">E</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">]</span></span>
-<span>  <span class="co"># Y: first E outcome variables (endogenous regressors)</span></span>
-<span>  <span class="va">Y</span> <span class="op">&lt;-</span> <span class="va">weakdata</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"y"</span>, <span class="fl">1</span><span class="op">:</span><span class="va">E</span><span class="op">)</span><span class="op">]</span></span>
-<span>  <span class="co"># Z: the E instruments</span></span>
-<span>  <span class="va">Z</span> <span class="op">&lt;-</span> <span class="va">weakdata</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Z"</span>, <span class="fl">1</span><span class="op">:</span><span class="va">E</span><span class="op">)</span>, <span class="op">]</span></span>
-<span>  <span class="co"># X: lagged ("o*"), deterministic ("x*"), and indicator ("i*") controls.</span></span>
-<span>  <span class="co"># gweakivtest() adds a constant term if one is missing.</span></span>
-<span>  <span class="va">ctrl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"o"</span><span class="op">)</span> <span class="op">|</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"x"</span><span class="op">)</span> <span class="op">|</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="st">"i"</span><span class="op">)</span></span>
-<span>  <span class="va">X</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="va">ctrl</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="va">weakdata</span><span class="op">[</span>, <span class="va">ctrl</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
-<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">weakdata</span><span class="op">)</span>, <span class="fl">0</span><span class="op">)</span></span>
-<span>  <span class="op">}</span></span>
-<span></span>
-<span>  <span class="fu"><a href="../reference/gweakivtest.html">gweakivtest</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">Y</span>, <span class="va">X</span>, <span class="va">Z</span>, cov_type <span class="op">=</span> <span class="st">"EHW"</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span><span class="va">specs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  <span class="st">"HET-IV, no controls"</span> <span class="op">=</span> <span class="va">res_het</span><span class="op">$</span><span class="va">WeakData</span>,</span>
-<span>  <span class="st">"HET-IV, with controls"</span> <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">WeakData</span>,</span>
-<span>  <span class="st">"Proxy-IV, with controls"</span> <span class="op">=</span> <span class="va">res_proxy</span><span class="op">$</span><span class="va">WeakData</span>,</span>
-<span>  <span class="st">"Proxy-IV, with controls + recursive restriction"</span> <span class="op">=</span> <span class="va">res_proxy_rec</span><span class="op">$</span><span class="va">WeakData</span></span>
+<p>With <code>details = TRUE</code>, <code><a href="../reference/hetiv.html">hetiv()</a></code> and
+<code><a href="../reference/proxyiv.html">proxyiv()</a></code> run the weak instrument tests automatically on
+the sample of every local projection. For a single shock
+(<code>E = 1</code>), the data frame <code>FirstStage</code> reports, by
+horizon, the homoskedastic first-stage F statistic (the squared t
+statistic of the instrument; Stock and Yogo, 2005) and the robust
+effective F statistic of Montiel Olea and Pflueger (2013), computed with
+the same covariance estimator as the standard errors
+(<code>cov_type</code>; HC3 by default, Newey West with
+<code>cov_type = "NW"</code>). When the proxy is set to zero on control
+days, the robust statistic should be preferred: the homoskedastic F
+treats the many zero observations as informative and overstates the
+strength of the instrument. <code><a href="../reference/svariv.html">svariv()</a></code> reports the same two
+statistics with <code>details = TRUE</code>, using HC0 by default. For
+several shocks (<code>E &gt; 1</code>), as in this example, the data
+frame <code>WeakTest</code> reports the generalised minimum eigenvalue
+statistic together with its critical values for every horizon
+<code>h</code> and outcome variable <code>i</code>. The statistic
+depends on the horizon only through the estimation sample, whereas the
+critical values differ across outcomes and horizons. The
+heteroskedasticity-robust version is used if
+<code>cov_type = "HC3"</code> (the default), the HAR (Newey West)
+version if <code>cov_type = "NW"</code>. The test uses a bias tolerance
+of 10% at a significance level of 5%. The estimators also return a
+<code>WeakData</code> data frame with the variables expected by
+<code><a href="../reference/gweakivtest.html">gweakivtest()</a></code> for custom tests.</p>
+<p>The table below shows the test on impact (<code>h = 0</code>) for the
+third variable for each of the four specifications.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">specs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  <span class="st">"HET-IV, no controls"</span> <span class="op">=</span> <span class="va">res_het</span><span class="op">$</span><span class="va">WeakTest</span>,</span>
+<span>  <span class="st">"HET-IV, with controls"</span> <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">WeakTest</span>,</span>
+<span>  <span class="st">"Proxy-IV, with controls"</span> <span class="op">=</span> <span class="va">res_proxy</span><span class="op">$</span><span class="va">WeakTest</span>,</span>
+<span>  <span class="st">"Proxy-IV, with controls + recursive restriction"</span> <span class="op">=</span> <span class="va">res_proxy_rec</span><span class="op">$</span><span class="va">WeakTest</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">wt_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">specs</span>, <span class="va">run_weaktest</span>, E <span class="op">=</span> <span class="va">E</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">wt_results</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">nm</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">r</span> <span class="op">&lt;-</span> <span class="va">wt_results</span><span class="op">[[</span><span class="va">nm</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">specs</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">nm</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">r</span> <span class="op">&lt;-</span> <span class="va">specs</span><span class="op">[[</span><span class="va">nm</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="va">specs</span><span class="op">[[</span><span class="va">nm</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">h</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">&amp;</span> <span class="va">specs</span><span class="op">[[</span><span class="va">nm</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">i</span> <span class="op">==</span> <span class="fl">3</span>, <span class="op">]</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    Specification <span class="op">=</span> <span class="va">nm</span>,</span>
-<span>    Statistic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">gmin_generalized</span>, <span class="fl">2</span><span class="op">)</span>,</span>
-<span>    LM_CV <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">gmin_generalized_critical_value</span>, <span class="fl">2</span><span class="op">)</span>,</span>
-<span>    Strong <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">gmin_generalized</span> <span class="op">&gt;</span> <span class="va">r</span><span class="op">$</span><span class="va">gmin_generalized_critical_value</span>,</span>
-<span>      <span class="st">"Yes"</span>, <span class="st">"No"</span></span>
-<span>    <span class="op">)</span>,</span>
+<span>    Statistic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">gmin</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>    LM_CV <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">cv</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>    Strong <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">gmin</span> <span class="op">&gt;</span> <span class="va">r</span><span class="op">$</span><span class="va">cv</span>, <span class="st">"Yes"</span>, <span class="st">"No"</span><span class="op">)</span>,</span>
 <span>    stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
@@ -783,11 +802,11 @@ of 10% at a significance level of 5%.</p>
 <span>    <span class="st">"Specification"</span>, <span class="st">"Statistic"</span>, <span class="st">"LM critical value"</span>,</span>
 <span>    <span class="st">"Strong instruments?"</span></span>
 <span>  <span class="op">)</span>,</span>
-<span>  caption <span class="op">=</span> <span class="st">"Weak instrument test results (Lewis-Mertens generalised minimum eigenvalue test)"</span></span>
+<span>  caption <span class="op">=</span> <span class="st">"Weak instrument test results on impact (Lewis-Mertens generalised minimum eigenvalue test)"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <table class="table">
-<caption>Weak instrument test results (Lewis-Mertens generalised minimum
-eigenvalue test)</caption>
+<caption>Weak instrument test results on impact (Lewis-Mertens
+generalised minimum eigenvalue test)</caption>
 <colgroup>
 <col width="50%">
 <col width="10%">
@@ -829,13 +848,118 @@ eigenvalue test)</caption>
 </table>
 <p>The specification without controls is affected by a weak instrument
 problem. The correctly specified model passes the weak instrument tests.
-Proxy-IV fails the test. However, note that this depends on the degree
-of noise used to construct the proxy and does not suggest that
-<code><a href="../reference/hetiv.html">hetiv()</a></code> is generally superior to <code><a href="../reference/proxyiv.html">proxyiv()</a></code>.
-Interestingly, at least for HET-IV, the critical values are much higher
-than the common rule of thumb for the Stock and Yogo (2005) test and
-higher than in the HAR test for the univariate case by Montiel Olea and
-Pflueger (2013) and Lewis (2022), which is around 23.</p>
+Proxy-IV passes the test as well, but with a smaller margin. Note that
+this depends on the degree of noise used to construct the proxy and does
+not suggest that <code><a href="../reference/hetiv.html">hetiv()</a></code> is generally superior to
+<code><a href="../reference/proxyiv.html">proxyiv()</a></code>. The recursive restriction does not change the
+test, because the test is for the full system with <code>E</code>
+endogenous variables and <code>E</code> instruments. Interestingly, at
+least for HET-IV, the critical values are much higher than the common
+rule of thumb for the Stock and Yogo (2005) test and higher than in the
+HAR test for the univariate case by Montiel Olea and Pflueger (2013) and
+Lewis (2022), which is around 23.</p>
+<p>Because the critical values depend on the outcome variable and the
+horizon, it is useful to inspect the full <code>WeakTest</code> data
+frame. The following table shows, for HET-IV with controls, the
+statistic and the critical value for the third and fourth variables at
+selected horizons.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">wt</span> <span class="op">&lt;-</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">WeakTest</span></span>
+<span><span class="va">wt</span> <span class="op">&lt;-</span> <span class="va">wt</span><span class="op">[</span><span class="va">wt</span><span class="op">$</span><span class="va">i</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">4</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">wt</span><span class="op">$</span><span class="va">h</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span>, <span class="fl">10</span>, <span class="fl">19</span><span class="op">)</span>, <span class="op">]</span></span>
+<span><span class="va">wt</span><span class="op">$</span><span class="va">Strong</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">wt</span><span class="op">$</span><span class="va">gmin</span> <span class="op">&gt;</span> <span class="va">wt</span><span class="op">$</span><span class="va">cv</span>, <span class="st">"Yes"</span>, <span class="st">"No"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="va">wt</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"h"</span>, <span class="st">"i"</span>, <span class="st">"Tobs"</span>, <span class="st">"gmin"</span>, <span class="st">"cv"</span>, <span class="st">"Strong"</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>  digits <span class="op">=</span> <span class="fl">2</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  col.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Horizon"</span>, <span class="st">"Variable"</span>, <span class="st">"Obs."</span>, <span class="st">"Statistic"</span>, <span class="st">"LM critical value"</span>, <span class="st">"Strong instruments?"</span><span class="op">)</span>,</span>
+<span>  caption <span class="op">=</span> <span class="st">"Weak instrument test by horizon and outcome variable (HET-IV with controls)"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table style="width:100%;" class="table">
+<caption>Weak instrument test by horizon and outcome variable (HET-IV
+with controls)</caption>
+<colgroup>
+<col width="11%">
+<col width="12%">
+<col width="7%">
+<col width="14%">
+<col width="25%">
+<col width="28%">
+</colgroup>
+<thead><tr class="header">
+<th align="right">Horizon</th>
+<th align="right">Variable</th>
+<th align="right">Obs.</th>
+<th align="right">Statistic</th>
+<th align="right">LM critical value</th>
+<th align="left">Strong instruments?</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">498</td>
+<td align="right">84.51</td>
+<td align="right">46.43</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="even">
+<td align="right">5</td>
+<td align="right">3</td>
+<td align="right">493</td>
+<td align="right">88.21</td>
+<td align="right">35.96</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="odd">
+<td align="right">10</td>
+<td align="right">3</td>
+<td align="right">488</td>
+<td align="right">88.41</td>
+<td align="right">35.91</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="even">
+<td align="right">19</td>
+<td align="right">3</td>
+<td align="right">479</td>
+<td align="right">89.14</td>
+<td align="right">36.09</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="odd">
+<td align="right">0</td>
+<td align="right">4</td>
+<td align="right">498</td>
+<td align="right">84.51</td>
+<td align="right">36.59</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="even">
+<td align="right">5</td>
+<td align="right">4</td>
+<td align="right">493</td>
+<td align="right">88.21</td>
+<td align="right">35.76</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="odd">
+<td align="right">10</td>
+<td align="right">4</td>
+<td align="right">488</td>
+<td align="right">88.41</td>
+<td align="right">35.95</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="even">
+<td align="right">19</td>
+<td align="right">4</td>
+<td align="right">479</td>
+<td align="right">89.14</td>
+<td align="right">35.98</td>
+<td align="left">Yes</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
@@ -846,6 +970,9 @@ Research, University of Neuchâtel.</p>
 <p>Burri, M. and Kaufmann, D. (2026b). Multiple monetary policy shocks
 from daily data: A heteroskedasticity IV approach. <em>Economics
 Letters</em>, 268, 113091. <a href="https://doi.org/10.1016/j.econlet.2026.113091" class="external-link uri">https://doi.org/10.1016/j.econlet.2026.113091</a></p>
+<p>Gertler, M. and Karadi, P. (2015). Monetary policy surprises, credit
+costs, and economic activity. <em>American Economic Journal:
+Macroeconomics</em>, 7(1), 44–76.</p>
 <p>Jordà, Ò. (2005). Estimation and inference of impulse responses by
 local projections. <em>American Economic Review</em>, 95(1),
 161–182.</p>
@@ -865,6 +992,9 @@ Statistics</em>, 31(3), 358-369.</p>
 <em>Local projections or VARs? A primer for macroeconomists</em>. NBER
 Macroeconomics Annual 2025, vol. 40, pp. 1-64, National Bureau of
 Economic Research.</p>
+<p>Nakamura, E. and Steinsson, J. (2018). High-frequency identification
+of monetary non-neutrality: The information effect. <em>Quarterly
+Journal of Economics</em>, 133(3), 1283–1330.</p>
 <p>Rigobon, R. (2003). Identification through heteroskedasticity.
 <em>Review of Economics and Statistics</em>, 85(4), 777–792.</p>
 <p>Stock, J. H. and Watson, M. W. (2018). Identification and estimation

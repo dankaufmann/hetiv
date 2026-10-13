@@ -22,10 +22,9 @@ proxyiv(
   E = 1,
   norm = 1,
   cum = FALSE,
-  Hstep = 1,
   cov_type = "HC3",
   recursive = FALSE,
-  hpredict = 1,
+  hpredict = 0,
   details = FALSE
 )
 ```
@@ -47,8 +46,16 @@ proxyiv(
 - Z:
 
   Numeric matrix of external instruments (T x E). Column `e` is used as
-  the proxy for shock dimension `e`. Missing values on control days
-  (`Ind == 0`) are treated as contaminated and excluded from estimation.
+  the proxy for shock dimension `e`. Following the proxy-SVAR literature
+  (Mertens and Ravn, 2013), the recommended convention is to set the
+  proxy to zero on control days (`Ind == 0`): these days then remain in
+  the IV sample and sharpen the estimates of the control coefficients,
+  while the identifying moments are unaffected. Alternatively, missing
+  values on control days are treated as contaminated and excluded from
+  estimation, which reproduces the event-day sample of the event-study
+  literature (Nakamura and Steinsson, 2018). With zeros, prefer the
+  robust first-stage statistics (`F_rob`, `WeakTest`) over the
+  homoskedastic F, which treats the zero observations as informative.
   Missing values on policy days (`Ind == 1`) remain labelled as events
   for residual-based shock prediction, but are necessarily dropped from
   IV regressions that use the missing proxy.
@@ -93,12 +100,6 @@ proxyiv(
   cumulative IRF is reported. A single value is recycled to all
   variables. Default `FALSE`.
 
-- Hstep:
-
-  Integer. Step size between horizons. The default `1` estimates all
-  horizons 0 through H - 1. Values greater than 1 estimate only the
-  selected horizons. Default `1`.
-
 - cov_type:
 
   Covariance estimator for local-projection standard errors: `"HC3"`
@@ -118,8 +119,10 @@ proxyiv(
 
 - hpredict:
 
-  Integer Forecast horizon for the residuals to be used for shock
-  prediction. Defaults to 1 (one-step-ahead residual)
+  Integer. Horizon of the responses and forecast errors used for shock
+  prediction, on the same scale as the row labels of `irf`. Defaults to
+  0 (impact response and one-step-ahead residual). Must lie between 0
+  and `H - 1`.
 
 - details:
 
@@ -146,6 +149,12 @@ A named list. Always contains:
 
 With `details = TRUE`, additionally contains:
 
+- `Shocks`:
+
+  Predicted structural shocks on event days from
+  [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md),
+  based on the responses at horizon `hpredict`.
+
 - `IVRes`:
 
   List of `ivreg` model objects, one per horizon, variable, and shock
@@ -161,7 +170,30 @@ With `details = TRUE`, additionally contains:
   Data frame with observation counts: `Tp` (policy days), `Tc` (control
   days), `To` (contaminated days), `Tt` (labelled event or control
   days), and `Tiv` (complete observations available to the IV regression
-  at the impact horizon).
+  of the first shock at the impact horizon).
+
+- `FirstStage`:
+
+  For `E = 1`: data frame with one row per horizon `h` giving the number
+  of observations `Tobs`, the homoskedastic first-stage F statistic
+  `F_hom` (the squared t statistic of the proxy; Stock and Yogo, 2005)
+  and the robust effective F statistic `F_rob` of Montiel Olea and
+  Pflueger (2013), computed with the covariance estimator in `cov_type`.
+  The statistics do not depend on the outcome variable. `NULL` for
+  `E > 1`.
+
+- `WeakTest`:
+
+  For `E > 1`: data frame with one row per horizon `h` and outcome
+  variable `i` giving the results of
+  [`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md)
+  for the system with `E` endogenous policy variables and `E` proxies:
+  `gmin` (generalized minimum eigenvalue statistic, which depends on the
+  horizon only through the sample), `cv` and `cv_simplified` (sharp and
+  simplified critical values, which depend on the outcome and horizon),
+  and the Stock-Yogo statistic `sy_stat` with its critical value `sy_cv`
+  (`NaN` unless over-identified). Rows where the outcome is a policy
+  variable on impact are omitted. `NULL` for `E = 1`.
 
 - `et`:
 
@@ -178,10 +210,9 @@ With `details = TRUE`, additionally contains:
 
 - `Psi`:
 
-  Impact matrix (N x E), equal to `irf[1, , ]`. By the package's
-  indexing convention `HSeries` starts at 1, so the first LP uses
-  `lead(y, 0)` (the contemporaneous value) and is labelled horizon 0;
-  `irf[1, , ]` is therefore always the impact response.
+  Response matrix (N x E) used for shock prediction: the response at
+  horizon `hpredict`, i.e. `irf[hpredict + 1, , ]`. With the default
+  `hpredict = 0` this is the impact response.
 
 - `WeakData`:
 
@@ -211,6 +242,10 @@ Review*, 103(4), 1212-1247.
 Montiel Olea, J. L., M. Plagborg-Moller, E. Qian, and C. K. Wolf (2025).
 Local projections or VARs? A primer for macroeconomists. *NBER Working
 Paper* No. 33871.
+
+Nakamura, E. and Steinsson, J. (2018). High-frequency identification of
+monetary non-neutrality: The information effect. *Quarterly Journal of
+Economics*, 133(3), 1283-1330.
 
 Stock, J. H. and Watson, M. W. (2018). Identification and estimation of
 dynamic causal effects in macroeconomics using external instruments.

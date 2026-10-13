@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hetiv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,6 +47,21 @@
       <small>Source: <a href="https://github.com/dankaufmann/hetiv/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3" id="hetiv-013">hetiv 0.1.3<a class="anchor" aria-label="anchor" href="#hetiv-013"></a></h2>
+<ul><li>
+<code><a href="../reference/plotirf.html">plotirf()</a></code> now plots up to three sets of impulse responses in the same panels. Each set is supplied as an array or as an estimator result (a list with <code>irf</code> and optionally <code>se</code> and <code>boot</code>) and is drawn without bands, with normal bands from standard errors, or with percentile bands computed from bootstrap draws and recentred on the point estimate (<code>boot_type = "recentred"</code>; <code>"percentile"</code> gives raw percentile bands). The default is a single 90% band (<code>ci = 0.90</code>); up to two confidence levels can be supplied. New arguments <code>names</code>, <code>colors</code>, <code>boot_type</code> and <code>legend</code>. <code><a href="../reference/plot2irf.html">plot2irf()</a></code> is now a thin wrapper around <code><a href="../reference/plotirf.html">plotirf()</a></code> kept for backward compatibility. Fixed: two-dimensional <code>IRFest</code> with <code>IRFse</code> no longer errors.</li>
+<li>
+<code><a href="../reference/svariv.html">svariv()</a></code> returns the bootstrap draws (<code>boot</code>) also when <code>details = FALSE</code>.</li>
+<li>
+<code><a href="../reference/svariv.html">svariv()</a></code> now computes the reduced-form residual covariance on the full VAR sample, as in Mertens and Ravn (2013); only the 2SLS step uses the observations with non-missing proxies. With <code>details = TRUE</code> it reports, for each policy residual, the homoskedastic first-stage F statistic (<code>FStat</code>) and the robust effective F statistic of Montiel Olea and Pflueger
+<ol start="2013" style="list-style-type: decimal"><li>(<code>FStatRobust</code>, new argument <code>cov_type</code>). Identification failures now raise an informative error.</li>
+</ol></li>
+<li>
+<code><a href="../reference/hetiv.html">hetiv()</a></code> and <code><a href="../reference/proxyiv.html">proxyiv()</a></code> with <code>details = TRUE</code> now report weak-instrument diagnostics on the sample of every local projection: for <code>E = 1</code>, a data frame <code>FirstStage</code> with the homoskedastic first-stage F statistic (squared t statistic of the instrument) and the robust effective F statistic of Montiel Olea and Pflueger (2013) by horizon; for <code>E &gt; 1</code>, a data frame <code>WeakTest</code> with the generalized Lewis and Mertens (2025) test from <code><a href="../reference/gweakivtest.html">gweakivtest()</a></code> by horizon and outcome variable. <code><a href="../reference/hetiv.html">hetiv()</a></code> now also returns the OLS residual models in <code>OLSRes</code>, and <code><a href="../reference/proxyiv.html">proxyiv()</a></code> computes <code>Tiv</code> on impact as documented.</li>
+<li>Removed the <code>Hstep</code> argument from <code><a href="../reference/hetiv.html">hetiv()</a></code>, <code><a href="../reference/proxyiv.html">proxyiv()</a></code> and <code><a href="../reference/recols.html">recols()</a></code>. All horizons <code>0, ..., H - 1</code> are always estimated. Previously, <code>Hstep &gt; 1</code> combined with <code>hpredict &gt; 1</code> selected the wrong horizon for the shock prediction.</li>
+<li>Breaking: <code>hpredict</code> in <code><a href="../reference/hetiv.html">hetiv()</a></code>, <code><a href="../reference/proxyiv.html">proxyiv()</a></code> and <code><a href="../reference/recols.html">recols()</a></code> is now a horizon on the scale of the row labels of <code>irf</code> (<code>0, ..., H - 1</code>, default <code>0</code> = impact) instead of a 1-based row index. Callers who passed a non-default value must subtract one. <code>Psi</code> equals <code>irf[hpredict + 1, , ]</code>.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.2" id="hetiv-012">hetiv 0.1.2<a class="anchor" aria-label="anchor" href="#hetiv-012"></a></h2>
 <ul><li>New <code><a href="../reference/svariv.html">svariv()</a></code>: proxy SVAR (SVAR-IV) following Mertens and Ravn (2013). Estimates a VAR(P) by OLS, identifies the first <code>E</code> shocks with external instruments, computes IRFs by recursion, and optionally returns wild-bootstrap percentile bands and standard deviations that work with <code><a href="../reference/plotirf.html">plotirf()</a></code> and <code><a href="../reference/plot2irf.html">plot2irf()</a></code>.</li>

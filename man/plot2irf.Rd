@@ -30,11 +30,10 @@ A list of \code{ggplot} objects, one per variable-shock combination,
 ordered by shock (outer loop) then variable (inner loop).
 }
 \description{
-Produces a panel of IRF plots comparing two sets of impulse responses.
-Each panel shows the point estimates and confidence bands
-at level \code{ci} for both approaches. Returns a list of \code{ggplot} objects
-(one per variable-shock combination) that can be arranged with e.g.
-\code{cowplot::plot_grid()}.
+Produces a panel of IRF plots comparing two sets of impulse responses with
+normal confidence bands at level \code{ci}. This function is kept for backward
+compatibility and is a thin wrapper around \code{\link[=plotirf]{plotirf()}}, which accepts up to
+three sets of impulse responses as well as bootstrap draws.
 }
 \examples{
 irf1 <- array(c(1, 0.5, 0.2, 0.1), dim = c(4, 1, 1))
@@ -43,4 +42,7 @@ irf2 <- irf1 * 0.8
 se <- array(0.1, dim = dim(irf1), dimnames = dimnames(irf1))
 plot2irf(irf1, se, irf2, se * 0, HTick = 1, Labels = "Output")
 
+}
+\seealso{
+\code{\link[=plotirf]{plotirf()}}
 }

@@ -2,39 +2,108 @@
 % Please edit documentation in R/plotirf.R
 \name{plotirf}
 \alias{plotirf}
-\title{Plot impulse responses from a single estimation approach}
+\title{Plot impulse responses from one or several estimation approaches}
 \usage{
-plotirf(IRFest, IRFse = NULL, HTick, Labels, ci = c(0.9, 0.95))
+plotirf(
+  IRF,
+  IRFse = NULL,
+  HTick,
+  Labels,
+  ci = 0.9,
+  names = NULL,
+  colors = c("steelblue", "darkred", "darkgreen"),
+  boot_type = c("recentred", "percentile"),
+  legend = FALSE
+)
 }
 \arguments{
-\item{IRFest}{Array (H x N x E) of impulse response point estimates.
-Dimnames on the first dimension must be the horizon labels (numeric).}
+\item{IRF}{Impulse responses to plot. One of
+\itemize{
+\item a numeric array (H x N x E, or H x N for a single shock) of point
+estimates, with numeric horizon labels in \code{dimnames()[[1]]};
+\item an estimator result as returned by \code{\link[=hetiv]{hetiv()}}, \code{\link[=proxyiv]{proxyiv()}},
+\code{\link[=recols]{recols()}} or \code{\link[=svariv]{svariv()}}, i.e. a list with elements \code{irf} and
+optionally \code{se}, \code{boot} (array H x N x E x B of bootstrap draws) and
+\code{Method};
+\item an (unnamed) list of up to three such objects, which are overlaid
+in the same panels.
+}}
 
-\item{IRFse}{Array (H x N x E) of standard errors, or \code{NULL} to suppress
-confidence bands.}
+\item{IRFse}{Array of standard errors with the same dimensions as \code{IRF}, or
+\code{NULL}. Only used when \code{IRF} is a numeric array (kept for backward
+compatibility). For list inputs, supply the standard errors as element
+\code{se} of each list.}
 
 \item{HTick}{Integer. Step size for x-axis tick marks.}
 
-\item{Labels}{Character vector of length N. Variable names used as panel titles.}
+\item{Labels}{Character vector of length N. Variable names used as panel
+titles.}
 
-\item{ci}{Numeric vector of confidence levels in (0, 1). One shaded band is
-drawn per level, with wider bands rendered at lower opacity. Defaults to
-\code{c(0.90, 0.95)}.}
+\item{ci}{Numeric vector of one or two confidence levels in (0, 1). One
+shaded band is drawn per level, with wider bands rendered at lower
+opacity. Defaults to \code{0.90} (a single 90\% band); supply two levels, e.g.
+\code{c(0.90, 0.95)}, to draw two bands.}
+
+\item{names}{Character vector with one name per set of impulse responses,
+used in the legend. Defaults to the \code{Method} element of each result if
+available and to \code{"IRF 1"}, \code{"IRF 2"}, ... otherwise.}
+
+\item{colors}{Character vector of colours, one per set of impulse responses.
+Defaults to \code{c("steelblue", "darkred", "darkgreen")}.}
+
+\item{boot_type}{Character. How bootstrap draws are turned into bands:
+\code{"recentred"} (default) or \code{"percentile"}. See Details. Ignored when no
+bootstrap draws are supplied.}
+
+\item{legend}{Logical. If \code{TRUE}, a legend with \code{names} is added to each
+panel when more than one set of impulse responses is plotted. Default
+\code{FALSE}.}
 }
 \value{
 A list of \code{ggplot} objects, one per variable-shock combination,
 ordered by shock (outer loop) then variable (inner loop).
 }
 \description{
-Produces a panel of IRF plots for a single set of impulse responses,
-with optional confidence bands. Returns a list of \code{ggplot}
-objects (one per variable-shock combination) that can be arranged with
-e.g. \code{cowplot::plot_grid()}.
+Produces a panel of IRF plots, one per variable-shock combination, for up
+to three sets of impulse responses drawn in the same panels. Returns a list
+of \code{ggplot} objects that can be arranged with \code{\link[=arrangeirf]{arrangeirf()}} (or e.g.
+\code{cowplot::plot_grid()}).
+}
+\details{
+Each set of impulse responses is plotted in one of three ways,
+depending on what is supplied:
+\itemize{
+\item Point estimate only: a line without confidence bands.
+\item Point estimate with standard errors: shaded normal bands
+\verb{irf +/- qnorm((1 + ci) / 2) * se} for up to two confidence levels.
+\item Point estimate with bootstrap draws: shaded percentile bands for
+up to two confidence levels. With \code{boot_type = "recentred"} (the
+default) the quantiles are computed from the deviations of the draws
+from their bootstrap mean and added to the point estimate, so the
+(possibly asymmetric) band is centred on the reported point estimate.
+With \code{boot_type = "percentile"} the raw quantiles of the draws are
+used; such bands can be off-centre when the bootstrap distribution
+is biased relative to the point estimate.
+}
+Bootstrap draws take precedence over standard errors if both are present
+(as for \code{\link[=svariv]{svariv()}} with \code{nboot > 0}). Standard errors that are all zero
+suppress the bands.
 }
 \examples{
 irf <- array(c(1, 0.5, 0.2, 0.1), dim = c(4, 1, 1))
 dimnames(irf)[[1]] <- 0:3
 se <- array(0.1, dim = dim(irf), dimnames = dimnames(irf))
+
+# One IRF with normal bands at two confidence levels
 plotirf(irf, se, HTick = 1, Labels = "Output")
+
+# Two IRFs: the second without bands, the first with bootstrap draws
+set.seed(1)
+boot <- array(irf, dim = c(dim(irf), 200)) + rnorm(4 * 200, sd = 0.1)
+plotirf(
+  list(list(irf = irf, boot = boot), list(irf = irf * 0.8)),
+  HTick = 1, Labels = "Output", ci = 0.90,
+  names = c("Bootstrap", "Alternative"), legend = TRUE
+)
 
 }

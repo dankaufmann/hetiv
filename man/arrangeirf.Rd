@@ -10,6 +10,7 @@ arrangeirf(
   N,
   nRows,
   xLab = "Horizon",
+  title = NULL,
   file = NA,
   figScaleW = 3.5,
   figScaleH = 2.5
@@ -28,6 +29,9 @@ shock (outer loop) and then by variable (inner loop), as returned by
 of columns is \code{ceiling(N / nRows)}.}
 
 \item{xLab}{Character. Common x-axis label printed below the panels.}
+
+\item{title}{Character vector of length \code{E} (or \code{1}, recycled) with a title
+printed above each figure, or \code{NULL} (default) for no title.}
 
 \item{file}{Character or \code{NA}. If not \code{NA}, file path stem; figure \code{e} is
 saved as \code{paste0(file, "_", e, ".pdf")}. If \code{NA} (default), nothing is

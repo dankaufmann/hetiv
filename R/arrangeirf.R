@@ -7,11 +7,13 @@
 #' @param myGraphs List of `ggplot` objects of length `E * N`, ordered by
 #'   shock (outer loop) and then by variable (inner loop), as returned by
 #'   [plotirf()] and [plot2irf()].
-#' @param E Integer. Number of shock dimensions (one figure per shock).
+#' @param E Integer. Number of shock dimensions (one figure per shock). Defaults to 1
 #' @param N Integer. Number of variables (panels per figure).
 #' @param nRows Integer. Number of rows of panels in each figure. The number
-#'   of columns is `ceiling(N / nRows)`.
+#'   of columns is `ceiling(N / nRows)`. Defaults to 1.
 #' @param xLab Character. Common x-axis label printed below the panels.
+#' @param title Character vector of length `E` (or `1`, recycled) with a title
+#'   printed above each figure, or `NULL` (default) for no title.
 #' @param file Character or `NA`. If not `NA`, file path stem; figure `e` is
 #'   saved as `paste0(file, "_", e, ".pdf")`. If `NA` (default), nothing is
 #'   saved.
@@ -41,8 +43,8 @@
 #' }
 #'
 #' @export
-arrangeirf <- function(myGraphs, E, N, nRows, xLab = "Horizon", file = NA,
-                       figScaleW = 3.5, figScaleH = 2.5) {
+arrangeirf <- function(myGraphs, E = 1, N, nRows = 1, xLab = "Horizon", title = NULL,
+                       file = NA, figScaleW = 3.5, figScaleH = 2.5) {
   # Validate inputs
   E <- .check_integerish_scalar(E, "E", min = 1)
   N <- .check_integerish_scalar(N, "N", min = 1)
@@ -55,16 +57,29 @@ arrangeirf <- function(myGraphs, E, N, nRows, xLab = "Horizon", file = NA,
   if (!(length(file) == 1 && (is.na(file) || is.character(file)))) {
     stop("file must be NA or a single character string.", call. = FALSE)
   }
+  if (!is.null(title)) {
+    if (!is.character(title) || !(length(title) %in% c(1, E)) || anyNA(title)) {
+      stop("title must be NULL or a character vector of length 1 or E.",
+        call. = FALSE
+      )
+    }
+    title <- rep_len(title, E)
+  }
 
   nCols <- ceiling(N / nRows)
   myXLab <- grid::textGrob(xLab, gp = grid::gpar(fontsize = 9.5), vjust = -1)
   figs <- vector("list", E)
 
-  # One figure per shock dimension
+  # One figure per shock dimension, with an optional title on top
   for (e in 1:E) {
+    myTop <- if (is.null(title)) {
+      NULL
+    } else {
+      grid::textGrob(title[e], gp = grid::gpar(fontsize = 11))
+    }
     figs[[e]] <- gridExtra::grid.arrange(
       grobs = myGraphs[((e - 1) * N + 1):(e * N)],
-      nrow = nRows, ncol = nCols, bottom = myXLab
+      nrow = nRows, ncol = nCols, bottom = myXLab, top = myTop
     )
 
     if (!is.na(file)) {

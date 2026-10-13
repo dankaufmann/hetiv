@@ -4,6 +4,6 @@
 "_PACKAGE"
 
 utils::globalVariables(c(
-  ".data", "Estimate", "Horizon", "IRF1", "IRF2", "lower1", "lower2", "pval",
-  "upper1", "upper2"
+  ".data", "Estimate", "Horizon", "IRF1", "IRF2", "lower", "lower1", "lower2",
+  "pval", "Series", "upper", "upper1", "upper2"
 ))

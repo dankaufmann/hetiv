@@ -16,6 +16,7 @@ recols(
   cum = FALSE,
   cov_type = "HC3",
   hpredict = 0,
+  pooled = FALSE,
   details = FALSE
 )
 }
@@ -69,6 +70,13 @@ for shock prediction, on the same scale as the row labels of \code{irf}.
 Defaults to 0 (impact response and one-step-ahead residual). Must lie
 between 0 and \code{H - 1}.}
 
+\item{pooled}{Logical. If \code{FALSE} (default), the shock prediction uses the
+forecast errors and responses at horizon \code{hpredict} only. If \code{TRUE}, the
+forecast errors of all horizons \verb{0, ..., hpredict} are stacked and used
+jointly (pooled prediction), which weights every horizon by its
+signal-to-noise ratio; see \code{\link[=kfpredict]{kfpredict()}}. With \code{hpredict = 0} both
+options coincide.}
+
 \item{details}{Logical. If \code{TRUE}, saves detailed OLS results and extracts
 shocks, which is slightly slower. If \code{FALSE}, returns only impulse
 responses and standard errors (e.g. for bootstrap).}
@@ -85,13 +93,18 @@ and shock dimension.}
 \item{\code{Obs}}{Data frame with observation counts: \code{Tp} (policy days),
 \code{Tc} (control days), \code{To} (contaminated days), \code{Tt} (total used).}
 \item{\code{Method}}{Character string \code{"Recursive-OLS"}.}
-\item{\code{et}}{Matrix of OLS residuals on event days (used for
-covariance estimation and shock extraction).}
-\item{\code{Sig}}{Covariance matrix of residuals on event days.}
-\item{\code{SigR}}{Covariance matrix of residuals on control days, or \code{NA}
-if unavailable.}
-\item{\code{Psi}}{Response matrix (N x E) at horizon \code{hpredict}, i.e.
-\code{irf[hpredict + 1, , ]}; with the default \code{hpredict = 0} this is the
+\item{\code{et}}{Matrix of forecast errors on event days used for shock
+prediction, one column per variable and horizon (\code{y1.h0}, ...,
+\code{yN.h0}, \code{y1.h1}, ...): horizon \code{hpredict} only if \code{pooled = FALSE},
+horizons \verb{0, ..., hpredict} if \code{pooled = TRUE}.}
+\item{\code{Sig}}{Covariance matrix of \code{et} on event days.}
+\item{\code{SigR}}{Covariance matrix of the same residuals on control days,
+or \code{NA} if unavailable. A control day enters horizon h only if no
+event occurs in its window \verb{t + 1, ..., t + h}.}
+\item{\code{Psi}}{Response matrix used for shock prediction, with rows
+matching the columns of \code{et}: \code{irf[hpredict + 1, , ]} (N x E) if
+\code{pooled = FALSE}, the rows \verb{1, ..., hpredict + 1} of \code{irf} stacked
+if \code{pooled = TRUE}. With the default \code{hpredict = 0} this is the
 impact response.}
 }
 }

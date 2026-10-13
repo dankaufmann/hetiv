@@ -32,6 +32,16 @@
   All horizons `0, ..., H - 1` are always estimated. Previously, `Hstep > 1`
   combined with `hpredict > 1` selected the wrong horizon for the shock
   prediction.
+* New argument `pooled` in `hetiv()`, `proxyiv()` and `recols()`: with
+  `pooled = TRUE` the shock prediction stacks the forecast errors of all
+  horizons `0, ..., hpredict` and uses them jointly (pooled prediction),
+  instead of the single horizon `hpredict`. `kfpredict()` accepts `Psi` and
+  `et` as arrays with one slice per horizon and stacks them, documents the
+  pooled prediction, and warns when the residual covariance is singular.
+  Control days now enter the horizon-h residual covariance only if no event
+  falls in their window `t + 1, ..., t + h`. The columns of `et` and the
+  elements of `OLSRes` are now named by variable and horizon (`y1.h0`,
+  `OLS.n1.h0`, ...).
 * Breaking: `hpredict` in `hetiv()`, `proxyiv()` and `recols()` is now a
   horizon on the scale of the row labels of `irf` (`0, ..., H - 1`, default
   `0` = impact) instead of a 1-based row index. Callers who passed a

@@ -65,6 +65,12 @@
 #'   for shock prediction, on the same scale as the row labels of `irf`.
 #'   Defaults to 0 (impact response and one-step-ahead residual). Must lie
 #'   between 0 and `H - 1`.
+#' @param pooled Logical. If `FALSE` (default), the shock prediction uses the
+#'   forecast errors and responses at horizon `hpredict` only. If `TRUE`, the
+#'   forecast errors of all horizons `0, ..., hpredict` are stacked and used
+#'   jointly (pooled prediction), which weights every horizon by its
+#'   signal-to-noise ratio; see [kfpredict()]. With `hpredict = 0` both
+#'   options coincide.
 #' @param details Logical. If `TRUE`, returns detailed results including IV
 #'   model objects, OLS residuals, and covariance matrices. If `FALSE` (default),
 #'   returns only impulse responses and standard errors (faster; use for
@@ -82,8 +88,9 @@
 #'       [kfpredict()], based on the responses at horizon `hpredict`.}
 #'     \item{`IVRes`}{List of `ivreg` model objects, one per horizon, variable,
 #'       and shock dimension.}
-#'     \item{`OLSRes`}{List of OLS model objects used for residual-based
-#'       covariance estimation, one per outcome variable.}
+#'     \item{`OLSRes`}{List of the information-set regressions whose residuals
+#'       enter the shock prediction, named `OLS.n<i>.h<h>` by outcome
+#'       variable and horizon.}
 #'     \item{`Obs`}{Data frame with observation counts: `Tp` (policy days),
 #'       `Tc` (control days), `To` (contaminated days), `Tt` (labelled event or
 #'       control days), and `Tiv` (complete observations available to the IV
@@ -105,13 +112,19 @@
 #'       critical value `sy_cv` (`NaN` unless over-identified). Rows where
 #'       the outcome is a policy variable on impact are omitted. `NULL` for
 #'       `E = 1`.}
-#'     \item{`et`}{Data frame of OLS residuals on event days.}
-#'     \item{`Sig`}{Covariance matrix of residuals on event days.}
-#'     \item{`SigR`}{Covariance matrix of residuals on control days, or `NA`
-#'       if unavailable.}
-#'     \item{`Psi`}{Response matrix (N x E) used for shock prediction: the
-#'       response at horizon `hpredict`, i.e. `irf[hpredict + 1, , ]`. With
-#'       the default `hpredict = 0` this is the impact response.}
+#'     \item{`et`}{Data frame of forecast errors on event days used for shock
+#'       prediction, one column per variable and horizon (`y1.h0`, ...,
+#'       `yN.h0`, `y1.h1`, ...): horizon `hpredict` only if `pooled = FALSE`,
+#'       horizons `0, ..., hpredict` if `pooled = TRUE`.}
+#'     \item{`Sig`}{Covariance matrix of `et` on event days.}
+#'     \item{`SigR`}{Covariance matrix of the same residuals on control days,
+#'       or `NA` if unavailable. A control day enters horizon h only if no
+#'       event occurs in its window `t + 1, ..., t + h`.}
+#'     \item{`Psi`}{Response matrix used for shock prediction, with rows
+#'       matching the columns of `et`: `irf[hpredict + 1, , ]` (N x E) if
+#'       `pooled = FALSE`, the rows `1, ..., hpredict + 1` of `irf` stacked
+#'       if `pooled = TRUE`. With the default `hpredict = 0` this is the
+#'       impact response.}
 #'     \item{`WeakData`}{Data frame of endogenous variables and instruments for
 #'       the Lewis-Mertens (2025) weak instrument test.}
 #'   }
@@ -159,10 +172,11 @@
 #' @export
 proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
                     cum = FALSE, cov_type = "HC3",
-                    recursive = FALSE, hpredict = 0, details = FALSE) {
+                    recursive = FALSE, hpredict = 0,
+                    pooled = FALSE, details = FALSE) {
   args <- .validate_estimator_inputs(
     y = y, O = O, X = X, Ind = Ind, P = P, H = H, E = E, norm = norm,
-    cum = cum, cov_type = cov_type, hpredict = hpredict
+    cum = cum, cov_type = cov_type, hpredict = hpredict, pooled = pooled
   )
   y <- args$y
   O <- args$O
@@ -178,6 +192,11 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
   recursive <- .check_logical_scalar(recursive, "recursive")
   hpredict <- args$hpredict
   hrow <- hpredict + 1L # row of the IRF array holding horizon hpredict
+  pooled <- args$pooled
+  # IRF rows whose residuals enter the shock prediction
+  hres <- if (pooled) seq_len(hrow) else hrow
+  etList <- list()
+  vtList <- list()
   details <- .check_logical_scalar(details, "details")
 
   # Collect properties of the data
@@ -368,40 +387,14 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
           }
         }
 
-        # Compute OLS residuals for covariance estimation (once per outcome variable, at e=1, h=1)
-        if (details == TRUE && e == 1 && h == hrow) {
-          
-          # Workaround to exclude contaminated events from the residuals
-          DataMSub$depVar.h2 <- DataMSub$depVar.h
-          DataMSub$depVar.h2[DataMSub$Ind == 2] <- NA
-
-          myFormula.ols <- paste0("depVar.h2 ~ ", paste(controls.info, collapse = "+"))
-          OLS.mod <- lm(as.formula(myFormula.ols), data = DataMSub, na.action = "na.exclude")
-
-          eti <- residuals(OLS.mod)
-          eti[DataMSub$Event != 1] <- NA
-
-          vti <- residuals(OLS.mod)
-          vti[DataMSub$NoEvent != 1] <- NA
-
-          # Pad residuals back to full sample length for consistent indexing
-          DataM$eti <- NA
-          DataM$eti[beg:end] <- eti
-          eti <- DataM$eti
-
-          DataM$vti <- NA
-          DataM$vti[beg:end] <- vti
-          vti <- DataM$vti
-
-          if (i == 1) {
-            et <- data.frame(eti)
-            vt <- data.frame(vti)
-          } else {
-            et <- data.frame(et, eti)
-            vt <- data.frame(vt, vti)
-          }
-
-          OLSRes[[paste0("OLS.n", i)]] <- OLS.mod
+        # Residuals of the information-set regression at the horizons used for
+        # shock prediction (event and control days; once, for e = 1)
+        if (details == TRUE && e == 1 && h %in% hres) {
+          sr <- .shock_residuals(DataMSub, controls.info, DataM$Ind, beg, end, Nobs, h - 1)
+          lab <- paste0("y", i, ".h", h - 1)
+          etList[[lab]] <- sr$et
+          vtList[[lab]] <- sr$vt
+          OLSRes[[paste0("OLS.n", i, ".h", h - 1)]] <- sr$mod
         }
 
         irfest[h_idx, i, e] <- IV.mod$coefficients["shockVar"] * norm
@@ -420,9 +413,13 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
   Method <- "Proxy-IV"
 
   if (details == TRUE) {
-    Sig <- var(et, use = "complete.obs")
-    SigR <- if (sum(!is.na(vt)) > 0) var(vt, use = "complete.obs") else NA
-    Psi <- matrix(irfest[hrow, , , drop = FALSE], nrow = N, ncol = E)
+    # Stack residuals and responses over the prediction horizons, compute the
+    # covariance matrices on event and control days, and predict the shocks
+    sk <- .stack_shock_inputs(etList, vtList, irfest, hres, N, E)
+    et <- sk$et
+    Sig <- sk$Sig
+    SigR <- sk$SigR
+    Psi <- sk$Psi
     Shocks <- kfpredict(Sig, SigR, Psi, et)
     
     # Data for Lewis-Mertens (2025) weak instrument test

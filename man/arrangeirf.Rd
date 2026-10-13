@@ -6,9 +6,9 @@
 \usage{
 arrangeirf(
   myGraphs,
-  E,
+  E = 1,
   N,
-  nRows,
+  nRows = 1,
   xLab = "Horizon",
   title = NULL,
   file = NA,
@@ -21,12 +21,12 @@ arrangeirf(
 shock (outer loop) and then by variable (inner loop), as returned by
 \code{\link[=plotirf]{plotirf()}} and \code{\link[=plot2irf]{plot2irf()}}.}
 
-\item{E}{Integer. Number of shock dimensions (one figure per shock).}
+\item{E}{Integer. Number of shock dimensions (one figure per shock). Defaults to 1}
 
 \item{N}{Integer. Number of variables (panels per figure).}
 
 \item{nRows}{Integer. Number of rows of panels in each figure. The number
-of columns is \code{ceiling(N / nRows)}.}
+of columns is \code{ceiling(N / nRows)}. Defaults to 1.}
 
 \item{xLab}{Character. Common x-axis label printed below the panels.}
 

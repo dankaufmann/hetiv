@@ -6,10 +6,10 @@
     }
   };
 </script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Extract monetary policy shocks via Kalman filter — kfpredict"><meta name="description" content="Extracts structural shocks from reduced-form residuals using the Kalman
-filter formula. Given the impact matrix Psi and the covariance matrices
+filter formula. Given the response matrix Psi and the covariance matrices
 of residuals on event and control days, the function recovers the latent
 shocks for each observation. Optionally rescales shocks to unit variance."><meta property="og:description" content="Extracts structural shocks from reduced-form residuals using the Kalman
-filter formula. Given the impact matrix Psi and the covariance matrices
+filter formula. Given the response matrix Psi and the covariance matrices
 of residuals on event and control days, the function recovers the latent
 shocks for each observation. Optionally rescales shocks to unit variance."><meta property="og:image" content="https://dankaufmann.github.io/hetiv/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -56,7 +56,7 @@ shocks for each observation. Optionally rescales shocks to unit variance."><meta
 
     <div class="ref-description section level2">
     <p>Extracts structural shocks from reduced-form residuals using the Kalman
-filter formula. Given the impact matrix <code>Psi</code> and the covariance matrices
+filter formula. Given the response matrix <code>Psi</code> and the covariance matrices
 of residuals on event and control days, the function recovers the latent
 shocks for each observation. Optionally rescales shocks to unit variance.</p>
     </div>
@@ -71,26 +71,28 @@ shocks for each observation. Optionally rescales shocks to unit variance.</p>
 
 
 <dl><dt id="arg-sig">Sig<a class="anchor" aria-label="anchor" href="#arg-sig"></a></dt>
-<dd><p>Numeric matrix (N x N). Covariance matrix of reduced-form
-residuals on policy event days (e.g. <code>et</code> from <code><a href="hetiv.html">hetiv()</a></code>).</p></dd>
-
-
-<dt id="arg-sigr">SigR<a class="anchor" aria-label="anchor" href="#arg-sigr"></a></dt>
-<dd><p>Numeric matrix (N x N). Covariance matrix of reduced-form
-residuals on control (non-event) days. Used to back out the implied
-shock variances when <code>scale = TRUE</code>.</p></dd>
-
-
-<dt id="arg-psi">Psi<a class="anchor" aria-label="anchor" href="#arg-psi"></a></dt>
-<dd><p>Numeric matrix (N x E). Impact matrix, i.e. the contemporaneous
-responses of all N variables to the E structural shocks (e.g. <code>Psi</code> from
+<dd><p>Numeric matrix (M x M, with M = N for one horizon). Covariance
+matrix of the residuals in <code>et</code> on policy event days (e.g. <code>Sig</code> from
 <code><a href="hetiv.html">hetiv()</a></code>).</p></dd>
 
 
+<dt id="arg-sigr">SigR<a class="anchor" aria-label="anchor" href="#arg-sigr"></a></dt>
+<dd><p>Numeric matrix (M x M). Covariance matrix of the residuals on
+control (non-event) days. Used to back out the implied shock variances
+when <code>scale = TRUE</code>.</p></dd>
+
+
+<dt id="arg-psi">Psi<a class="anchor" aria-label="anchor" href="#arg-psi"></a></dt>
+<dd><p>Numeric matrix (M x E) of responses of the residuals in <code>et</code> to
+the E structural shocks (e.g. <code>Psi</code> from <code><a href="hetiv.html">hetiv()</a></code>), or an array
+N x E x M of responses at M horizons, which is stacked by rows.</p></dd>
+
+
 <dt id="arg-et">et<a class="anchor" aria-label="anchor" href="#arg-et"></a></dt>
-<dd><p>Numeric matrix or data frame (T x N). Reduced-form residuals on
-event days (e.g. <code>et</code> from <code><a href="hetiv.html">hetiv()</a></code>). Rows correspond to time
-periods, columns to variables.</p></dd>
+<dd><p>Numeric matrix or data frame (T x M) of forecast errors on event
+days (e.g. <code>et</code> from <code><a href="hetiv.html">hetiv()</a></code>), or an array T x N x M of forecast
+errors at M horizons, which is stacked by columns. Rows correspond to
+time periods.</p></dd>
 
 
 <dt id="arg-tol">tol<a class="anchor" aria-label="anchor" href="#arg-tol"></a></dt>
@@ -109,7 +111,38 @@ Kalman filter projection is returned.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A numeric matrix (T x E) of extracted structural shocks, with the
-same number of rows as <code>et</code> and one column per shock dimension.</p>
+same number of rows as <code>et</code> and one column per shock dimension. Rows with
+missing residuals give missing shocks.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The prediction is the linear projection of the shocks on the
+residuals, <code>eps_t = Sig_eps Psi' Sig^{-1} e_t</code>, up to the scaling
+described under <code>scale</code>. It applies to any set of forecast errors that is
+linear in the shocks:</p><ul><li><p>One horizon: <code>Psi</code> is the N x E response at horizon h and <code>et</code>
+holds the T x N forecast errors of <code>y_{t+h}</code> given information dated
+<code>t - 1</code>. With h = 0 these are the impact responses and the one-step
+residuals.</p></li>
+<li><p>Pooled horizons: the forecast errors of several horizons are
+stacked, <code>Psi</code> has one block of N rows per horizon and <code>et</code> one block
+of N columns per horizon, in the same order. The pooled prediction
+weights every horizon by its signal-to-noise ratio and accounts for
+the correlation of the forecast errors across horizons. It has a
+weakly smaller mean squared error than the prediction from any single
+horizon, and coincides with the impact prediction when all responses
+are complete on impact.</p></li>
+</ul><p>For convenience, <code>Psi</code> may be supplied as an array N x E x M and <code>et</code> as
+an array T x N x M (one slice per horizon); both are then stacked
+internally. <code>Sig</code> and <code>SigR</code> must be of dimension N*M in that case.</p>
+<p>The pooled prediction requires a nonsingular covariance of the stacked
+forecast errors. A sufficient condition is that at least as many
+non-policy shocks as variables drive the data (the one-day non-policy
+covariance has full rank). If fewer shocks are present, as in a stylised
+simulation with fewer regular shocks than variables, <code>Sig</code> is singular
+for stacked horizons, and the generalized inverse yields a regularized
+prediction that is sensitive to estimation error in <code>Psi</code>. A warning is
+issued when <code>Sig</code> is (nearly) singular, including when the number of
+complete rows of <code>et</code> does not exceed its number of columns.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -136,6 +169,23 @@ University of Neuchatel.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] -0.37366525</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] -0.15323607</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [10,]  0.01922568</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Pooled prediction from two horizons (arrays with one slice per horizon)</span></span></span>
+<span class="r-in"><span><span class="va">Psi2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">Psi</span>, <span class="fl">0.5</span> <span class="op">*</span> <span class="va">Psi</span><span class="op">)</span>, dim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">et2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">40</span><span class="op">)</span>, dim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">et2m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">et2</span>, nrow <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">kfpredict</span><span class="op">(</span>Sig <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">var</a></span><span class="op">(</span><span class="va">et2m</span><span class="op">)</span>, SigR <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">var</a></span><span class="op">(</span><span class="va">et2m</span><span class="op">)</span>, Psi <span class="op">=</span> <span class="va">Psi2</span>, et <span class="op">=</span> <span class="va">et2</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              [,1]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] -1.36321491</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,]  0.38066380</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,]  0.52225505</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] -1.64057001</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] -0.54916223</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,]  0.61859522</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,]  0.06926866</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,]  0.11918553</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] -0.37946344</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,]  0.94648219</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

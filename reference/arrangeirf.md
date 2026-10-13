@@ -12,9 +12,9 @@ label. Optionally saves each figure as a PDF.
 ``` r
 arrangeirf(
   myGraphs,
-  E,
+  E = 1,
   N,
-  nRows,
+  nRows = 1,
   xLab = "Horizon",
   title = NULL,
   file = NA,
@@ -35,7 +35,8 @@ arrangeirf(
 
 - E:
 
-  Integer. Number of shock dimensions (one figure per shock).
+  Integer. Number of shock dimensions (one figure per shock). Defaults
+  to 1
 
 - N:
 
@@ -44,7 +45,7 @@ arrangeirf(
 - nRows:
 
   Integer. Number of rows of panels in each figure. The number of
-  columns is `ceiling(N / nRows)`.
+  columns is `ceiling(N / nRows)`. Defaults to 1.
 
 - xLab:
 

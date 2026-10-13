@@ -25,6 +25,7 @@ recols(
   cum = FALSE,
   cov_type = "HC3",
   hpredict = 0,
+  pooled = FALSE,
   details = FALSE
 )
 ```
@@ -105,6 +106,16 @@ recols(
   0 (impact response and one-step-ahead residual). Must lie between 0
   and `H - 1`.
 
+- pooled:
+
+  Logical. If `FALSE` (default), the shock prediction uses the forecast
+  errors and responses at horizon `hpredict` only. If `TRUE`, the
+  forecast errors of all horizons `0, ..., hpredict` are stacked and
+  used jointly (pooled prediction), which weights every horizon by its
+  signal-to-noise ratio; see
+  [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md).
+  With `hpredict = 0` both options coincide.
+
 - details:
 
   Logical. If `TRUE`, saves detailed OLS results and extracts shocks,
@@ -146,23 +157,27 @@ A named list. If `details = FALSE`, it contains `irf`, `se`, and
 
 - `et`:
 
-  Matrix of OLS residuals on event days (used for covariance estimation
-  and shock extraction).
+  Matrix of forecast errors on event days used for shock prediction, one
+  column per variable and horizon (`y1.h0`, ..., `yN.h0`, `y1.h1`, ...):
+  horizon `hpredict` only if `pooled = FALSE`, horizons
+  `0, ..., hpredict` if `pooled = TRUE`.
 
 - `Sig`:
 
-  Covariance matrix of residuals on event days.
+  Covariance matrix of `et` on event days.
 
 - `SigR`:
 
-  Covariance matrix of residuals on control days, or `NA` if
-  unavailable.
+  Covariance matrix of the same residuals on control days, or `NA` if
+  unavailable. A control day enters horizon h only if no event occurs in
+  its window `t + 1, ..., t + h`.
 
 - `Psi`:
 
-  Response matrix (N x E) at horizon `hpredict`, i.e.
-  `irf[hpredict + 1, , ]`; with the default `hpredict = 0` this is the
-  impact response.
+  Response matrix used for shock prediction, with rows matching the
+  columns of `et`: `irf[hpredict + 1, , ]` (N x E) if `pooled = FALSE`,
+  the rows `1, ..., hpredict + 1` of `irf` stacked if `pooled = TRUE`.
+  With the default `hpredict = 0` this is the impact response.
 
 ## Details
 

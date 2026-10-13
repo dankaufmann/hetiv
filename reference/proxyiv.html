@@ -83,6 +83,7 @@ conventions as <code><a href="hetiv.html">hetiv()</a></code>.</p>
 <span>  cov_type <span class="op">=</span> <span class="st">"HC3"</span>,</span>
 <span>  recursive <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  hpredict <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  pooled <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  details <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -181,6 +182,15 @@ Defaults to 0 (impact response and one-step-ahead residual). Must lie
 between 0 and <code>H - 1</code>.</p></dd>
 
 
+<dt id="arg-pooled">pooled<a class="anchor" aria-label="anchor" href="#arg-pooled"></a></dt>
+<dd><p>Logical. If <code>FALSE</code> (default), the shock prediction uses the
+forecast errors and responses at horizon <code>hpredict</code> only. If <code>TRUE</code>, the
+forecast errors of all horizons <code>0, ..., hpredict</code> are stacked and used
+jointly (pooled prediction), which weights every horizon by its
+signal-to-noise ratio; see <code><a href="kfpredict.html">kfpredict()</a></code>. With <code>hpredict = 0</code> both
+options coincide.</p></dd>
+
+
 <dt id="arg-details">details<a class="anchor" aria-label="anchor" href="#arg-details"></a></dt>
 <dd><p>Logical. If <code>TRUE</code>, returns detailed results including IV
 model objects, OLS residuals, and covariance matrices. If <code>FALSE</code> (default),
@@ -209,8 +219,9 @@ bootstrap).</p></dd>
 and shock dimension.</p></dd>
 
 <dt><code>OLSRes</code></dt>
-<dd><p>List of OLS model objects used for residual-based
-covariance estimation, one per outcome variable.</p></dd>
+<dd><p>List of the information-set regressions whose residuals
+enter the shock prediction, named <code>OLS.n&lt;i&gt;.h&lt;h&gt;</code> by outcome
+variable and horizon.</p></dd>
 
 <dt><code>Obs</code></dt>
 <dd><p>Data frame with observation counts: <code>Tp</code> (policy days),
@@ -240,19 +251,25 @@ the outcome is a policy variable on impact are omitted. <code>NULL</code> for
 <code>E = 1</code>.</p></dd>
 
 <dt><code>et</code></dt>
-<dd><p>Data frame of OLS residuals on event days.</p></dd>
+<dd><p>Data frame of forecast errors on event days used for shock
+prediction, one column per variable and horizon (<code>y1.h0</code>, ...,
+<code>yN.h0</code>, <code>y1.h1</code>, ...): horizon <code>hpredict</code> only if <code>pooled = FALSE</code>,
+horizons <code>0, ..., hpredict</code> if <code>pooled = TRUE</code>.</p></dd>
 
 <dt><code>Sig</code></dt>
-<dd><p>Covariance matrix of residuals on event days.</p></dd>
+<dd><p>Covariance matrix of <code>et</code> on event days.</p></dd>
 
 <dt><code>SigR</code></dt>
-<dd><p>Covariance matrix of residuals on control days, or <code>NA</code>
-if unavailable.</p></dd>
+<dd><p>Covariance matrix of the same residuals on control days,
+or <code>NA</code> if unavailable. A control day enters horizon h only if no
+event occurs in its window <code>t + 1, ..., t + h</code>.</p></dd>
 
 <dt><code>Psi</code></dt>
-<dd><p>Response matrix (N x E) used for shock prediction: the
-response at horizon <code>hpredict</code>, i.e. <code>irf[hpredict + 1, , ]</code>. With
-the default <code>hpredict = 0</code> this is the impact response.</p></dd>
+<dd><p>Response matrix used for shock prediction, with rows
+matching the columns of <code>et</code>: <code>irf[hpredict + 1, , ]</code> (N x E) if
+<code>pooled = FALSE</code>, the rows <code>1, ..., hpredict + 1</code> of <code>irf</code> stacked
+if <code>pooled = TRUE</code>. With the default <code>hpredict = 0</code> this is the
+impact response.</p></dd>
 
 <dt><code>WeakData</code></dt>
 <dd><p>Data frame of endogenous variables and instruments for

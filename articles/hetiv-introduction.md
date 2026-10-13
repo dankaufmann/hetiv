@@ -289,12 +289,12 @@ knitr::kable(
 )
 ```
 
-| True | HET-IV without controls | HET-IV with controls | Proxy-IV with controls | Proxy-IV with recursive restriction |
-|---:|---:|---:|---:|---:|
-| 1.0 | 1.00 | 1.00 | 1.00 | 1.00 |
-| 0.5 | 0.53 | 0.45 | 0.44 | 0.44 |
-| 0.3 | 0.54 | 0.32 | 0.40 | 0.40 |
-| 0.2 | 0.19 | 0.18 | 0.24 | 0.24 |
+|  | True | HET-IV without controls | HET-IV with controls | Proxy-IV with controls | Proxy-IV with recursive restriction |
+|:---|---:|---:|---:|---:|---:|
+| y1.h0 | 1.0 | 1.00 | 1.00 | 1.00 | 1.00 |
+| y2.h0 | 0.5 | 0.53 | 0.45 | 0.44 | 0.44 |
+| y3.h0 | 0.3 | 0.54 | 0.32 | 0.40 | 0.40 |
+| y4.h0 | 0.2 | 0.19 | 0.18 | 0.24 | 0.24 |
 
 Impact matrix estimates (\\\Psi\\) for shock 1 across different
 specifications {.table}
@@ -323,12 +323,12 @@ knitr::kable(
 )
 ```
 
-| True | HET-IV without controls | HET-IV with controls | Proxy-IV with controls | Proxy-IV with recursive restriction |
-|---:|---:|---:|---:|---:|
-| 0.0 | 0.00 | 0.00 | -0.06 | 0.00 |
-| 1.0 | 1.00 | 1.00 | 1.00 | 1.00 |
-| -0.4 | -0.46 | -0.31 | -0.51 | -0.48 |
-| 0.3 | 0.27 | 0.31 | 0.18 | 0.19 |
+|  | True | HET-IV without controls | HET-IV with controls | Proxy-IV with controls | Proxy-IV with recursive restriction |
+|:---|---:|---:|---:|---:|---:|
+| y1.h0 | 0.0 | 0.00 | 0.00 | -0.06 | 0.00 |
+| y2.h0 | 1.0 | 1.00 | 1.00 | 1.00 | 1.00 |
+| y3.h0 | -0.4 | -0.46 | -0.31 | -0.51 | -0.48 |
+| y4.h0 | 0.3 | 0.27 | 0.31 | 0.18 | 0.19 |
 
 Impact matrix estimates (\\\Psi\\) for shock 2 across different
 specifications {.table}
@@ -598,6 +598,132 @@ correlation is close to unity for Shock 1 and 0.94 for Shock 2. Proxy-IV
 with controls yields a high correlation as well, at least for Shock 1.
 Note that the specific values depend on the exact nature of the
 simulated data.
+
+### Prediction from several horizons
+
+By default, the shocks are predicted from the one-step-ahead forecast
+errors and the impact responses. The same projection applies to the
+forecast errors of `y_{t+h}` given the information dated `t-1`, with the
+impact responses replaced by the horizon-`h` responses (`hpredict = h`),
+and to the forecast errors of all horizons `0, ..., h` jointly
+(`pooled = TRUE`). The pooled prediction weights every horizon by its
+signal-to-noise ratio and, in population, has a weakly smaller mean
+squared error than the prediction from any single horizon. If all
+responses are complete on impact, it coincides with the impact
+prediction, and a single later horizon can only add noise.
+
+The pooled prediction requires a nonsingular covariance of the stacked
+forecast errors, which is estimated on event days only. A sufficient
+condition is that at least as many non-policy shocks as variables drive
+the data. The simulated model above violates this condition
+deliberately: two regular shocks drive four variables, so the twelve
+stacked forecast errors of horizons 0 to 2 are driven by only eight
+shocks and their covariance is singular.
+[`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md)
+warns in this case and falls back on a generalised inverse, which makes
+the prediction sensitive to estimation error in the responses. The table
+shows the consequence: the pooled prediction is better than the single
+horizon-2 prediction but clearly worse than the impact prediction.
+
+``` r
+
+res_het_h2 <- hetiv(
+  y = y_data, O = y_data, X = X_data, Ind = Ind, P = P, H = H, E = E,
+  norm = 1, hpredict = 2, details = TRUE
+)
+res_het_pool <- hetiv(
+  y = y_data, O = y_data, X = X_data, Ind = Ind, P = P, H = H, E = E,
+  norm = 1, hpredict = 2, pooled = TRUE, details = TRUE
+)
+#> Warning: Sig is (nearly) singular: the smallest eigenvalue of its correlation
+#> matrix is 1.3e-05 relative to the largest. The generalized inverse regularizes
+#> the prediction, which is sensitive to estimation error in Psi. For pooled
+#> horizons, the stacked residual covariance is nonsingular only if at least as
+#> many non-policy shocks as variables drive the data and the number of complete
+#> event days exceeds the number of residual series.
+dim(res_het_pool$Psi) # N(h+1) x E: responses at horizons 0, 1, 2 stacked
+#> [1] 12  2
+
+cor_pool <- function(true, r0, r2, rp, k) {
+  c(
+    Impact   = cor(true[, k], r0$Shocks[, k], use = "complete.obs"),
+    Horizon2 = cor(true[, k], r2$Shocks[, k], use = "complete.obs"),
+    Pooled   = cor(true[, k], rp$Shocks[, k], use = "complete.obs")
+  )
+}
+tab_pool <- round(rbind(
+  cor_pool(true_shocks, res_het_X, res_het_h2, res_het_pool, 1),
+  cor_pool(true_shocks, res_het_X, res_het_h2, res_het_pool, 2)
+), 2)
+rownames(tab_pool) <- c("Shock 1", "Shock 2")
+knitr::kable(
+  tab_pool,
+  col.names = c("Impact (hpredict = 0)", "Horizon 2 (hpredict = 2)", "Pooled (horizons 0-2)"),
+  row.names = TRUE,
+  caption = "Correlation of predicted shocks with true shocks by prediction horizon (two regular shocks, singular stacked covariance)"
+)
+```
+
+|  | Impact (hpredict = 0) | Horizon 2 (hpredict = 2) | Pooled (horizons 0-2) |
+|:---|---:|---:|---:|
+| Shock 1 | 1.00 | 0.80 | 0.87 |
+| Shock 2 | 0.94 | 0.57 | 0.71 |
+
+Correlation of predicted shocks with true shocks by prediction horizon
+(two regular shocks, singular stacked covariance) {.table}
+
+With as many regular shocks as variables, the stacked covariance is
+nonsingular and the pooled prediction behaves as the theory predicts. We
+simulate a second data set that differs from the first only in two
+additional regular shocks. The impact prediction is less accurate than
+before, because the additional shocks add noise on impact, but the
+pooled prediction is now about as accurate as the impact prediction,
+while the single horizon-2 prediction remains clearly worse. The small
+remaining gap reflects the estimation of a 12 by 12 covariance from
+about 50 event days.
+
+``` r
+
+PsiR4 <- cbind(PsiR, c(0.1, 0.2, 1.0, -0.2), c(-0.1, 0.1, 0.3, 1.0))
+sim4 <- simulatedata(
+  Phi = Phi, SigE = SigE, PsiE = PsiE, PsiR = PsiR4,
+  Nobs = Nobs, Nbin = Nbin, N = N, R = ncol(PsiR4), E = E,
+  Nevn = Nevn, P = P, eDist = 0, seed = 42
+)
+y4 <- sim4$y
+Ind4 <- as.integer(sim4$IndE[, 1])
+fit4 <- function(...) {
+  hetiv(y = y4, O = y4, Ind = Ind4, P = P, H = H, E = E, norm = 1, details = TRUE, ...)
+}
+res4_0 <- fit4()
+res4_h2 <- fit4(hpredict = 2)
+res4_pool <- fit4(hpredict = 2, pooled = TRUE)
+
+tab_pool4 <- round(rbind(
+  cor_pool(sim4$eE, res4_0, res4_h2, res4_pool, 1),
+  cor_pool(sim4$eE, res4_0, res4_h2, res4_pool, 2)
+), 2)
+rownames(tab_pool4) <- c("Shock 1", "Shock 2")
+knitr::kable(
+  tab_pool4,
+  col.names = c("Impact (hpredict = 0)", "Horizon 2 (hpredict = 2)", "Pooled (horizons 0-2)"),
+  row.names = TRUE,
+  caption = "Correlation of predicted shocks with true shocks by prediction horizon (four regular shocks, nonsingular stacked covariance)"
+)
+```
+
+|  | Impact (hpredict = 0) | Horizon 2 (hpredict = 2) | Pooled (horizons 0-2) |
+|:---|---:|---:|---:|
+| Shock 1 | 0.91 | 0.71 | 0.88 |
+| Shock 2 | 0.91 | 0.49 | 0.88 |
+
+Correlation of predicted shocks with true shocks by prediction horizon
+(four regular shocks, nonsingular stacked covariance) {.table}
+
+The pooled prediction is therefore most useful when the responses build
+up after the event, so that later horizons carry information that the
+impact response misses, and when the number of event days is large
+relative to the dimension of the stacked covariance.
 
 ## Weak instrument test
 

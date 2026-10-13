@@ -354,13 +354,15 @@ shocks, and the strength of the instruments.</p>
 <caption>Impact matrix estimates (<span class="math inline">\(\Psi\)</span>) for shock 1 across different
 specifications</caption>
 <colgroup>
+<col width="5%">
 <col width="4%">
-<col width="22%">
-<col width="19%">
-<col width="21%">
-<col width="33%">
+<col width="20%">
+<col width="18%">
+<col width="20%">
+<col width="31%">
 </colgroup>
 <thead><tr class="header">
+<th align="left"></th>
 <th align="right">True</th>
 <th align="right">HET-IV without controls</th>
 <th align="right">HET-IV with controls</th>
@@ -369,6 +371,7 @@ specifications</caption>
 </tr></thead>
 <tbody>
 <tr class="odd">
+<td align="left">y1.h0</td>
 <td align="right">1.0</td>
 <td align="right">1.00</td>
 <td align="right">1.00</td>
@@ -376,6 +379,7 @@ specifications</caption>
 <td align="right">1.00</td>
 </tr>
 <tr class="even">
+<td align="left">y2.h0</td>
 <td align="right">0.5</td>
 <td align="right">0.53</td>
 <td align="right">0.45</td>
@@ -383,6 +387,7 @@ specifications</caption>
 <td align="right">0.44</td>
 </tr>
 <tr class="odd">
+<td align="left">y3.h0</td>
 <td align="right">0.3</td>
 <td align="right">0.54</td>
 <td align="right">0.32</td>
@@ -390,6 +395,7 @@ specifications</caption>
 <td align="right">0.40</td>
 </tr>
 <tr class="even">
+<td align="left">y4.h0</td>
 <td align="right">0.2</td>
 <td align="right">0.19</td>
 <td align="right">0.18</td>
@@ -423,13 +429,15 @@ specifications</caption>
 <caption>Impact matrix estimates (<span class="math inline">\(\Psi\)</span>) for shock 2 across different
 specifications</caption>
 <colgroup>
+<col width="5%">
 <col width="4%">
-<col width="22%">
-<col width="19%">
-<col width="21%">
-<col width="33%">
+<col width="20%">
+<col width="18%">
+<col width="20%">
+<col width="31%">
 </colgroup>
 <thead><tr class="header">
+<th align="left"></th>
 <th align="right">True</th>
 <th align="right">HET-IV without controls</th>
 <th align="right">HET-IV with controls</th>
@@ -438,6 +446,7 @@ specifications</caption>
 </tr></thead>
 <tbody>
 <tr class="odd">
+<td align="left">y1.h0</td>
 <td align="right">0.0</td>
 <td align="right">0.00</td>
 <td align="right">0.00</td>
@@ -445,6 +454,7 @@ specifications</caption>
 <td align="right">0.00</td>
 </tr>
 <tr class="even">
+<td align="left">y2.h0</td>
 <td align="right">1.0</td>
 <td align="right">1.00</td>
 <td align="right">1.00</td>
@@ -452,6 +462,7 @@ specifications</caption>
 <td align="right">1.00</td>
 </tr>
 <tr class="odd">
+<td align="left">y3.h0</td>
 <td align="right">-0.4</td>
 <td align="right">-0.46</td>
 <td align="right">-0.31</td>
@@ -459,6 +470,7 @@ specifications</caption>
 <td align="right">-0.48</td>
 </tr>
 <tr class="even">
+<td align="left">y4.h0</td>
 <td align="right">0.3</td>
 <td align="right">0.27</td>
 <td align="right">0.31</td>
@@ -739,6 +751,168 @@ correlation is close to unity for Shock 1 and 0.94 for Shock 2. Proxy-IV
 with controls yields a high correlation as well, at least for Shock 1.
 Note that the specific values depend on the exact nature of the
 simulated data.</p>
+<div class="section level3">
+<h3 id="prediction-from-several-horizons">Prediction from several horizons<a class="anchor" aria-label="anchor" href="#prediction-from-several-horizons"></a>
+</h3>
+<p>By default, the shocks are predicted from the one-step-ahead forecast
+errors and the impact responses. The same projection applies to the
+forecast errors of <code>y_{t+h}</code> given the information dated
+<code>t-1</code>, with the impact responses replaced by the
+horizon-<code>h</code> responses (<code>hpredict = h</code>), and to the
+forecast errors of all horizons <code>0, ..., h</code> jointly
+(<code>pooled = TRUE</code>). The pooled prediction weights every
+horizon by its signal-to-noise ratio and, in population, has a weakly
+smaller mean squared error than the prediction from any single horizon.
+If all responses are complete on impact, it coincides with the impact
+prediction, and a single later horizon can only add noise.</p>
+<p>The pooled prediction requires a nonsingular covariance of the
+stacked forecast errors, which is estimated on event days only. A
+sufficient condition is that at least as many non-policy shocks as
+variables drive the data. The simulated model above violates this
+condition deliberately: two regular shocks drive four variables, so the
+twelve stacked forecast errors of horizons 0 to 2 are driven by only
+eight shocks and their covariance is singular. <code><a href="../reference/kfpredict.html">kfpredict()</a></code>
+warns in this case and falls back on a generalised inverse, which makes
+the prediction sensitive to estimation error in the responses. The table
+shows the consequence: the pooled prediction is better than the single
+horizon-2 prediction but clearly worse than the impact prediction.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">res_het_h2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hetiv.html">hetiv</a></span><span class="op">(</span></span>
+<span>  y <span class="op">=</span> <span class="va">y_data</span>, O <span class="op">=</span> <span class="va">y_data</span>, X <span class="op">=</span> <span class="va">X_data</span>, Ind <span class="op">=</span> <span class="va">Ind</span>, P <span class="op">=</span> <span class="va">P</span>, H <span class="op">=</span> <span class="va">H</span>, E <span class="op">=</span> <span class="va">E</span>,</span>
+<span>  norm <span class="op">=</span> <span class="fl">1</span>, hpredict <span class="op">=</span> <span class="fl">2</span>, details <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">res_het_pool</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hetiv.html">hetiv</a></span><span class="op">(</span></span>
+<span>  y <span class="op">=</span> <span class="va">y_data</span>, O <span class="op">=</span> <span class="va">y_data</span>, X <span class="op">=</span> <span class="va">X_data</span>, Ind <span class="op">=</span> <span class="va">Ind</span>, P <span class="op">=</span> <span class="va">P</span>, H <span class="op">=</span> <span class="va">H</span>, E <span class="op">=</span> <span class="va">E</span>,</span>
+<span>  norm <span class="op">=</span> <span class="fl">1</span>, hpredict <span class="op">=</span> <span class="fl">2</span>, pooled <span class="op">=</span> <span class="cn">TRUE</span>, details <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: Sig is (nearly) singular: the smallest eigenvalue of its correlation</span></span>
+<span><span class="co">#&gt; matrix is 1.3e-05 relative to the largest. The generalized inverse regularizes</span></span>
+<span><span class="co">#&gt; the prediction, which is sensitive to estimation error in Psi. For pooled</span></span>
+<span><span class="co">#&gt; horizons, the stacked residual covariance is nonsingular only if at least as</span></span>
+<span><span class="co">#&gt; many non-policy shocks as variables drive the data and the number of complete</span></span>
+<span><span class="co">#&gt; event days exceeds the number of residual series.</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">res_het_pool</span><span class="op">$</span><span class="va">Psi</span><span class="op">)</span> <span class="co"># N(h+1) x E: responses at horizons 0, 1, 2 stacked</span></span>
+<span><span class="co">#&gt; [1] 12  2</span></span>
+<span></span>
+<span><span class="va">cor_pool</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">true</span>, <span class="va">r0</span>, <span class="va">r2</span>, <span class="va">rp</span>, <span class="va">k</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    Impact   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">true</span><span class="op">[</span>, <span class="va">k</span><span class="op">]</span>, <span class="va">r0</span><span class="op">$</span><span class="va">Shocks</span><span class="op">[</span>, <span class="va">k</span><span class="op">]</span>, use <span class="op">=</span> <span class="st">"complete.obs"</span><span class="op">)</span>,</span>
+<span>    Horizon2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">true</span><span class="op">[</span>, <span class="va">k</span><span class="op">]</span>, <span class="va">r2</span><span class="op">$</span><span class="va">Shocks</span><span class="op">[</span>, <span class="va">k</span><span class="op">]</span>, use <span class="op">=</span> <span class="st">"complete.obs"</span><span class="op">)</span>,</span>
+<span>    Pooled   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">true</span><span class="op">[</span>, <span class="va">k</span><span class="op">]</span>, <span class="va">rp</span><span class="op">$</span><span class="va">Shocks</span><span class="op">[</span>, <span class="va">k</span><span class="op">]</span>, use <span class="op">=</span> <span class="st">"complete.obs"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">tab_pool</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
+<span>  <span class="fu">cor_pool</span><span class="op">(</span><span class="va">true_shocks</span>, <span class="va">res_het_X</span>, <span class="va">res_het_h2</span>, <span class="va">res_het_pool</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  <span class="fu">cor_pool</span><span class="op">(</span><span class="va">true_shocks</span>, <span class="va">res_het_X</span>, <span class="va">res_het_h2</span>, <span class="va">res_het_pool</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">tab_pool</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Shock 1"</span>, <span class="st">"Shock 2"</span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="va">tab_pool</span>,</span>
+<span>  col.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Impact (hpredict = 0)"</span>, <span class="st">"Horizon 2 (hpredict = 2)"</span>, <span class="st">"Pooled (horizons 0-2)"</span><span class="op">)</span>,</span>
+<span>  row.names <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  caption <span class="op">=</span> <span class="st">"Correlation of predicted shocks with true shocks by prediction horizon (two regular shocks, singular stacked covariance)"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>Correlation of predicted shocks with true shocks by prediction
+horizon (two regular shocks, singular stacked covariance)</caption>
+<colgroup>
+<col width="10%">
+<col width="28%">
+<col width="32%">
+<col width="28%">
+</colgroup>
+<thead><tr class="header">
+<th align="left"></th>
+<th align="right">Impact (hpredict = 0)</th>
+<th align="right">Horizon 2 (hpredict = 2)</th>
+<th align="right">Pooled (horizons 0-2)</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Shock 1</td>
+<td align="right">1.00</td>
+<td align="right">0.80</td>
+<td align="right">0.87</td>
+</tr>
+<tr class="even">
+<td align="left">Shock 2</td>
+<td align="right">0.94</td>
+<td align="right">0.57</td>
+<td align="right">0.71</td>
+</tr>
+</tbody>
+</table>
+<p>With as many regular shocks as variables, the stacked covariance is
+nonsingular and the pooled prediction behaves as the theory predicts. We
+simulate a second data set that differs from the first only in two
+additional regular shocks. The impact prediction is less accurate than
+before, because the additional shocks add noise on impact, but the
+pooled prediction is now about as accurate as the impact prediction,
+while the single horizon-2 prediction remains clearly worse. The small
+remaining gap reflects the estimation of a 12 by 12 covariance from
+about 50 event days.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">PsiR4</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">PsiR</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">1.0</span>, <span class="op">-</span><span class="fl">0.2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.3</span>, <span class="fl">1.0</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">sim4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulatedata.html">simulatedata</a></span><span class="op">(</span></span>
+<span>  Phi <span class="op">=</span> <span class="va">Phi</span>, SigE <span class="op">=</span> <span class="va">SigE</span>, PsiE <span class="op">=</span> <span class="va">PsiE</span>, PsiR <span class="op">=</span> <span class="va">PsiR4</span>,</span>
+<span>  Nobs <span class="op">=</span> <span class="va">Nobs</span>, Nbin <span class="op">=</span> <span class="va">Nbin</span>, N <span class="op">=</span> <span class="va">N</span>, R <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">PsiR4</span><span class="op">)</span>, E <span class="op">=</span> <span class="va">E</span>,</span>
+<span>  Nevn <span class="op">=</span> <span class="va">Nevn</span>, P <span class="op">=</span> <span class="va">P</span>, eDist <span class="op">=</span> <span class="fl">0</span>, seed <span class="op">=</span> <span class="fl">42</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">y4</span> <span class="op">&lt;-</span> <span class="va">sim4</span><span class="op">$</span><span class="va">y</span></span>
+<span><span class="va">Ind4</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">sim4</span><span class="op">$</span><span class="va">IndE</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">fit4</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/hetiv.html">hetiv</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">y4</span>, O <span class="op">=</span> <span class="va">y4</span>, Ind <span class="op">=</span> <span class="va">Ind4</span>, P <span class="op">=</span> <span class="va">P</span>, H <span class="op">=</span> <span class="va">H</span>, E <span class="op">=</span> <span class="va">E</span>, norm <span class="op">=</span> <span class="fl">1</span>, details <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">res4_0</span> <span class="op">&lt;-</span> <span class="fu">fit4</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">res4_h2</span> <span class="op">&lt;-</span> <span class="fu">fit4</span><span class="op">(</span>hpredict <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">res4_pool</span> <span class="op">&lt;-</span> <span class="fu">fit4</span><span class="op">(</span>hpredict <span class="op">=</span> <span class="fl">2</span>, pooled <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">tab_pool4</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
+<span>  <span class="fu">cor_pool</span><span class="op">(</span><span class="va">sim4</span><span class="op">$</span><span class="va">eE</span>, <span class="va">res4_0</span>, <span class="va">res4_h2</span>, <span class="va">res4_pool</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  <span class="fu">cor_pool</span><span class="op">(</span><span class="va">sim4</span><span class="op">$</span><span class="va">eE</span>, <span class="va">res4_0</span>, <span class="va">res4_h2</span>, <span class="va">res4_pool</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">tab_pool4</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Shock 1"</span>, <span class="st">"Shock 2"</span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="va">tab_pool4</span>,</span>
+<span>  col.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Impact (hpredict = 0)"</span>, <span class="st">"Horizon 2 (hpredict = 2)"</span>, <span class="st">"Pooled (horizons 0-2)"</span><span class="op">)</span>,</span>
+<span>  row.names <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  caption <span class="op">=</span> <span class="st">"Correlation of predicted shocks with true shocks by prediction horizon (four regular shocks, nonsingular stacked covariance)"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>Correlation of predicted shocks with true shocks by prediction
+horizon (four regular shocks, nonsingular stacked covariance)</caption>
+<colgroup>
+<col width="10%">
+<col width="28%">
+<col width="32%">
+<col width="28%">
+</colgroup>
+<thead><tr class="header">
+<th align="left"></th>
+<th align="right">Impact (hpredict = 0)</th>
+<th align="right">Horizon 2 (hpredict = 2)</th>
+<th align="right">Pooled (horizons 0-2)</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Shock 1</td>
+<td align="right">0.91</td>
+<td align="right">0.71</td>
+<td align="right">0.88</td>
+</tr>
+<tr class="even">
+<td align="left">Shock 2</td>
+<td align="right">0.91</td>
+<td align="right">0.49</td>
+<td align="right">0.88</td>
+</tr>
+</tbody>
+</table>
+<p>The pooled prediction is therefore most useful when the responses
+build up after the event, so that later horizons carry information that
+the impact response misses, and when the number of event days is large
+relative to the dimension of the stacked covariance.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="weak-instrument-test">Weak instrument test<a class="anchor" aria-label="anchor" href="#weak-instrument-test"></a>
@@ -777,7 +951,7 @@ of 10% at a significance level of 5%. The estimators also return a
 <code><a href="../reference/gweakivtest.html">gweakivtest()</a></code> for custom tests.</p>
 <p>The table below shows the test on impact (<code>h = 0</code>) for the
 third variable for each of the four specifications.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">specs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  <span class="st">"HET-IV, no controls"</span> <span class="op">=</span> <span class="va">res_het</span><span class="op">$</span><span class="va">WeakTest</span>,</span>
 <span>  <span class="st">"HET-IV, with controls"</span> <span class="op">=</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">WeakTest</span>,</span>
@@ -863,7 +1037,7 @@ horizon, it is useful to inspect the full <code>WeakTest</code> data
 frame. The following table shows, for HET-IV with controls, the
 statistic and the critical value for the third and fourth variables at
 selected horizons.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wt</span> <span class="op">&lt;-</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">WeakTest</span></span>
 <span><span class="va">wt</span> <span class="op">&lt;-</span> <span class="va">wt</span><span class="op">[</span><span class="va">wt</span><span class="op">$</span><span class="va">i</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">4</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">wt</span><span class="op">$</span><span class="va">h</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span>, <span class="fl">10</span>, <span class="fl">19</span><span class="op">)</span>, <span class="op">]</span></span>
 <span><span class="va">wt</span><span class="op">$</span><span class="va">Strong</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">wt</span><span class="op">$</span><span class="va">gmin</span> <span class="op">&gt;</span> <span class="va">wt</span><span class="op">$</span><span class="va">cv</span>, <span class="st">"Yes"</span>, <span class="st">"No"</span><span class="op">)</span></span>

@@ -92,6 +92,99 @@ test_that("svariv drops missing proxies from identification only", {
   keep <- !is.na(z)
   ratio <- cov(fit$U[keep, 2], z[keep]) / cov(fit$U[keep, 1], z[keep])
   expect_equal(fit$Psi[2, 1], ratio, tolerance = 1e-10)
+  # First-stage statistics use the identification sample only
+  fs <- summary(lm(fit$U[keep, 1] ~ z[keep]))
+  expect_equal(unname(fit$FStat), unname(fs$fstatistic[1]), tolerance = 1e-8)
+})
+
+make_svar_dgp3 <- function(Nobs = 2500, seed = 7) {
+  set.seed(seed)
+  N <- 3
+  Phi <- array(0, dim = c(N, N, 1))
+  Phi[, , 1] <- diag(c(0.5, 0.3, 0.6))
+  Psi <- matrix(c(1, 0.5, 0.2, 0, 1, -0.4, 0.3, 0.1, 1), N, N)
+  eps <- matrix(rnorm(Nobs * N), ncol = N)
+  y <- matrix(0, Nobs, N)
+  for (t in 2:Nobs) y[t, ] <- Phi[, , 1] %*% y[t - 1, ] + Psi %*% eps[t, ]
+  Z <- cbind(eps[, 1] + rnorm(Nobs), eps[, 2] + rnorm(Nobs))
+  list(y = y, Z = Z, Phi = Phi, Psi = Psi)
+}
+
+test_that("svariv uses the full-sample covariance and a subsample 2SLS step", {
+  dgp <- make_svar_dgp3()
+  Zna <- dgp$Z
+  Zna[seq(2, nrow(Zna), by = 4), ] <- NA
+  E <- 2
+  fit <- svariv(y = dgp$y, Z = Zna, P = 1, H = 3, E = E, details = TRUE)
+
+  # Manual Mertens-Ravn (2013) identification: Sigma on all VAR residuals,
+  # relative impacts b21 b11^-1 by 2SLS on the rows with observed proxies
+  U <- fit$U
+  N <- ncol(U)
+  ident <- complete.cases(Zna[-1, , drop = FALSE])
+  mr_psi <- function(Sigma) {
+    Uid <- U[ident, ]
+    Zid <- Zna[-1, ][ident, ]
+    uhat <- fitted(lm(Uid[, 1:E] ~ Zid))
+    ss_coef <- matrix(coef(lm(Uid[, (E + 1):N] ~ uhat)), ncol = N - E)
+    b21ib11 <- t(ss_coef[-1, , drop = FALSE])
+    S11 <- Sigma[1:E, 1:E]
+    S21 <- Sigma[(E + 1):N, 1:E, drop = FALSE]
+    S22 <- Sigma[(E + 1):N, (E + 1):N, drop = FALSE]
+    ZZp <- b21ib11 %*% S11 %*% t(b21ib11) -
+      (S21 %*% t(b21ib11) + b21ib11 %*% t(S21)) + S22
+    b12b12p <- t(S21 - b21ib11 %*% S11) %*% solve(ZZp, S21 - b21ib11 %*% S11)
+    L1 <- t(chol(S11 - b12b12p))
+    Psi <- rbind(L1, b21ib11 %*% L1)
+    for (e in 1:E) Psi[, e] <- Psi[, e] / Psi[e, e]
+    unname(Psi)
+  }
+  Psi_full <- mr_psi(crossprod(U) / nrow(U))
+  Psi_sub <- mr_psi(crossprod(U[ident, ]) / sum(ident))
+
+  expect_equal(unname(fit$Psi), Psi_full, tolerance = 1e-10)
+  expect_false(isTRUE(all.equal(Psi_full, Psi_sub, tolerance = 1e-6)))
+  expect_equal(unname(fit$Psi[1, 2]), 0)
+  expect_length(fit$FStat, E)
+  expect_length(fit$FStatRobust, E)
+})
+
+test_that("svariv reports homoskedastic and robust first-stage F statistics", {
+  dgp <- make_svar_dgp(Nobs = 1500)
+  fit <- svariv(y = dgp$y, Z = dgp$Z, P = 1, H = 3, details = TRUE)
+  z <- dgp$Z[-1, 1]
+  u1 <- fit$U[, 1]
+  reg <- lm(u1 ~ z)
+
+  # Single instrument: homoskedastic F = t^2, robust effective F = robust t^2
+  t_hom <- coef(reg)[2] / sqrt(vcov(reg)[2, 2])
+  t_hc0 <- coef(reg)[2] / sqrt(sandwich::vcovHC(reg, type = "HC0")[2, 2])
+  expect_equal(unname(fit$FStat), unname(t_hom^2), tolerance = 1e-8)
+  expect_equal(unname(fit$FStatRobust), unname(t_hc0^2), tolerance = 1e-8)
+
+  fit_nw <- svariv(y = dgp$y, Z = dgp$Z, P = 1, H = 3, cov_type = "NW", details = TRUE)
+  t_nw <- coef(reg)[2] /
+    sqrt(sandwich::NeweyWest(reg, prewhite = FALSE, adjust = TRUE)[2, 2])
+  expect_equal(unname(fit_nw$FStatRobust), unname(t_nw^2), tolerance = 1e-8)
+  expect_equal(fit_nw$FStat, fit$FStat)
+  expect_equal(fit_nw$irf, fit$irf)
+
+  # Two instruments: effective F of Montiel Olea and Pflueger (2013)
+  set.seed(11)
+  Z2 <- cbind(dgp$Z, dgp$Z + rnorm(nrow(dgp$Z)))
+  fit2 <- svariv(y = dgp$y, Z = Z2, P = 1, H = 3, details = TRUE)
+  reg2 <- lm(u1 ~ Z2[-1, ])
+  b <- coef(reg2)[2:3]
+  V <- sandwich::vcovHC(reg2, type = "HC0")[2:3, 2:3]
+  Zt <- sweep(Z2[-1, ], 2, colMeans(Z2[-1, ]))
+  Qzz <- crossprod(Zt) / nrow(Zt)
+  F_eff <- drop(t(b) %*% Qzz %*% b) / sum(diag(Qzz %*% V))
+  expect_equal(unname(fit2$FStatRobust), F_eff, tolerance = 1e-8)
+  expect_equal(unname(fit2$FStat), unname(summary(reg2)$fstatistic[1]), tolerance = 1e-8)
+
+  expect_error(svariv(y = dgp$y, Z = dgp$Z, P = 1, H = 3, cov_type = "HC9"), "cov_type")
+  # Without details no first-stage statistics are computed
+  expect_null(svariv(y = dgp$y, Z = dgp$Z, P = 1, H = 3)$FStat)
 })
 
 test_that("svariv wild bootstrap matches a manual implementation", {

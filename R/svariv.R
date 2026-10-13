@@ -16,9 +16,19 @@
 #'
 #'   All columns of `Z` are used jointly as instruments in the first-stage
 #'   regressions of the policy residuals on the proxies. Rows of `Z` with
-#'   missing values are excluded from the identification step only; the VAR
-#'   itself is estimated on the full sample. The residual covariance used for
-#'   identification is computed on the identification sample.
+#'   missing values are excluded from the identification step only: the VAR
+#'   and the reduced-form residual covariance `Sigma` are estimated on the
+#'   full sample, as in Mertens and Ravn (2013), whereas the 2SLS step that
+#'   recovers the relative impact responses uses only the observations with
+#'   non-missing proxies (the identification sample).
+#'
+#'   With `details = TRUE`, first-stage diagnostics are reported for every
+#'   policy residual: the homoskedastic F statistic of the proxies (`FStat`,
+#'   equal to the squared t statistic when `M = 1`; Stock and Yogo, 2005) and
+#'   the robust effective F statistic of Montiel Olea and Pflueger (2013)
+#'   (`FStatRobust`), computed with the covariance estimator in `cov_type`.
+#'   For `E > 1` these are equation-by-equation statistics; use
+#'   [gweakivtest()] for a joint test.
 #'
 #'   The bootstrap follows Mertens and Ravn (2013): in every replication, the
 #'   VAR residuals and the proxies are multiplied by the same Rademacher draw,
@@ -26,8 +36,9 @@
 #'   observations, and the VAR is re-estimated and re-identified. Each draw is
 #'   normalized in the same way as the point estimate. Percentile bands are
 #'   reported for every level in `ci`; `se` is the bootstrap standard
-#'   deviation, which allows the result to be used directly with [plotirf()]
-#'   and [plot2irf()]. Replications in which identification fails (e.g. a
+#'   deviation and `boot` holds the raw draws, so the result can be passed
+#'   directly to [plotirf()], which draws recentred percentile bands from the
+#'   draws. Replications in which identification fails (e.g. a
 #'   non-positive-definite policy block) are dropped with a warning.
 #'
 #' @param y Numeric matrix of VAR variables (T x N) without missing values.
@@ -53,8 +64,11 @@
 #'   skips the bootstrap, in which case `se`, `lower`, and `upper` are `NULL`.
 #' @param ci Numeric vector of confidence levels in (0, 1) for the percentile
 #'   bands. Default `c(0.90, 0.95)`.
+#' @param cov_type Covariance estimator for the robust first-stage F statistic
+#'   reported with `details = TRUE`: `"HC0"` (default, Eicker-Huber-White),
+#'   `"HC1"`, `"HC3"`, or `"NW"` for Newey-West HAC.
 #' @param details Logical. If `TRUE`, additionally returns the VAR estimates,
-#'   residuals, first-stage statistics, and the bootstrap draws.
+#'   residuals and first-stage statistics.
 #'
 #' @return A named list. Always contains:
 #'   \describe{
@@ -65,6 +79,8 @@
 #'     \item{`lower`, `upper`}{Arrays (H x N x E x length(ci)) of percentile
 #'       bands, one slice per level in `ci` (labelled in the fourth
 #'       dimension), or `NULL` if `nboot = 0`.}
+#'     \item{`boot`}{Array (H x N x E x nboot) of bootstrap draws (`NA` for
+#'       failed replications), or `NULL` if `nboot = 0`.}
 #'     \item{`Method`}{Character string `"SVAR-IV"`.}
 #'   }
 #'   With `details = TRUE`, additionally contains:
@@ -75,12 +91,12 @@
 #'     \item{`C`}{Vector of length N with the VAR intercepts.}
 #'     \item{`D`}{Matrix (N x K) of coefficients on `X`, or `NULL`.}
 #'     \item{`U`}{Matrix ((T - P) x N) of reduced-form residuals.}
-#'     \item{`FStat`, `R2`}{First-stage F statistics and R-squared of the
-#'       regressions of each policy residual on the proxies.}
+#'     \item{`FStat`, `FStatRobust`, `R2`}{Vectors of length E with the
+#'       homoskedastic first-stage F statistic, the robust effective F
+#'       statistic (Montiel Olea and Pflueger, 2013) and the R-squared of the
+#'       regressions of each policy residual on the proxies (see Details).}
 #'     \item{`Obs`}{Data frame with `T` (sample size), `Test` (VAR estimation
 #'       sample), and `Tiv` (identification sample).}
-#'     \item{`boot`}{Array (H x N x E x nboot) of bootstrap draws (`NA` for
-#'       failed replications), or `NULL` if `nboot = 0`.}
 #'     \item{`nfail`}{Number of failed bootstrap replications.}
 #'     \item{`ci`}{The confidence levels used for `lower` and `upper`.}
 #'   }
@@ -90,9 +106,17 @@
 #' corporate income tax changes in the United States. *American Economic
 #' Review*, 103(4), 1212-1247.
 #'
+#' Montiel Olea, J. L. and Pflueger, C. (2013). A robust test for weak
+#' instruments. *Journal of Business & Economic Statistics*, 31(3), 358-369.
+#'
 #' Stock, J. H. and Watson, M. W. (2018). Identification and estimation of
 #' dynamic causal effects in macroeconomics using external instruments.
 #' *Economic Journal*, 128(610), 917-948.
+#'
+#' Stock, J. H. and Yogo, M. (2005). Testing for weak instruments in linear IV
+#' regression. In D. W. K. Andrews and J. H. Stock (Eds.), *Identification
+#' and inference for econometric models: Essays in honor of Thomas
+#' Rothenberg* (pp. 80-108). Cambridge University Press.
 #'
 #' @seealso [proxyiv()] for the local-projection counterpart, [computeirf()],
 #'   [plotirf()].
@@ -114,7 +138,8 @@
 #'
 #' @export
 svariv <- function(y, Z, X = NULL, P, H, E = 1, norm = 1, cum = FALSE,
-                   nboot = 0, ci = c(0.90, 0.95), details = FALSE) {
+                   nboot = 0, ci = c(0.90, 0.95), cov_type = "HC0",
+                   details = FALSE) {
   y <- .as_numeric_matrix(y, "y", allow_na = FALSE)
   Z <- .as_numeric_matrix(Z, "Z", nrow = nrow(y))
   if (!is.null(X)) {
@@ -126,6 +151,7 @@ svariv <- function(y, Z, X = NULL, P, H, E = 1, norm = 1, cum = FALSE,
   norm <- .check_numeric_scalar(norm, "norm")
   cum <- .check_cum(cum, ncol(y))
   nboot <- .check_integerish_scalar(nboot, "nboot", min = 0)
+  cov_type <- .check_choice(cov_type, "cov_type", c("HC0", "HC1", "HC3", "NW"))
   details <- .check_logical_scalar(details, "details")
   if (
     !is.numeric(ci) || length(ci) < 1 || anyNA(ci) ||
@@ -154,7 +180,8 @@ svariv <- function(y, Z, X = NULL, P, H, E = 1, norm = 1, cum = FALSE,
   # 1) Reduced-form VAR(P) by OLS (constant always included)
   fit <- .svariv_var(y, X, P)
 
-  # 2) Identification on the observations with a non-missing proxy
+  # 2) Identification: Sigma on the full VAR sample, 2SLS on the observations
+  #    with a non-missing proxy
   Zs <- Z[(P + 1):Nobs, , drop = FALSE]
   ident <- stats::complete.cases(Zs)
   Tiv <- sum(ident)
@@ -163,7 +190,7 @@ svariv <- function(y, Z, X = NULL, P, H, E = 1, norm = 1, cum = FALSE,
       call. = FALSE
     )
   }
-  id <- .svariv_identify(fit$U[ident, , drop = FALSE], Zs[ident, , drop = FALSE], E)
+  id <- .svariv_identify(fit$U, Zs, ident, E, fstat = details, cov_type = cov_type)
 
   # 3) Impulse responses by recursion, normalized on the policy variables
   irf <- .svariv_irf(id$Psi, fit$Phi, H, E, norm, cum)
@@ -186,9 +213,7 @@ svariv <- function(y, Z, X = NULL, P, H, E = 1, norm = 1, cum = FALSE,
       fb <- .svariv_var(yb, X, P)
       draw <- tryCatch(
         {
-          idb <- .svariv_identify(
-            fb$U[ident, , drop = FALSE], bootZ[ident, , drop = FALSE], E
-          )
+          idb <- .svariv_identify(fb$U, bootZ, ident, E)
           .svariv_irf(idb$Psi, fb$Phi, H, E, norm, cum)
         },
         error = function(e) NULL
@@ -229,14 +254,19 @@ svariv <- function(y, Z, X = NULL, P, H, E = 1, norm = 1, cum = FALSE,
   if (details == TRUE) {
     Obs <- data.frame(T = Nobs, Test = Nobs - P, Tiv = Tiv)
     return(list(
-      irf = irf, se = se, lower = lower, upper = upper,
+      irf = irf, se = se, lower = lower, upper = upper, boot = boot,
       Method = Method,
       Psi = Psi, Phi = fit$Phi, C = fit$C, D = fit$D, U = fit$U,
-      FStat = id$FStat, R2 = id$R2, Obs = Obs,
-      boot = boot, nfail = nfail, ci = ci
+      FStat = id$FStat, FStatRobust = id$FStatRobust, R2 = id$R2, Obs = Obs,
+      nfail = nfail, ci = ci
     ))
   } else {
-    return(list(irf = irf, se = se, lower = lower, upper = upper, Method = Method))
+    # boot is returned also without details so that plotirf() can draw
+    # percentile bands from the draws
+    return(list(
+      irf = irf, se = se, lower = lower, upper = upper, boot = boot,
+      Method = Method
+    ))
   }
 }
 
@@ -271,30 +301,32 @@ svariv <- function(y, Z, X = NULL, P, H, E = 1, norm = 1, cum = FALSE,
 }
 
 # Identify the impact matrix of the first E shocks with external instruments
-# (Mertens and Ravn, 2013). U: identification-sample residuals (T x N), the
-# first E columns being the policy variables; Z: proxies (T x M).
-# Returns Psi (N x E, policy block lower triangular with positive diagonal),
-# first-stage F statistics, and R-squared.
-.svariv_identify <- function(U, Z, E) {
+# (Mertens and Ravn, 2013). U: reduced-form residuals of the full VAR sample
+# (T x N), the first E columns being the policy variables; Z: proxies (T x M,
+# may contain NA); ident: logical vector marking the identification sample
+# (rows with non-missing proxies). The residual covariance Sigma is computed
+# on the full sample, the 2SLS step on the identification sample only.
+# Returns Psi (N x E, policy block lower triangular with positive diagonal)
+# and, if fstat = TRUE, the first-stage statistics of each policy residual
+# (see .firststage_f()).
+.svariv_identify <- function(U, Z, ident, E, fstat = FALSE, cov_type = "HC0") {
   N <- ncol(U)
-  Tn <- nrow(U)
-  M <- ncol(Z)
   k <- E
 
-  Sigma <- crossprod(U) / Tn
+  # Reduced-form covariance on the full VAR sample
+  Sigma <- crossprod(U) / nrow(U)
+
+  # Identification sample
+  Uid <- U[ident, , drop = FALSE]
+  Zid <- Z[ident, , drop = FALSE]
+  Tn <- nrow(Uid)
 
   # First stage: policy residuals on constant and proxies
-  Xz <- cbind(1, Z)
-  fs <- stats::lm.fit(Xz, U[, seq_len(k), drop = FALSE])
+  fs <- stats::lm.fit(cbind(1, Zid), Uid[, seq_len(k), drop = FALSE])
   uhat <- matrix(fs$fitted.values, nrow = Tn, ncol = k)
-  res <- matrix(fs$residuals, nrow = Tn, ncol = k)
-  ssr <- colSums(res^2)
-  sst <- colSums(sweep(U[, seq_len(k), drop = FALSE], 2, colMeans(U[, seq_len(k), drop = FALSE]))^2)
-  R2 <- 1 - ssr / sst
-  FStat <- (R2 / M) / ((1 - R2) / (Tn - M - 1))
 
   # Second stage: non-policy residuals on fitted policy residuals (2SLS)
-  ss <- stats::lm.fit(cbind(1, uhat), U[, (k + 1):N, drop = FALSE])
+  ss <- stats::lm.fit(cbind(1, uhat), Uid[, (k + 1):N, drop = FALSE])
   ss_coef <- matrix(ss$coefficients, nrow = k + 1, ncol = N - k)
   b21ib11 <- t(ss_coef[2:(k + 1), , drop = FALSE]) # (N - k) x k
 
@@ -307,12 +339,30 @@ svariv <- function(y, Z, X = NULL, P, H, E = 1, norm = 1, cum = FALSE,
   b12b12p <- t(Sig21 - b21ib11 %*% Sig11) %*%
     solve(ZZp, Sig21 - b21ib11 %*% Sig11)
   b11b11p <- Sig11 - b12b12p
-  L1 <- t(chol(b11b11p))
+  L1 <- tryCatch(
+    t(chol(b11b11p)),
+    error = function(e) {
+      stop("Identification failed: the implied covariance matrix of the ",
+        "policy shocks is not positive definite. Check the instruments ",
+        "and the ordering of the variables in y.", call. = FALSE)
+    }
+  )
 
   Psi <- rbind(L1, b21ib11 %*% L1)
   dimnames(Psi) <- NULL
 
-  list(Psi = Psi, FStat = FStat, R2 = R2)
+  # First-stage diagnostics, equation by equation (skipped in the bootstrap)
+  FStat <- FStatRobust <- R2 <- NULL
+  if (fstat) {
+    fsx <- lapply(seq_len(k), function(e) {
+      .firststage_f(Uid[, e], Zid, cov_type = cov_type)
+    })
+    FStat <- vapply(fsx, `[[`, numeric(1), "F_hom")
+    FStatRobust <- vapply(fsx, `[[`, numeric(1), "F_rob")
+    R2 <- vapply(fsx, `[[`, numeric(1), "R2")
+  }
+
+  list(Psi = Psi, FStat = FStat, FStatRobust = FStatRobust, R2 = R2)
 }
 
 # IRFs by recursion through the VAR, normalized so that the impact response of

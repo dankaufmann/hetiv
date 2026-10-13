@@ -15,6 +15,7 @@ svariv(
   cum = FALSE,
   nboot = 0,
   ci = c(0.9, 0.95),
+  cov_type = "HC0",
   details = FALSE
 )
 }
@@ -52,8 +53,12 @@ skips the bootstrap, in which case \code{se}, \code{lower}, and \code{upper} are
 \item{ci}{Numeric vector of confidence levels in (0, 1) for the percentile
 bands. Default \code{c(0.90, 0.95)}.}
 
+\item{cov_type}{Covariance estimator for the robust first-stage F statistic
+reported with \code{details = TRUE}: \code{"HC0"} (default, Eicker-Huber-White),
+\code{"HC1"}, \code{"HC3"}, or \code{"NW"} for Newey-West HAC.}
+
 \item{details}{Logical. If \code{TRUE}, additionally returns the VAR estimates,
-residuals, first-stage statistics, and the bootstrap draws.}
+residuals and first-stage statistics.}
 }
 \value{
 A named list. Always contains:
@@ -65,6 +70,8 @@ A named list. Always contains:
 \item{\code{lower}, \code{upper}}{Arrays (H x N x E x length(ci)) of percentile
 bands, one slice per level in \code{ci} (labelled in the fourth
 dimension), or \code{NULL} if \code{nboot = 0}.}
+\item{\code{boot}}{Array (H x N x E x nboot) of bootstrap draws (\code{NA} for
+failed replications), or \code{NULL} if \code{nboot = 0}.}
 \item{\code{Method}}{Character string \code{"SVAR-IV"}.}
 }
 With \code{details = TRUE}, additionally contains:
@@ -75,12 +82,12 @@ before cumulation.}
 \item{\code{C}}{Vector of length N with the VAR intercepts.}
 \item{\code{D}}{Matrix (N x K) of coefficients on \code{X}, or \code{NULL}.}
 \item{\code{U}}{Matrix ((T - P) x N) of reduced-form residuals.}
-\item{\code{FStat}, \code{R2}}{First-stage F statistics and R-squared of the
-regressions of each policy residual on the proxies.}
+\item{\code{FStat}, \code{FStatRobust}, \code{R2}}{Vectors of length E with the
+homoskedastic first-stage F statistic, the robust effective F
+statistic (Montiel Olea and Pflueger, 2013) and the R-squared of the
+regressions of each policy residual on the proxies (see Details).}
 \item{\code{Obs}}{Data frame with \code{T} (sample size), \code{Test} (VAR estimation
 sample), and \code{Tiv} (identification sample).}
-\item{\code{boot}}{Array (H x N x E x nboot) of bootstrap draws (\code{NA} for
-failed replications), or \code{NULL} if \code{nboot = 0}.}
 \item{\code{nfail}}{Number of failed bootstrap replications.}
 \item{\code{ci}}{The confidence levels used for \code{lower} and \code{upper}.}
 }
@@ -90,8 +97,7 @@ Estimates a reduced-form VAR(P) by OLS, identifies the impact matrix of the
 first \code{E} structural shocks with external instruments (proxies) following
 Mertens and Ravn (2013) and Stock and Watson (2018), and computes impulse
 responses by recursion through the VAR. Optionally computes confidence
-bands with a wild bootstrap (Rademacher weights applied jointly to the VAR
-residuals and the proxies).
+bands with a wild bootstrap following Mertens and Ravn (2013).
 }
 \details{
 The first \code{E} columns of \code{y} are the policy variables: shock \code{e}
@@ -104,9 +110,19 @@ impact matrix of the policy block is identified up to a lower-triangular
 
 All columns of \code{Z} are used jointly as instruments in the first-stage
 regressions of the policy residuals on the proxies. Rows of \code{Z} with
-missing values are excluded from the identification step only; the VAR
-itself is estimated on the full sample. The residual covariance used for
-identification is computed on the identification sample.
+missing values are excluded from the identification step only: the VAR
+and the reduced-form residual covariance \code{Sigma} are estimated on the
+full sample, as in Mertens and Ravn (2013), whereas the 2SLS step that
+recovers the relative impact responses uses only the observations with
+non-missing proxies (the identification sample).
+
+With \code{details = TRUE}, first-stage diagnostics are reported for every
+policy residual: the homoskedastic F statistic of the proxies (\code{FStat},
+equal to the squared t statistic when \code{M = 1}; Stock and Yogo, 2005) and
+the robust effective F statistic of Montiel Olea and Pflueger (2013)
+(\code{FStatRobust}), computed with the covariance estimator in \code{cov_type}.
+For \code{E > 1} these are equation-by-equation statistics; use
+\code{\link[=gweakivtest]{gweakivtest()}} for a joint test.
 
 The bootstrap follows Mertens and Ravn (2013): in every replication, the
 VAR residuals and the proxies are multiplied by the same Rademacher draw,
@@ -114,8 +130,9 @@ artificial data are generated recursively from the first \code{P}
 observations, and the VAR is re-estimated and re-identified. Each draw is
 normalized in the same way as the point estimate. Percentile bands are
 reported for every level in \code{ci}; \code{se} is the bootstrap standard
-deviation, which allows the result to be used directly with \code{\link[=plotirf]{plotirf()}}
-and \code{\link[=plot2irf]{plot2irf()}}. Replications in which identification fails (e.g. a
+deviation and \code{boot} holds the raw draws, so the result can be passed
+directly to \code{\link[=plotirf]{plotirf()}}, which draws recentred percentile bands from the
+draws. Replications in which identification fails (e.g. a
 non-positive-definite policy block) are dropped with a warning.
 }
 \examples{
@@ -137,9 +154,17 @@ Mertens, K. and Ravn, M. O. (2013). The dynamic effects of personal and
 corporate income tax changes in the United States. \emph{American Economic
 Review}, 103(4), 1212-1247.
 
+Montiel Olea, J. L. and Pflueger, C. (2013). A robust test for weak
+instruments. \emph{Journal of Business & Economic Statistics}, 31(3), 358-369.
+
 Stock, J. H. and Watson, M. W. (2018). Identification and estimation of
 dynamic causal effects in macroeconomics using external instruments.
 \emph{Economic Journal}, 128(610), 917-948.
+
+Stock, J. H. and Yogo, M. (2005). Testing for weak instruments in linear IV
+regression. In D. W. K. Andrews and J. H. Stock (Eds.), \emph{Identification
+and inference for econometric models: Essays in honor of Thomas
+Rothenberg} (pp. 80-108). Cambridge University Press.
 }
 \seealso{
 \code{\link[=proxyiv]{proxyiv()}} for the local-projection counterpart, \code{\link[=computeirf]{computeirf()}},

@@ -19,11 +19,19 @@
 #' @param O Numeric matrix of information set variables (T x M). May be
 #'   identical to `y`. Included as lags 1 through `P`.
 #' @param Z Numeric matrix of external instruments (T x E). Column `e` is used
-#'   as the proxy for shock dimension `e`. Missing values on control days
-#'   (`Ind == 0`) are treated as contaminated and excluded from estimation.
-#'   Missing values on policy days (`Ind == 1`) remain labelled as events for
-#'   residual-based shock prediction, but are necessarily dropped from IV
-#'   regressions that use the missing proxy.
+#'   as the proxy for shock dimension `e`. Following the proxy-SVAR literature
+#'   (Mertens and Ravn, 2013), the recommended convention is to set the proxy
+#'   to zero on control days (`Ind == 0`): these days then remain in the IV
+#'   sample and sharpen the estimates of the control coefficients, while the
+#'   identifying moments are unaffected. Alternatively, missing values on
+#'   control days are treated as contaminated and excluded from estimation,
+#'   which reproduces the event-day sample of the event-study literature
+#'   (Nakamura and Steinsson, 2018). With zeros, prefer the robust first-stage
+#'   statistics (`F_rob`, `WeakTest`) over the homoskedastic F, which treats
+#'   the zero observations as informative. Missing values on policy days
+#'   (`Ind == 1`) remain labelled as events for residual-based shock
+#'   prediction, but are necessarily dropped from IV regressions that use the
+#'   missing proxy.
 #' @param X Numeric matrix of deterministic variables (T x K), or `NULL`
 #'   (default). May include a constant, time trend, or seasonal dummies.
 #'   Included as-is (no lags).
@@ -43,9 +51,6 @@
 #' @param cum Logical scalar or vector of length N. If `TRUE` for variable `i`,
 #'   the cumulative IRF is reported. A single value is recycled to all
 #'   variables. Default `FALSE`.
-#' @param Hstep Integer. Step size between horizons. The default `1` estimates
-#'   all horizons 0 through H - 1. Values greater than 1 estimate only the
-#'   selected horizons. Default `1`.
 #' @param cov_type Covariance estimator for local-projection standard errors:
 #'   `"HC3"` (default) for heteroskedasticity-robust standard errors or `"NW"`
 #'   for Newey-West HAC standard errors. `"HC3"` is the default because
@@ -56,8 +61,10 @@
 #' @param recursive Logical. If `TRUE`, imposes recursive zero restrictions
 #'   across shock dimensions: for shock `e > 1`, the variables and instruments
 #'   from dimensions `1, ..., e-1` are added as controls. Default `FALSE`.
-#' @param hpredict Integer Forecast horizon for the residuals to be used for shock
-#'    prediction. Defaults to 1 (one-step-ahead residual)
+#' @param hpredict Integer. Horizon of the responses and forecast errors used
+#'   for shock prediction, on the same scale as the row labels of `irf`.
+#'   Defaults to 0 (impact response and one-step-ahead residual). Must lie
+#'   between 0 and `H - 1`.
 #' @param details Logical. If `TRUE`, returns detailed results including IV
 #'   model objects, OLS residuals, and covariance matrices. If `FALSE` (default),
 #'   returns only impulse responses and standard errors (faster; use for
@@ -71,6 +78,8 @@
 #'   }
 #'   With `details = TRUE`, additionally contains:
 #'   \describe{
+#'     \item{`Shocks`}{Predicted structural shocks on event days from
+#'       [kfpredict()], based on the responses at horizon `hpredict`.}
 #'     \item{`IVRes`}{List of `ivreg` model objects, one per horizon, variable,
 #'       and shock dimension.}
 #'     \item{`OLSRes`}{List of OLS model objects used for residual-based
@@ -78,15 +87,31 @@
 #'     \item{`Obs`}{Data frame with observation counts: `Tp` (policy days),
 #'       `Tc` (control days), `To` (contaminated days), `Tt` (labelled event or
 #'       control days), and `Tiv` (complete observations available to the IV
-#'       regression at the impact horizon).}
+#'       regression of the first shock at the impact horizon).}
+#'     \item{`FirstStage`}{For `E = 1`: data frame with one row per horizon
+#'       `h` giving the number of observations `Tobs`, the homoskedastic
+#'       first-stage F statistic `F_hom` (the squared t statistic of the
+#'       proxy; Stock and Yogo, 2005) and the robust effective F statistic
+#'       `F_rob` of Montiel Olea and Pflueger (2013), computed with the
+#'       covariance estimator in `cov_type`. The statistics do not depend on
+#'       the outcome variable. `NULL` for `E > 1`.}
+#'     \item{`WeakTest`}{For `E > 1`: data frame with one row per horizon `h`
+#'       and outcome variable `i` giving the results of [gweakivtest()] for
+#'       the system with `E` endogenous policy variables and `E` proxies:
+#'       `gmin` (generalized minimum eigenvalue statistic, which depends on
+#'       the horizon only through the sample), `cv` and `cv_simplified`
+#'       (sharp and simplified critical values, which depend on the outcome
+#'       and horizon), and the Stock-Yogo statistic `sy_stat` with its
+#'       critical value `sy_cv` (`NaN` unless over-identified). Rows where
+#'       the outcome is a policy variable on impact are omitted. `NULL` for
+#'       `E = 1`.}
 #'     \item{`et`}{Data frame of OLS residuals on event days.}
 #'     \item{`Sig`}{Covariance matrix of residuals on event days.}
 #'     \item{`SigR`}{Covariance matrix of residuals on control days, or `NA`
 #'       if unavailable.}
-#'     \item{`Psi`}{Impact matrix (N x E), equal to `irf[1, , ]`. By the
-#'       package's indexing convention `HSeries` starts at 1, so the first LP
-#'       uses `lead(y, 0)` (the contemporaneous value) and is labelled horizon
-#'       0; `irf[1, , ]` is therefore always the impact response.}
+#'     \item{`Psi`}{Response matrix (N x E) used for shock prediction: the
+#'       response at horizon `hpredict`, i.e. `irf[hpredict + 1, , ]`. With
+#'       the default `hpredict = 0` this is the impact response.}
 #'     \item{`WeakData`}{Data frame of endogenous variables and instruments for
 #'       the Lewis-Mertens (2025) weak instrument test.}
 #'   }
@@ -106,6 +131,10 @@
 #' Montiel Olea, J. L., M. Plagborg-Moller, E. Qian, and C. K. Wolf (2025).
 #' Local projections or VARs? A primer for macroeconomists. *NBER Working
 #' Paper* No. 33871.
+#'
+#' Nakamura, E. and Steinsson, J. (2018). High-frequency identification of
+#' monetary non-neutrality: The information effect. *Quarterly Journal of
+#' Economics*, 133(3), 1283-1330.
 #'
 #' Stock, J. H. and Watson, M. W. (2018). Identification and estimation of
 #' dynamic causal effects in macroeconomics using external instruments.
@@ -129,11 +158,11 @@
 #'
 #' @export
 proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
-                    cum = FALSE, Hstep = 1, cov_type = "HC3",
-                    recursive = FALSE, hpredict = 1, details = FALSE) {
+                    cum = FALSE, cov_type = "HC3",
+                    recursive = FALSE, hpredict = 0, details = FALSE) {
   args <- .validate_estimator_inputs(
     y = y, O = O, X = X, Ind = Ind, P = P, H = H, E = E, norm = norm,
-    cum = cum, Hstep = Hstep, cov_type = cov_type, hpredict = hpredict
+    cum = cum, cov_type = cov_type, hpredict = hpredict
   )
   y <- args$y
   O <- args$O
@@ -144,11 +173,11 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
   E <- args$E
   norm <- args$norm
   cum <- args$cum
-  Hstep <- args$Hstep
   cov_type <- args$cov_type
   Z <- .as_numeric_matrix(Z, "Z", nrow = nrow(y))
   recursive <- .check_logical_scalar(recursive, "recursive")
   hpredict <- args$hpredict
+  hrow <- hpredict + 1L # row of the IRF array holding horizon hpredict
   details <- .check_logical_scalar(details, "details")
 
   # Collect properties of the data
@@ -170,9 +199,9 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
   if (sum(is.na(Ind)) > 0) warning("Missing values in Ind")
   if (!is.null(X) && sum(is.na(X)) > 0) warning("Missing values in X")
 
-  # Horizons at which IRFs are estimated
-  HSeries <- seq(1, H, Hstep)
-  HNum <- length(HSeries)
+  # Horizons at which IRFs are computed: h = 1..H corresponds to horizon h - 1
+  HSeries <- seq_len(H)
+  HNum <- H
 
   # Build main data frame
   if (is.null(X)) {
@@ -190,6 +219,9 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
   irfse <- array(NA, dim = c(HNum, N, E))
   IVRes <- list()
   OLSRes <- list()
+  FirstStage <- NULL # first-stage F statistics by horizon (E == 1, details)
+  WeakTest <- NULL # Lewis-Mertens tests by horizon and outcome (E > 1, details)
+  Tiv <- NA
 
   # Build information set: lags of O
   infoVars <- c()
@@ -294,7 +326,8 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
         )
 
         # Estimate IV regression and compute local-projection standard errors
-        IV.mod <- ivreg::ivreg(as.formula(myFormula), data = subset(DataMSub, Ind < 2))
+        DataIV <- subset(DataMSub, Ind < 2)
+        IV.mod <- ivreg::ivreg(as.formula(myFormula), data = DataIV)
         if (cov_type == "NW") {
           IV.vcov <- sandwich::NeweyWest(IV.mod, prewhite = FALSE, adjust = TRUE)
         } else {
@@ -302,8 +335,41 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
         }
         IV.se <- sqrt(diag(IV.vcov))
 
+        # Weak-instrument diagnostics on the sample of the IV regression
+        if (details == TRUE) {
+          ctrl <- controls.info[controls.info != "1"]
+          Xctrl <- if (length(ctrl) > 0) as.matrix(DataIV[, ctrl, drop = FALSE]) else NULL
+          if (e == 1 && i == 1 && h == 1) {
+            # Complete observations available to the IV regression on impact
+            iv_vars <- unique(c("depVar.h", "shockVar", "Z", controls.lp, controls.iv))
+            iv_vars <- iv_vars[iv_vars != "1"]
+            Tiv <- sum(complete.cases(DataIV[, iv_vars, drop = FALSE]))
+          }
+          if (E == 1 && i == 1) {
+            # One instrument: homoskedastic F (= t^2) and robust effective F
+            # (Montiel Olea and Pflueger, 2013); identical for every outcome
+            fs <- .firststage_f(DataIV$shockVar, DataIV$Z, X = Xctrl, cov_type = cov_type)
+            FirstStage <- rbind(FirstStage, data.frame(
+              h = h - 1, Tobs = fs$Tobs, F_hom = fs$F_hom, F_rob = fs$F_rob
+            ))
+          }
+          if (E > 1 && e == E && !(h == 1 && i <= E)) {
+            # Several instruments: generalized test of Lewis and Mertens (2025)
+            # for the full system, whose critical values depend on the outcome
+            # at horizon h (skipped where the outcome is itself a policy
+            # variable on impact)
+            WeakTest <- rbind(WeakTest, .lm_weaktest_row(
+              y = DataIV$depVar.h,
+              Y = as.matrix(DataIV[, paste0("y", seq_len(E)), drop = FALSE]),
+              X = Xctrl,
+              Z = as.matrix(DataIV[, paste0("Z", seq_len(E)), drop = FALSE]),
+              h = h - 1, i = i, cov_type = cov_type
+            ))
+          }
+        }
+
         # Compute OLS residuals for covariance estimation (once per outcome variable, at e=1, h=1)
-        if (details == TRUE && e == 1 && h == hpredict) {
+        if (details == TRUE && e == 1 && h == hrow) {
           
           # Workaround to exclude contaminated events from the residuals
           DataMSub$depVar.h2 <- DataMSub$depVar.h
@@ -356,7 +422,7 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
   if (details == TRUE) {
     Sig <- var(et, use = "complete.obs")
     SigR <- if (sum(!is.na(vt)) > 0) var(vt, use = "complete.obs") else NA
-    Psi <- matrix(irfest[hpredict, , , drop = FALSE], nrow = N, ncol = E)
+    Psi <- matrix(irfest[hrow, , , drop = FALSE], nrow = N, ncol = E)
     Shocks <- kfpredict(Sig, SigR, Psi, et)
     
     # Data for Lewis-Mertens (2025) weak instrument test
@@ -374,9 +440,6 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
     colnames(WeakData) <- wk_names
     WeakData[DataM$Ind == 2, ] <- NA
 
-    iv_vars <- unique(c("depVar.h", "shockVar", "Z", controls.lp, controls.iv))
-    iv_vars <- iv_vars[iv_vars != "1"]
-    Tiv <- sum(complete.cases(DataMSub[DataMSub$Ind < 2, iv_vars, drop = FALSE]))
     Obs <- data.frame(Tp = Te, Tc = Tn, To = To, Tt = Tt, Tiv = Tiv)
 
     return(list(
@@ -385,7 +448,8 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
       IVRes = IVRes, OLSRes = OLSRes,
       Obs = Obs, Method = Method,
       et = as.matrix(et), Sig = Sig, SigR = SigR, Psi = Psi,
-      WeakData = WeakData
+      WeakData = WeakData,
+      FirstStage = FirstStage, WeakTest = WeakTest
     ))
   } else {
     return(list(irf = irfest, se = irfse, Method = Method))

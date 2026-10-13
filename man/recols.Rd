@@ -14,9 +14,8 @@ recols(
   E = 1,
   norm = 1,
   cum = FALSE,
-  Hstep = 1,
   cov_type = "HC3",
-  hpredict = 1,
+  hpredict = 0,
   details = FALSE
 )
 }
@@ -57,10 +56,6 @@ unit-effect normalization.}
 to report the cumulative impulse response instead of the level response.
 If only one provided, applied to all impulse responses.}
 
-\item{Hstep}{Integer. Step size between horizons. The default \code{1} estimates
-all horizons 0 through H - 1. Values greater than 1 estimate only the
-selected horizons.}
-
 \item{cov_type}{Covariance estimator for local-projection standard errors:
 \code{"HC3"} (default) for heteroskedasticity-robust standard errors or \code{"NW"}
 for Newey-West HAC standard errors. \code{"HC3"} is the default because
@@ -69,9 +64,10 @@ errors suffice for local-projection impulse responses under weak
 conditions, even though multi-step forecast errors are typically serially
 correlated. \code{"NW"} remains available as an optional HAC robustness check.}
 
-\item{hpredict}{Integer. Forecast horizon of the residuals used for shock
-prediction. Defaults to 1 (one-step-ahead residual). Must be one of the
-estimated horizons in \code{seq(1, H, Hstep)}.}
+\item{hpredict}{Integer. Horizon of the responses and forecast errors used
+for shock prediction, on the same scale as the row labels of \code{irf}.
+Defaults to 0 (impact response and one-step-ahead residual). Must lie
+between 0 and \code{H - 1}.}
 
 \item{details}{Logical. If \code{TRUE}, saves detailed OLS results and extracts
 shocks, which is slightly slower. If \code{FALSE}, returns only impulse
@@ -94,8 +90,9 @@ covariance estimation and shock extraction).}
 \item{\code{Sig}}{Covariance matrix of residuals on event days.}
 \item{\code{SigR}}{Covariance matrix of residuals on control days, or \code{NA}
 if unavailable.}
-\item{\code{Psi}}{Impact matrix (N x E) at horizon \code{hpredict - 1}; with the
-default \code{hpredict = 1} this equals \code{irf[1, , ]}.}
+\item{\code{Psi}}{Response matrix (N x E) at horizon \code{hpredict}, i.e.
+\code{irf[hpredict + 1, , ]}; with the default \code{hpredict = 0} this is the
+impact response.}
 }
 }
 \description{

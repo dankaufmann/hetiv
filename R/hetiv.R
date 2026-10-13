@@ -39,9 +39,6 @@
 #' @param cum Logical vector of length N. For each variable in `y`, whether
 #'   to report the cumulative impulse response instead of the level response.
 #'   If only one provided, applied to all impulse responses.
-#' @param Hstep Integer. Step size between horizons. The default `1` estimates
-#'   all horizons 0 through H - 1. Values greater than 1 estimate only the
-#'   selected horizons.
 #' @param cov_type Covariance estimator for local-projection standard errors:
 #'   `"HC3"` (default) for heteroskedasticity-robust standard errors or `"NW"`
 #'   for Newey-West HAC standard errors. `"HC3"` is the default because
@@ -49,17 +46,44 @@
 #'   errors suffice for local-projection impulse responses under weak
 #'   conditions, even though multi-step forecast errors are typically serially
 #'   correlated. `"NW"` remains available as an optional HAC robustness check.
-#' @param hpredict Integer Forecast horizon for the residuals to be used for shock
-#'    prediction. Defaults to 1 (one-step-ahead residual)
-#' @param details Logical. If `TRUE`, code saves detailed IV results, which is slightly slower.
-#'   if set to `FALSE`, returns only impulse response and standard error (e.g. for bootstrap)
+#' @param hpredict Integer. Horizon of the responses and forecast errors used
+#'   for shock prediction, on the same scale as the row labels of `irf`.
+#'   Defaults to 0 (impact response and one-step-ahead residual). Must lie
+#'   between 0 and `H - 1`.
+#' @param details Logical. If `TRUE`, saves detailed IV results and predicts
+#'   the shocks, which is slightly slower. If `FALSE`, returns only impulse
+#'   responses and standard errors (e.g. for bootstrap).
 #'
-#' @return A named list with the following elements:
+#' @return A named list. If `details = FALSE`, it contains `irf`, `se` and
+#'   `Method`. If `details = TRUE`, it contains:
 #'   \describe{
 #'     \item{`irf`}{Array (H x N x E) of estimated impulse responses.}
 #'     \item{`se`}{Array (H x N x E) of local-projection standard errors.}
+#'     \item{`Shocks`}{Predicted structural shocks on event days from
+#'       [kfpredict()], based on the responses at horizon `hpredict`.}
 #'     \item{`IVRes`}{List of `ivreg` model objects, one per horizon, variable,
 #'       and shock dimension.}
+#'     \item{`OLSRes`}{List of OLS model objects used for residual-based
+#'       covariance estimation, one per outcome variable.}
+#'     \item{`ORTHRes`}{List of OLS models used to orthogonalize the variable
+#'       underlying the instrument, one per shock dimension.}
+#'     \item{`FirstStage`}{For `E = 1`: data frame with one row per horizon
+#'       `h` giving the number of observations `Tobs`, the homoskedastic
+#'       first-stage F statistic `F_hom` (the squared t statistic of the
+#'       instrument; Stock and Yogo, 2005) and the robust effective F
+#'       statistic `F_rob` of Montiel Olea and Pflueger (2013), computed with
+#'       the covariance estimator in `cov_type`. The statistics do not depend
+#'       on the outcome variable. `NULL` for `E > 1`.}
+#'     \item{`WeakTest`}{For `E > 1`: data frame with one row per horizon `h`
+#'       and outcome variable `i` giving the results of [gweakivtest()] for
+#'       the system with `E` endogenous policy variables and `E` instruments:
+#'       `gmin` (generalized minimum eigenvalue statistic, which depends on
+#'       the horizon only through the sample), `cv` and `cv_simplified`
+#'       (sharp and simplified critical values, which depend on the outcome
+#'       and horizon), and the Stock-Yogo statistic `sy_stat` with its
+#'       critical value `sy_cv` (`NaN` unless over-identified). Rows where
+#'       the outcome is a policy variable on impact are omitted. `NULL` for
+#'       `E = 1`.}
 #'     \item{`Obs`}{Data frame with observation counts: `Tp` (policy days),
 #'       `Tc` (control days), `To` (contaminated days), `Tt` (total used).}
 #'     \item{`Method`}{Character string `"Heteroscedasticity-IV"`.}
@@ -69,10 +93,9 @@
 #'       shock extraction).}
 #'     \item{`SigR`}{Covariance matrix of residuals on control days, or `NA`
 #'       if unavailable (used for shock extraction).}
-#'     \item{`Psi`}{Impact matrix (N x E), equal to `irf[1, , ]`. By the
-#'       package's indexing convention `HSeries` starts at 1, so the first LP
-#'       uses `lead(y, 0)` (the contemporaneous value) and is labelled horizon
-#'       0; `irf[1, , ]` is therefore always the impact response.}
+#'     \item{`Psi`}{Response matrix (N x E) used for shock prediction: the
+#'       response at horizon `hpredict`, i.e. `irf[hpredict + 1, , ]`. With
+#'       the default `hpredict = 0` this is the impact response.}
 #'     \item{`WeakData`}{Data frame of endogenous variables and instruments for
 #'       the Lewis-Mertens (2025) weak instrument test.}
 #'   }
@@ -119,10 +142,10 @@
 #'
 #' @export
 hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
-                  cum = FALSE, Hstep = 1, cov_type = "HC3", hpredict = 1, details = FALSE) {
+                  cum = FALSE, cov_type = "HC3", hpredict = 0, details = FALSE) {
   args <- .validate_estimator_inputs(
     y = y, O = O, X = X, Ind = Ind, P = P, H = H, E = E, norm = norm,
-    cum = cum, Hstep = Hstep, cov_type = cov_type, hpredict = hpredict
+    cum = cum, cov_type = cov_type, hpredict = hpredict
   )
   y <- args$y
   O <- args$O
@@ -133,10 +156,10 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
   E <- args$E
   norm <- args$norm
   cum <- args$cum
-  Hstep <- args$Hstep
   cov_type <- args$cov_type
   interact <- .check_logical_scalar(interact, "interact")
   hpredict <- args$hpredict
+  hrow <- hpredict + 1L # row of the IRF array holding horizon hpredict
   details <- .check_logical_scalar(details, "details")
 
   # Collect various properties of the data and observations to be used
@@ -158,9 +181,9 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
   }
   if (!is.null(X) && sum(is.na(X)) > 0) warning("Missing values in X")
 
-  # Specify at which horizons IRF should be computed
-  HSeries <- seq(1, H, Hstep)
-  HNum <- length(HSeries)
+  # Horizons at which IRFs are computed: h = 1..H corresponds to horizon h - 1
+  HSeries <- seq_len(H)
+  HNum <- H
 
   # Set up data set and and objects to save results
   if (is.null(X)) {
@@ -175,6 +198,8 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
   IVRes <- list()
   OLSRes <- list()
   ORTHRes <- list()
+  FirstStage <- NULL # first-stage F statistics by horizon (E == 1, details)
+  WeakTest <- NULL # Lewis-Mertens tests by horizon and outcome (E > 1, details)
 
   # Compute lagged variables included in information set O(t-1)...O(t-P)
   infoVars <- c()
@@ -330,7 +355,8 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
         )
 
         # Estimate IV regression and compute local-projection standard errors
-        IV.mod <- ivreg::ivreg(as.formula(myFormula), data = subset(DataMSub, Ind < 2))
+        DataIV <- subset(DataMSub, Ind < 2)
+        IV.mod <- ivreg::ivreg(as.formula(myFormula), data = DataIV)
         if (cov_type == "NW") {
           IV.vcov <- sandwich::NeweyWest(IV.mod, prewhite = FALSE, adjust = TRUE)
         } else {
@@ -338,11 +364,37 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
         }
         IV.se <- sqrt(diag(IV.vcov))
 
+        # Weak-instrument diagnostics on the sample of the IV regression
+        if (details == TRUE) {
+          ctrl <- controls.info[controls.info != "1"]
+          Xctrl <- if (length(ctrl) > 0) as.matrix(DataIV[, ctrl, drop = FALSE]) else NULL
+          if (E == 1 && i == 1) {
+            # One instrument: homoskedastic F (= t^2) and robust effective F
+            # (Montiel Olea and Pflueger, 2013); identical for every outcome
+            fs <- .firststage_f(DataIV$shockVar, DataIV$Z, X = Xctrl, cov_type = cov_type)
+            FirstStage <- rbind(FirstStage, data.frame(
+              h = h - 1, Tobs = fs$Tobs, F_hom = fs$F_hom, F_rob = fs$F_rob
+            ))
+          }
+          if (E > 1 && e == E && !(h == 1 && i <= E)) {
+            # Several instruments: generalized test of Lewis and Mertens (2025)
+            # for the full system, whose critical values depend on the outcome
+            # at horizon h (skipped where the outcome is itself a policy
+            # variable on impact)
+            WeakTest <- rbind(WeakTest, .lm_weaktest_row(
+              y = DataIV$depVar.h,
+              Y = as.matrix(DataIV[, paste0("y", seq_len(E)), drop = FALSE]),
+              X = Xctrl,
+              Z = as.matrix(DataIV[, paste0("Z", seq_len(E)), drop = FALSE]),
+              h = h - 1, i = i, cov_type = cov_type
+            ))
+          }
+        }
 
         if (details == TRUE) {
           # Compute OLS residuals on event and control days (once per shock, at h=1)
           # Save residuals for later computation of variance-covariance matrix
-          if (e == 1 && h == hpredict) {
+          if (e == 1 && h == hrow) {
             
             # Workaround to exclude contaminated events from the residuals
             DataMSub$depVar.h2 <- DataMSub$depVar.h
@@ -382,6 +434,8 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
               et <- data.frame(et, eti)
               vt <- data.frame(vt, vti)
             }
+
+            OLSRes[[paste0("OLS.n", i)]] <- OLS.mod
           }
         }
 
@@ -413,12 +467,12 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
     # Compute variance-covariance matrix of residuals on event days, and impact matrix
     Sig <- var(et, use = "complete.obs")
 
-    if (sum(!is.na(vt) > 0)) {
+    if (sum(!is.na(vt)) > 0) {
       SigR <- var(vt, use = "complete.obs")
     } else {
       SigR <- NA
     }
-    Psi <- matrix(irfest[hpredict, , , drop = FALSE], nrow = N, ncol = E)
+    Psi <- matrix(irfest[hrow, , , drop = FALSE], nrow = N, ncol = E)
     Shocks <- kfpredict(Sig, SigR, Psi, et)
     
     # Save data for weak instruments test by Lewis-Mertens (2025)
@@ -449,7 +503,8 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
       Shocks = Shocks,
       IVRes = IVRes, OLSRes = OLSRes, ORTHRes = ORTHRes,
       Obs = Obs, Method = Method,
-      et = as.matrix(et), Sig = Sig, SigR = SigR, Psi = Psi, WeakData = WeakData
+      et = as.matrix(et), Sig = Sig, SigR = SigR, Psi = Psi, WeakData = WeakData,
+      FirstStage = FirstStage, WeakTest = WeakTest
     ))
   } else {
     return(list(irf = irfest, se = irfse, Method = Method))

@@ -60,6 +60,13 @@ Simulates data from a VAR(P) model with two types of structural shocks:
 regular shocks (always present) and event shocks (occurring every \code{Nevn}
 periods). The shock distribution can be normal, Student-t, or GARCH(1,1).
 }
+\details{
+Unless \code{seed = NA}, the function calls \code{\link[=set.seed]{set.seed()}} and does not
+restore the previous state of the random number generator. Any random
+draws made after the call (e.g. a simulated proxy) therefore follow
+deterministically from \code{seed}; set a new seed explicitly if independent
+draws are required.
+}
 \examples{
 N <- 2
 Phi <- array(0, dim = c(N, N, 1))

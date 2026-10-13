@@ -15,9 +15,8 @@ hetiv(
   norm = 1,
   interact = FALSE,
   cum = FALSE,
-  Hstep = 1,
   cov_type = "HC3",
-  hpredict = 1,
+  hpredict = 0,
   details = FALSE
 )
 }
@@ -60,10 +59,6 @@ interacted with event/non-event dummies.}
 to report the cumulative impulse response instead of the level response.
 If only one provided, applied to all impulse responses.}
 
-\item{Hstep}{Integer. Step size between horizons. The default \code{1} estimates
-all horizons 0 through H - 1. Values greater than 1 estimate only the
-selected horizons.}
-
 \item{cov_type}{Covariance estimator for local-projection standard errors:
 \code{"HC3"} (default) for heteroskedasticity-robust standard errors or \code{"NW"}
 for Newey-West HAC standard errors. \code{"HC3"} is the default because
@@ -72,19 +67,46 @@ errors suffice for local-projection impulse responses under weak
 conditions, even though multi-step forecast errors are typically serially
 correlated. \code{"NW"} remains available as an optional HAC robustness check.}
 
-\item{hpredict}{Integer Forecast horizon for the residuals to be used for shock
-prediction. Defaults to 1 (one-step-ahead residual)}
+\item{hpredict}{Integer. Horizon of the responses and forecast errors used
+for shock prediction, on the same scale as the row labels of \code{irf}.
+Defaults to 0 (impact response and one-step-ahead residual). Must lie
+between 0 and \code{H - 1}.}
 
-\item{details}{Logical. If \code{TRUE}, code saves detailed IV results, which is slightly slower.
-if set to \code{FALSE}, returns only impulse response and standard error (e.g. for bootstrap)}
+\item{details}{Logical. If \code{TRUE}, saves detailed IV results and predicts
+the shocks, which is slightly slower. If \code{FALSE}, returns only impulse
+responses and standard errors (e.g. for bootstrap).}
 }
 \value{
-A named list with the following elements:
+A named list. If \code{details = FALSE}, it contains \code{irf}, \code{se} and
+\code{Method}. If \code{details = TRUE}, it contains:
 \describe{
 \item{\code{irf}}{Array (H x N x E) of estimated impulse responses.}
 \item{\code{se}}{Array (H x N x E) of local-projection standard errors.}
+\item{\code{Shocks}}{Predicted structural shocks on event days from
+\code{\link[=kfpredict]{kfpredict()}}, based on the responses at horizon \code{hpredict}.}
 \item{\code{IVRes}}{List of \code{ivreg} model objects, one per horizon, variable,
 and shock dimension.}
+\item{\code{OLSRes}}{List of OLS model objects used for residual-based
+covariance estimation, one per outcome variable.}
+\item{\code{ORTHRes}}{List of OLS models used to orthogonalize the variable
+underlying the instrument, one per shock dimension.}
+\item{\code{FirstStage}}{For \code{E = 1}: data frame with one row per horizon
+\code{h} giving the number of observations \code{Tobs}, the homoskedastic
+first-stage F statistic \code{F_hom} (the squared t statistic of the
+instrument; Stock and Yogo, 2005) and the robust effective F
+statistic \code{F_rob} of Montiel Olea and Pflueger (2013), computed with
+the covariance estimator in \code{cov_type}. The statistics do not depend
+on the outcome variable. \code{NULL} for \code{E > 1}.}
+\item{\code{WeakTest}}{For \code{E > 1}: data frame with one row per horizon \code{h}
+and outcome variable \code{i} giving the results of \code{\link[=gweakivtest]{gweakivtest()}} for
+the system with \code{E} endogenous policy variables and \code{E} instruments:
+\code{gmin} (generalized minimum eigenvalue statistic, which depends on
+the horizon only through the sample), \code{cv} and \code{cv_simplified}
+(sharp and simplified critical values, which depend on the outcome
+and horizon), and the Stock-Yogo statistic \code{sy_stat} with its
+critical value \code{sy_cv} (\code{NaN} unless over-identified). Rows where
+the outcome is a policy variable on impact are omitted. \code{NULL} for
+\code{E = 1}.}
 \item{\code{Obs}}{Data frame with observation counts: \code{Tp} (policy days),
 \code{Tc} (control days), \code{To} (contaminated days), \code{Tt} (total used).}
 \item{\code{Method}}{Character string \code{"Heteroscedasticity-IV"}.}
@@ -94,10 +116,9 @@ covariance estimation and shock extraction).}
 shock extraction).}
 \item{\code{SigR}}{Covariance matrix of residuals on control days, or \code{NA}
 if unavailable (used for shock extraction).}
-\item{\code{Psi}}{Impact matrix (N x E), equal to \code{irf[1, , ]}. By the
-package's indexing convention \code{HSeries} starts at 1, so the first LP
-uses \code{lead(y, 0)} (the contemporaneous value) and is labelled horizon
-0; \code{irf[1, , ]} is therefore always the impact response.}
+\item{\code{Psi}}{Response matrix (N x E) used for shock prediction: the
+response at horizon \code{hpredict}, i.e. \code{irf[hpredict + 1, , ]}. With
+the default \code{hpredict = 0} this is the impact response.}
 \item{\code{WeakData}}{Data frame of endogenous variables and instruments for
 the Lewis-Mertens (2025) weak instrument test.}
 }

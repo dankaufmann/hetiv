@@ -102,24 +102,39 @@ test_that("kfpredict validates dimensions", {
   )
 })
 
-test_that("Hstep stores selected horizons by row position", {
+test_that("hpredict is a horizon selecting Psi and must not exceed H - 1", {
   dat <- make_lp_data(80)
 
-  het <- hetiv(
+  het <- suppressWarnings(hetiv(
     y = dat$y, O = dat$O, Ind = dat$Ind, P = 1, H = 5,
-    Hstep = 2, details = TRUE
-  )
-  prox <- proxyiv(
+    hpredict = 2, details = TRUE
+  ))
+  prox <- suppressWarnings(proxyiv(
     y = dat$y, O = dat$O, Z = dat$Z, Ind = dat$Ind, P = 1,
-    H = 5, Hstep = 2, details = TRUE
-  )
+    H = 5, hpredict = 2, details = TRUE
+  ))
 
-  expect_equal(dim(het$irf), c(3, 2, 1))
-  expect_equal(dim(prox$irf), c(3, 2, 1))
-  expect_equal(dim(het$Psi), c(2, 1))
-  expect_equal(dim(prox$Psi), c(2, 1))
-  expect_equal(dimnames(het$irf)[[1]], c("0", "2", "4"))
-  expect_equal(dimnames(prox$irf)[[1]], c("0", "2", "4"))
+  # All horizons 0..H-1 are always estimated
+  expect_equal(dim(het$irf), c(5, 2, 1))
+  expect_equal(dim(prox$irf), c(5, 2, 1))
+  expect_equal(dimnames(het$irf)[[1]], as.character(0:4))
+  # Psi is the response at horizon hpredict (row hpredict + 1)
+  expect_equal(as.numeric(het$Psi), as.numeric(het$irf[3, , 1]))
+  expect_equal(as.numeric(prox$Psi), as.numeric(prox$irf[3, , 1]))
+
+  expect_error(
+    hetiv(y = dat$y, O = dat$O, Ind = dat$Ind, P = 1, H = 5, hpredict = 5),
+    "hpredict"
+  )
+  expect_error(
+    proxyiv(y = dat$y, O = dat$O, Z = dat$Z, Ind = dat$Ind, P = 1, H = 5,
+      hpredict = 5),
+    "hpredict"
+  )
+  expect_error(
+    hetiv(y = dat$y, O = dat$O, Ind = dat$Ind, P = 1, H = 5, Hstep = 2),
+    "unused argument"
+  )
 })
 
 test_that("negative normalization leaves standard errors non-negative", {

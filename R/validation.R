@@ -135,7 +135,7 @@
 }
 
 .validate_estimator_inputs <- function(y, O, X, Ind, P, H, E, norm, cum,
-                                       Hstep, cov_type, hpredict) {
+                                       cov_type, hpredict) {
   y <- .as_numeric_matrix(y, "y")
   O <- .as_numeric_matrix(O, "O", nrow = nrow(y))
   if (!is.null(X)) {
@@ -145,8 +145,9 @@
   P <- .check_integerish_scalar(P, "P", min = 0)
   H <- .check_integerish_scalar(H, "H", min = 1)
   E <- .check_integerish_scalar(E, "E", min = 1)
-  hpredict <- .check_integerish_scalar(hpredict, "hpredict", min = 1)
-  Hstep <- .check_integerish_scalar(Hstep, "Hstep", min = 1)
+  # hpredict is a horizon on the scale of the IRF row labels, so it must lie
+  # within the estimated horizons 0..H-1
+  hpredict <- .check_integerish_scalar(hpredict, "hpredict", min = 0, max = H - 1)
   norm <- .check_numeric_scalar(norm, "norm")
   Ind <- .check_indicator(Ind, nrow(y))
   cum <- .check_cum(cum, ncol(y))
@@ -166,7 +167,7 @@
 
   list(
     y = y, O = O, X = X, Ind = Ind, P = P, H = H, E = E, norm = norm,
-    cum = cum, Hstep = Hstep, cov_type = cov_type, hpredict = hpredict
+    cum = cum, cov_type = cov_type, hpredict = hpredict
   )
 }
 

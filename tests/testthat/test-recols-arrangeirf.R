@@ -50,8 +50,8 @@ test_that("recols returns details, excludes contaminated days, and validates inp
   expect_equal(as.numeric(fit$Psi), as.numeric(fit$irf[1, , 1]))
 
   expect_error(
-    recols(y = d$y, O = d$y, Ind = d$Ind, P = 1, H = 5, Hstep = 2,
-      hpredict = 2, details = TRUE),
+    recols(y = d$y, O = d$y, Ind = d$Ind, P = 1, H = 5,
+      hpredict = 5, details = TRUE),
     "hpredict"
   )
   expect_error(recols(y = d$y, O = d$y, Ind = d$Ind, P = 1, H = 3, E = 3), "E cannot")

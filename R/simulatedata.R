@@ -26,6 +26,12 @@
 #' @param seed Integer seed passed to [set.seed()] for reproducibility.
 #'   Use `NA` to skip seeding.
 #'
+#' @details Unless `seed = NA`, the function calls [set.seed()] and does not
+#'   restore the previous state of the random number generator. Any random
+#'   draws made after the call (e.g. a simulated proxy) therefore follow
+#'   deterministically from `seed`; set a new seed explicitly if independent
+#'   draws are required.
+#'
 #' @return A named list with components:
 #' \describe{
 #'   \item{y}{Simulated VAR data, dimension `Nobs x N` (burn-in discarded).}

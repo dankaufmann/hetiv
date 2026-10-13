@@ -48,9 +48,6 @@
 #' @param cum Logical vector of length N. For each variable in `y`, whether
 #'   to report the cumulative impulse response instead of the level response.
 #'   If only one provided, applied to all impulse responses.
-#' @param Hstep Integer. Step size between horizons. The default `1` estimates
-#'   all horizons 0 through H - 1. Values greater than 1 estimate only the
-#'   selected horizons.
 #' @param cov_type Covariance estimator for local-projection standard errors:
 #'   `"HC3"` (default) for heteroskedasticity-robust standard errors or `"NW"`
 #'   for Newey-West HAC standard errors. `"HC3"` is the default because
@@ -58,9 +55,10 @@
 #'   errors suffice for local-projection impulse responses under weak
 #'   conditions, even though multi-step forecast errors are typically serially
 #'   correlated. `"NW"` remains available as an optional HAC robustness check.
-#' @param hpredict Integer. Forecast horizon of the residuals used for shock
-#'   prediction. Defaults to 1 (one-step-ahead residual). Must be one of the
-#'   estimated horizons in `seq(1, H, Hstep)`.
+#' @param hpredict Integer. Horizon of the responses and forecast errors used
+#'   for shock prediction, on the same scale as the row labels of `irf`.
+#'   Defaults to 0 (impact response and one-step-ahead residual). Must lie
+#'   between 0 and `H - 1`.
 #' @param details Logical. If `TRUE`, saves detailed OLS results and extracts
 #'   shocks, which is slightly slower. If `FALSE`, returns only impulse
 #'   responses and standard errors (e.g. for bootstrap).
@@ -81,8 +79,9 @@
 #'     \item{`Sig`}{Covariance matrix of residuals on event days.}
 #'     \item{`SigR`}{Covariance matrix of residuals on control days, or `NA`
 #'       if unavailable.}
-#'     \item{`Psi`}{Impact matrix (N x E) at horizon `hpredict - 1`; with the
-#'       default `hpredict = 1` this equals `irf[1, , ]`.}
+#'     \item{`Psi`}{Response matrix (N x E) at horizon `hpredict`, i.e.
+#'       `irf[hpredict + 1, , ]`; with the default `hpredict = 0` this is the
+#'       impact response.}
 #'   }
 #'
 #' @seealso [hetiv()] for heteroskedasticity-based identification and
@@ -112,11 +111,11 @@
 #'
 #' @export
 recols <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1,
-                   cum = FALSE, Hstep = 1, cov_type = "HC3", hpredict = 1,
+                   cum = FALSE, cov_type = "HC3", hpredict = 0,
                    details = FALSE) {
   args <- .validate_estimator_inputs(
     y = y, O = O, X = X, Ind = Ind, P = P, H = H, E = E, norm = norm,
-    cum = cum, Hstep = Hstep, cov_type = cov_type, hpredict = hpredict
+    cum = cum, cov_type = cov_type, hpredict = hpredict
   )
   y <- args$y
   O <- args$O
@@ -127,9 +126,9 @@ recols <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1,
   E <- args$E
   norm <- args$norm
   cum <- args$cum
-  Hstep <- args$Hstep
   cov_type <- args$cov_type
   hpredict <- args$hpredict
+  hrow <- hpredict + 1L # row of the IRF array holding horizon hpredict
   details <- .check_logical_scalar(details, "details")
 
   # Collect various properties of the data and observations to be used
@@ -150,14 +149,9 @@ recols <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1,
   }
   if (!is.null(X) && sum(is.na(X)) > 0) warning("Missing values in X")
 
-  # Specify at which horizons IRF should be computed
-  HSeries <- seq(1, H, Hstep)
-  HNum <- length(HSeries)
-  if (details && !(hpredict %in% HSeries)) {
-    stop("hpredict must be one of the estimated horizons seq(1, H, Hstep).",
-      call. = FALSE
-    )
-  }
+  # Horizons at which IRFs are computed: h = 1..H corresponds to horizon h - 1
+  HSeries <- seq_len(H)
+  HNum <- H
 
   # Set up data set and objects to save results
   if (is.null(X)) {
@@ -286,7 +280,7 @@ recols <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1,
 
           # Residuals of the information-set regression at horizon hpredict,
           # used for shock extraction (computed once, for e = 1)
-          if (e == 1 && h == hpredict) {
+          if (e == 1 && h == hrow) {
             # Exclude contaminated events from the residuals
             DataMSub$depVar.h2 <- DataMSub$depVar.h
             DataMSub$depVar.h2[DataMSub$Ind == 2] <- NA
@@ -337,7 +331,7 @@ recols <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1,
     } else {
       SigR <- NA
     }
-    Psi <- matrix(irfest[which(HSeries == hpredict), , , drop = FALSE], nrow = N, ncol = E)
+    Psi <- matrix(irfest[hrow, , , drop = FALSE], nrow = N, ncol = E)
     Shocks <- kfpredict(Sig, SigR, Psi, et)
 
     Obs <- data.frame(Tp = Te, Tc = Tn, To = To, Tt = Tt)

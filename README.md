@@ -54,6 +54,7 @@ remotes::install_github("dankaufmann/hetiv")
 | `hetiv()` | Estimates impulse response functions via heteroskedasticity-based IV local projections |
 | `proxyiv()` | Estimates impulse response functions via proxy-IV local projections |
 | `svariv()` | Estimates impulse response functions via a proxy SVAR (SVAR-IV) with optional wild-bootstrap bands |
+| `recols()` | Estimates impulse response functions via recursive (Cholesky) local projections, as a benchmark |
 | `gweakivtest()` | Tests for weak instruments using the generalised minimum eigenvalue statistic of Lewis and Mertens (2025) |
 | `kfpredict()` | Extracts structural shocks from reduced-form residuals via Kalman filter |
 | `computeirf()` | Recursively computes IRFs from an impact matrix and VAR coefficients |
@@ -61,8 +62,9 @@ remotes::install_github("dankaufmann/hetiv")
 | `logdiff()` | Computes the log-difference of a time series |
 | `firstdiff()` | Computes the first difference of a time series |
 | `filllinear()` | Linearly interpolates short gaps of missing values in a data frame |
-| `plotirf()` | Plots IRFs with confidence bands for a single estimation approach |
-| `plot2irf()` | Plots and compares IRFs from two estimation approaches |
+| `plotirf()` | Plots IRFs of up to three estimation approaches with confidence bands from standard errors or bootstrap draws |
+| `plot2irf()` | Plots and compares IRFs from two estimation approaches (wrapper around `plotirf()`, kept for backward compatibility) |
+| `arrangeirf()` | Arranges IRF panels into one figure per shock and optionally saves them as PDF |
 | `plotpval()` | Plots p-values of IRF coefficients across horizons with significance reference lines |
 | `simulatedata()` | Simulates VAR data with heteroskedastic event shocks |
 
@@ -112,9 +114,16 @@ res <- proxyiv(y = y, O = O, Z = Z, Ind = Ind, P = 1, H = 20, E = 2,
 ### Plot impulse responses
 
 ``` r
-plots <- plotirf(IRFest = res$irf, IRFse = res$se,
-                 HTick = 5, Labels = c("Var 1", "Var 2"))
-cowplot::plot_grid(plotlist = plots)
+# One estimator: normal bands at two confidence levels
+plots <- plotirf(res, HTick = 5, Labels = c("Var 1", "Var 2"), ci = c(0.90, 0.95))
+arrangeirf(plots, E = 1, N = 2, nRows = 1)
+
+# Up to three estimators in the same panels (bands from standard errors or,
+# as for svariv() with nboot > 0, from the bootstrap draws)
+plots <- plotirf(list(res_het, res_proxy, res_svar), HTick = 5,
+                 Labels = c("Var 1", "Var 2"), ci = 0.90,
+                 names = c("HET-IV", "Proxy-IV", "SVAR-IV"), legend = TRUE)
+arrangeirf(plots, E = 1, N = 2, nRows = 1, title = "Shock 1")
 ```
 
 ### Test for weak instruments (Lewis-Mertens, 2025)

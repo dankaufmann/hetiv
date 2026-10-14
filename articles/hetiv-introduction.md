@@ -35,7 +35,8 @@ available on **<https://karelmertens.com/research/>**.
 In addition, the package provides
 [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md)
 for predicting the underlying unobserved shocks based on the Kalman
-filter, as suggested by Burri and Kaufmann (2026a).
+filter, as suggested by Burri and Kaufmann (2026a). We currently work on
+an extension to exploit multiple IRF horizons for shock extraction.
 
 This vignette demonstrates the functionality using a simulated
 four-variable VAR with two structural shocks.

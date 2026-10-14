@@ -41,7 +41,7 @@ robustness check.
 
 The package allows for multiple shocks and endogenous variables. Weak-instrument HAR inference is implemented via the generalised minimum eigenvalue test of Lewis and Mertens (2025), which nests the classical Stock-Yogo (2005) test for the univariate homoskedastic case. `gweakivtest()` is a direct port of the Matlab files by Lewis and Mertens (2025) available on **https://karelmertens.com/research/**.
 
-In addition, the package provides `kfpredict()` for predicting the underlying unobserved shocks based on the Kalman filter, as suggested by Burri and Kaufmann (2026a).
+In addition, the package provides `kfpredict()` for predicting the underlying unobserved shocks based on the Kalman filter, as suggested by Burri and Kaufmann (2026a). We currently work on an extension to exploit multiple IRF horizons for shock extraction.
 
 This vignette demonstrates the functionality using a simulated four-variable VAR
 with two structural shocks.

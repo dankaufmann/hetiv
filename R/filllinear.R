@@ -7,7 +7,7 @@
 #' @param DF A data frame or matrix with numeric columns.
 #' @param gap Integer. Maximum number of consecutive `NA`s to fill.
 #'
-#' @return The data frame `DF` with short gaps up to a maximum of `gap` consecutive `NA`s linearly interpolated.
+#' @return The data frame `DF` with short gaps up to a maximum of `gap` consecutive missings linearly interpolated.
 #'
 #' @importFrom zoo na.approx
 #'

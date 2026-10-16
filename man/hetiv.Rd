@@ -22,13 +22,13 @@ hetiv(
 )
 }
 \arguments{
-\item{y}{Numeric matrix of stationary outcome variables (T x N). The effect on
+\item{y}{Numeric matrix of outcome variables (T x N). The effect on
 the first variable in each dimension is normalized to unity at horizon 0.
 These variables are also used to construct heteroskedasticity-based instruments
 and for recursive ordering to identify multiple dimensions.}
 
-\item{O}{Numeric matrix of information set variables (T x M). May be
-identical to \code{y}. Included as lags 1 through \code{P}.}
+\item{O}{Numeric matrix of information set variables (T x M). Should include at least
+\code{y} in case of non-stationary variables. Included as lags 1 through \code{P}.}
 
 \item{X}{Numeric matrix of deterministic variables (T x K). For example,
 time trend, seasonal dummies or other deterministic controls. Included as is (no lags).
@@ -50,7 +50,7 @@ no lags (regression on deterministic terms only).}
 ordering.}
 
 \item{norm}{Numeric scalar. Normalize the impact response of the first
-variable to a specific value. Set to \code{1} for standard unit-effect
+variable to a specific value. Defaults to \code{1} for standard unit-effect
 normalization.}
 
 \item{interact}{Logical. If \code{TRUE}, lagged information set variables are
@@ -70,23 +70,27 @@ correlated. \code{"NW"} remains available as an optional HAC robustness check.}
 
 \item{hpredict}{Integer. Horizon of the responses and forecast errors used
 for shock prediction, on the same scale as the row labels of \code{irf}.
-Defaults to 0 (impact response and one-step-ahead residual). Must lie
-between 0 and \code{H - 1}.}
+Defaults to 0 (recommended; impact response and one-step-ahead residual are used)
+Must lie between 0 and \code{H - 1}.}
 
 \item{pooled}{Logical. If \code{FALSE} (default), the shock prediction uses the
 forecast errors and responses at horizon \code{hpredict} only. If \code{TRUE}, the
 forecast errors of all horizons \verb{0, ..., hpredict} are stacked and used
-jointly (pooled prediction), which weights every horizon by its
-signal-to-noise ratio; see \code{\link[=kfpredict]{kfpredict()}}. With \code{hpredict = 0} both
+jointly (pooled prediction); see \code{\link[=kfpredict]{kfpredict()}}. With \code{hpredict = 0} both
 options coincide.}
 
-\item{details}{Logical. If \code{TRUE}, saves detailed IV results and predicts
-the shocks, which is slightly slower. If \code{FALSE}, returns only impulse
-responses and standard errors (e.g. for bootstrap).}
+\item{details}{Logical. If \code{TRUE}, saves detailed IV results, weak instrument
+tests, and shock prediction results, which is slightly slower. If \code{FALSE},
+returns only impulse responses and standard errors.}
 }
 \value{
-A named list. If \code{details = FALSE}, it contains \code{irf}, \code{se} and
-\code{Method}. If \code{details = TRUE}, it contains:
+A named list. Always contains:
+\describe{
+\item{\code{irf}}{Array (H x N x E) of estimated impulse responses.}
+\item{\code{se}}{Array (H x N x E) of local-projection standard errors.}
+\item{\code{Method}}{Character string \code{"Heteroskedasticity-IV"}.}
+}
+With \code{details = TRUE}, additionally contains:
 \describe{
 \item{\code{irf}}{Array (H x N x E) of estimated impulse responses.}
 \item{\code{se}}{Array (H x N x E) of local-projection standard errors.}
@@ -102,12 +106,13 @@ underlying the instrument, one per shock dimension.}
 \item{\code{FirstStage}}{For \code{E = 1}: data frame with one row per horizon
 \code{h} giving the number of observations \code{Tobs}, the homoskedastic
 first-stage F statistic \code{F_hom} (the squared t statistic of the
-instrument; Stock and Yogo, 2005) and the robust effective F
-statistic \code{F_rob} of Montiel Olea and Pflueger (2013), computed with
-the covariance estimator in \code{cov_type}. The statistics do not depend
-on the outcome variable. \code{NULL} for \code{E > 1}.}
+proxy; Stock and Yogo, 2005) and the robust effective F statistic
+\code{F_rob} of Montiel Olea and Pflueger (2013), always computed with HAC
+robust covariance estimator. The statistics do not depend on
+the outcome variable. \code{NULL} for \code{E > 1}.}
 \item{\code{WeakTest}}{For \code{E > 1}: data frame with one row per horizon \code{h}
-and outcome variable \code{i} giving the results of \code{\link[=gweakivtest]{gweakivtest()}} for
+and outcome variable \code{i} and shock dimension \code{e}
+giving the results of \code{\link[=gweakivtest]{gweakivtest()}} for
 the system with \code{E} endogenous policy variables and \code{E} instruments:
 \code{gmin} (generalized minimum eigenvalue statistic, which depends on
 the horizon only through the sample), \code{cv} and \code{cv_simplified}
@@ -115,10 +120,13 @@ the horizon only through the sample), \code{cv} and \code{cv_simplified}
 and horizon), and the Stock-Yogo statistic \code{sy_stat} with its
 critical value \code{sy_cv} (\code{NaN} unless over-identified). Rows where
 the outcome is a policy variable on impact are omitted. \code{NULL} for
-\code{E = 1}.}
+\code{E = 1}. Note that the test statistic is always based on HAC robust
+covariance, the target is always the \code{e} endogenous variable,
+and the relative criterion is reported for comparability
+with Montiel Olea and Pflueger (2013).}
 \item{\code{Obs}}{Data frame with observation counts: \code{Tp} (policy days),
 \code{Tc} (control days), \code{To} (contaminated days), \code{Tt} (total used).}
-\item{\code{Method}}{Character string \code{"Heteroscedasticity-IV"}.}
+\item{\code{Method}}{Character string \code{"Heteroskedasticity-IV"}.}
 \item{\code{et}}{Data frame of forecast errors on event days used for shock
 prediction: residuals of the regression of \verb{y_\{t+h\}} on the
 information set dated \code{t - 1}, one column per variable and horizon
@@ -143,7 +151,8 @@ heteroskedasticity-IV identification (Rigobon, 2003; Rigobon and Sack, 2004;
 Lewis, 2022; Burri and Kaufmann, 2026a, 2026b) combined with local projections
 (Jorda, 2005). Identification exploits the difference in variance between
 policy event days and control days to construct instruments for the
-endogenous variables.
+endogenous variables. It also returns weak instrument tests as well as shock
+predictions on event days.
 }
 \details{
 For \code{E > 1}, identification is recursive and order-dependent: the

@@ -12,7 +12,7 @@ filllinear(DF, gap)
 \item{gap}{Integer. Maximum number of consecutive \code{NA}s to fill.}
 }
 \value{
-The data frame \code{DF} with short gaps linearly interpolated.
+The data frame \code{DF} with short gaps up to a maximum of \code{gap} consecutive missings linearly interpolated.
 }
 \description{
 Fills missing values (\code{NA}) in every column of a data frame using linear

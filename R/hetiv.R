@@ -5,18 +5,19 @@
 #' Lewis, 2022; Burri and Kaufmann, 2026a, 2026b) combined with local projections
 #' (Jorda, 2005). Identification exploits the difference in variance between
 #' policy event days and control days to construct instruments for the
-#' endogenous variables.
+#' endogenous variables. It also returns weak instrument tests as well as shock
+#' predictions on event days. 
 #'
 #' @details For `E > 1`, identification is recursive and order-dependent: the
 #'   column order of `y` defines both the shock ordering and the normalization
 #'   variable for each shock dimension.
 #'
-#' @param y Numeric matrix of stationary outcome variables (T x N). The effect on
+#' @param y Numeric matrix of outcome variables (T x N). The effect on
 #'   the first variable in each dimension is normalized to unity at horizon 0.
 #'   These variables are also used to construct heteroskedasticity-based instruments
 #'   and for recursive ordering to identify multiple dimensions.
-#' @param O Numeric matrix of information set variables (T x M). May be
-#'   identical to `y`. Included as lags 1 through `P`.
+#' @param O Numeric matrix of information set variables (T x M). Should include at least
+#'   `y` in case of non-stationary variables. Included as lags 1 through `P`.
 #' @param X Numeric matrix of deterministic variables (T x K). For example,
 #'   time trend, seasonal dummies or other deterministic controls. Included as is (no lags).
 #'   A constant is included by default.
@@ -32,7 +33,7 @@
 #' @param E Integer. Number of shock dimensions to identify via recursive
 #'   ordering.
 #' @param norm Numeric scalar. Normalize the impact response of the first
-#'   variable to a specific value. Set to `1` for standard unit-effect
+#'   variable to a specific value. Defaults to `1` for standard unit-effect
 #'   normalization.
 #' @param interact Logical. If `TRUE`, lagged information set variables are
 #'   interacted with event/non-event dummies.
@@ -48,20 +49,24 @@
 #'   correlated. `"NW"` remains available as an optional HAC robustness check.
 #' @param hpredict Integer. Horizon of the responses and forecast errors used
 #'   for shock prediction, on the same scale as the row labels of `irf`.
-#'   Defaults to 0 (impact response and one-step-ahead residual). Must lie
-#'   between 0 and `H - 1`.
+#'   Defaults to 0 (recommended; impact response and one-step-ahead residual are used)
+#'   Must lie between 0 and `H - 1`.
 #' @param pooled Logical. If `FALSE` (default), the shock prediction uses the
 #'   forecast errors and responses at horizon `hpredict` only. If `TRUE`, the
 #'   forecast errors of all horizons `0, ..., hpredict` are stacked and used
-#'   jointly (pooled prediction), which weights every horizon by its
-#'   signal-to-noise ratio; see [kfpredict()]. With `hpredict = 0` both
+#'   jointly (pooled prediction); see [kfpredict()]. With `hpredict = 0` both
 #'   options coincide.
-#' @param details Logical. If `TRUE`, saves detailed IV results and predicts
-#'   the shocks, which is slightly slower. If `FALSE`, returns only impulse
-#'   responses and standard errors (e.g. for bootstrap).
+#' @param details Logical. If `TRUE`, saves detailed IV results, weak instrument
+#'   tests, and shock prediction results, which is slightly slower. If `FALSE`, 
+#'   returns only impulse responses and standard errors.
 #'
-#' @return A named list. If `details = FALSE`, it contains `irf`, `se` and
-#'   `Method`. If `details = TRUE`, it contains:
+#' @return A named list. Always contains:
+#'   \describe{
+#'     \item{`irf`}{Array (H x N x E) of estimated impulse responses.}
+#'     \item{`se`}{Array (H x N x E) of local-projection standard errors.}
+#'     \item{`Method`}{Character string `"Heteroskedasticity-IV"`.}
+#'   }
+#'   With `details = TRUE`, additionally contains:
 #'   \describe{
 #'     \item{`irf`}{Array (H x N x E) of estimated impulse responses.}
 #'     \item{`se`}{Array (H x N x E) of local-projection standard errors.}
@@ -77,12 +82,13 @@
 #'     \item{`FirstStage`}{For `E = 1`: data frame with one row per horizon
 #'       `h` giving the number of observations `Tobs`, the homoskedastic
 #'       first-stage F statistic `F_hom` (the squared t statistic of the
-#'       instrument; Stock and Yogo, 2005) and the robust effective F
-#'       statistic `F_rob` of Montiel Olea and Pflueger (2013), computed with
-#'       the covariance estimator in `cov_type`. The statistics do not depend
-#'       on the outcome variable. `NULL` for `E > 1`.}
+#'       proxy; Stock and Yogo, 2005) and the robust effective F statistic
+#'       `F_rob` of Montiel Olea and Pflueger (2013), always computed with HAC
+#'       robust covariance estimator. The statistics do not depend on
+#'       the outcome variable. `NULL` for `E > 1`.}
 #'     \item{`WeakTest`}{For `E > 1`: data frame with one row per horizon `h`
-#'       and outcome variable `i` giving the results of [gweakivtest()] for
+#'       and outcome variable `i` and shock dimension `e` 
+#'       giving the results of [gweakivtest()] for
 #'       the system with `E` endogenous policy variables and `E` instruments:
 #'       `gmin` (generalized minimum eigenvalue statistic, which depends on
 #'       the horizon only through the sample), `cv` and `cv_simplified`
@@ -90,10 +96,13 @@
 #'       and horizon), and the Stock-Yogo statistic `sy_stat` with its
 #'       critical value `sy_cv` (`NaN` unless over-identified). Rows where
 #'       the outcome is a policy variable on impact are omitted. `NULL` for
-#'       `E = 1`.}
+#'       `E = 1`. Note that the test statistic is always based on HAC robust 
+#'        covariance, the target is always the `e` endogenous variable,
+#'        and the relative criterion is reported for comparability 
+#'        with Montiel Olea and Pflueger (2013).}
 #'     \item{`Obs`}{Data frame with observation counts: `Tp` (policy days),
 #'       `Tc` (control days), `To` (contaminated days), `Tt` (total used).}
-#'     \item{`Method`}{Character string `"Heteroscedasticity-IV"`.}
+#'     \item{`Method`}{Character string `"Heteroskedasticity-IV"`.}
 #'     \item{`et`}{Data frame of forecast errors on event days used for shock
 #'       prediction: residuals of the regression of `y_{t+h}` on the
 #'       information set dated `t - 1`, one column per variable and horizon
@@ -174,6 +183,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
   hpredict <- args$hpredict
   hrow <- hpredict + 1L # row of the IRF array holding horizon hpredict
   pooled <- args$pooled
+  
   # IRF rows whose residuals enter the shock prediction
   hres <- if (pooled) seq_len(hrow) else hrow
   etList <- list()
@@ -183,7 +193,6 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
   # Collect various properties of the data and observations to be used
   Nobs <- dim(y)[1] # Number of observations in y
   beg <- P + 1 # Start of the sample
-  #end <- Nobs - H + 1 # End of the sample (moved. Change with every horizon)
   N <- dim(y)[2] # Number of variables in y
   M <- dim(O)[2] # Number of variables in O
   K <- if (!is.null(X)) dim(X)[2] else 0
@@ -304,7 +313,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
     DataM$OthEvent <- (DataM$Ind == 2)
 
     # Shorten data to subset of observations without missing values at beginning or end
-    end      <- Nobs             # End of the sample (moved. Change with every horizon)
+    end      <- Nobs             # End of the sample 
     DataMSub <- DataM[beg:end, ]
 
     # Orthogonalize the variable used to construct the instrument if we include
@@ -322,7 +331,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
     DataMSub$Ze[DataMSub$Ind < 2]  <- residuals(orthModel, na.action = "na.exclude")
     DataMSub$Ze[DataMSub$Ind == 2] <- NA
     
-    # Compute instrument and F-Statistic (see Lewis, 2022, and Rigobon and Sachs, 2004)
+    # Compute instrument and F-Statistic (see Lewis, 2022, and Rigobon and Sack, 2004)
     Te <- sum(DataMSub$Event)
     Tn <- sum(DataMSub$NoEvent)
     To <- sum(DataMSub$OthEvent)
@@ -359,10 +368,12 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
         }
 
         # Shorten data to subset which contains no missing values
-        end      <- Nobs - h + 1      # End of the sample (moved. Change with every horizon)
+        end      <- Nobs - h + 1      # End of the sample (change with every horizon)
         DataMSub <- DataM[beg:end, ]
 
-        # LP (Jorda, 2005): instrument shockVar with Z, control for information set
+        # Local projection IV (Jorda, 2005, Rigobon and Sack, 2004, Lewis, 2022): 
+        # regress the dependent variable at horizon h
+        # instrument shockVar with Z, control for information set
         myFormula <- paste0(
           "depVar.h ~ shockVar + ",
           paste(controls.lp, collapse = "+"),
@@ -389,22 +400,22 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
           if (E == 1 && i == 1) {
             # One instrument: homoskedastic F (= t^2) and robust effective F
             # (Montiel Olea and Pflueger, 2013); identical for every outcome
-            fs <- .firststage_f(DataIV$shockVar, DataIV$Z, X = Xctrl, cov_type = cov_type)
+            fs <- .firststage_f(DataIV$shockVar, DataIV$Z, X = Xctrl, cov_type = "NW")
             FirstStage <- rbind(FirstStage, data.frame(
               h = h - 1, Tobs = fs$Tobs, F_hom = fs$F_hom, F_rob = fs$F_rob
             ))
           }
-          if (E > 1 && e == E && !(h == 1 && i <= E)) {
+          if (E > 1 && !(h == 1 && i <= E)) {
             # Several instruments: generalized test of Lewis and Mertens (2025)
             # for the full system, whose critical values depend on the outcome
             # at horizon h (skipped where the outcome is itself a policy
             # variable on impact)
             WeakTest <- rbind(WeakTest, .lm_weaktest_row(
               y = DataIV$depVar.h,
-              Y = as.matrix(DataIV[, paste0("y", seq_len(E)), drop = FALSE]),
+              Y = as.matrix(DataIV[, paste0("y", seq_len(e)), drop = FALSE]),
               X = Xctrl,
-              Z = as.matrix(DataIV[, paste0("Z", seq_len(E)), drop = FALSE]),
-              h = h - 1, i = i, cov_type = cov_type
+              Z = as.matrix(DataIV[, paste0("Z", seq_len(e)), drop = FALSE]),
+              h = h - 1, i = i, cov_type = "NW", crit = "rel", target = e
             ))
           }
         }
@@ -475,7 +486,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
     Obs <- data.frame(Tp = Te, Tc = Tn, To = To, Tt = Tt)
   }
 
-  Method <- "Heteroscedasticity-IV"
+  Method <- "Heteroskedasticity-IV"
 
   if (details == TRUE) {
     return(list(

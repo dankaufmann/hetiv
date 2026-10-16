@@ -4,14 +4,14 @@
 # Lewis-Mertens (2025) test for outcome y (horizon h, variable i) in the system
 # with endogenous regressors Y (T x E), controls X (or NULL) and instruments Z
 # (T x E). cov_type "NW" maps to the HAC version, anything else to EHW.
-.lm_weaktest_row <- function(y, Y, X, Z, h, i, cov_type) {
+.lm_weaktest_row <- function(y, Y, X, Z, h, i, cov_type = "EHW", target = "beta", crit = "abs") {
   if (is.null(X)) X <- matrix(1, nrow = length(y), ncol = 1)
   wt <- gweakivtest(
-    y = y, Y = Y, X = X, Z = Z,
+    y = y, Y = Y, X = X, Z = Z, target = target, crit = crit,
     cov_type = if (cov_type == "NW") "NW" else "EHW"
   )
   data.frame(
-    h = h, i = i, Tobs = wt$nobs,
+    h = h, i = i, target = target, Tobs = wt$nobs,
     gmin = wt$gmin_generalized,
     cv = wt$gmin_generalized_critical_value,
     cv_simplified = wt$gmin_generalized_critical_value_simplified,

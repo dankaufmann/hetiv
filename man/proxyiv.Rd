@@ -23,23 +23,23 @@ proxyiv(
 )
 }
 \arguments{
-\item{y}{Numeric matrix of stationary outcome variables (T x N). The effect
+\item{y}{Numeric matrix of outcome variables (T x N). The effect
 on the first variable in each dimension is normalized to \code{norm} at horizon
 0. These variables are also used as the endogenous regressors instrumented
 by the columns of \code{Z}.}
 
-\item{O}{Numeric matrix of information set variables (T x M). May be
-identical to \code{y}. Included as lags 1 through \code{P}.}
+\item{O}{Numeric matrix of information set variables (T x M). For non-stationary
+variables \code{y}, it should at least include \code{y}. Included as lags 1 through \code{P}.}
 
 \item{Z}{Numeric matrix of external instruments (T x E). Column \code{e} is used
-as the proxy for shock dimension \code{e}. Following the proxy-SVAR literature
-(Mertens and Ravn, 2013), the recommended convention is to set the proxy
-to zero on control days (\code{Ind == 0}): these days then remain in the IV
-sample and sharpen the estimates of the control coefficients, while the
-identifying moments are unaffected. Alternatively, missing values on
-control days are treated as contaminated and excluded from estimation,
+as the proxy for shock dimension \code{e} for the corresponding endogenous variable.
+Following the proxy-SVAR literature (Mertens and Ravn, 2013), the recommended
+convention is to set the proxy to zero on control days (\code{Ind == 0}).
+These days then remain in the IV sample and sharpen the estimates of the
+control coefficients, while the identifying moments are unaffected. Alternatively,
+missing values control days are treated as contaminated and excluded from estimation,
 which reproduces the event-day sample of the event-study literature
-(Nakamura and Steinsson, 2018). With zeros, prefer the robust first-stage
+(Nakamura and Steinsson, 2018). With zeros, always prefer the robust first-stage
 statistics (\code{F_rob}, \code{WeakTest}) over the homoskedastic F, which treats
 the zero observations as informative. Missing values on policy days
 (\code{Ind == 1}) remain labelled as events for residual-based shock
@@ -63,13 +63,14 @@ no lags (regression on constant only).}
 \item{H}{Integer. Maximum horizon (in periods) up to which IRFs are
 estimated.}
 
-\item{E}{Integer. Number of shock dimensions to identify. Default \code{1}.}
+\item{E}{Integer. Number of shock dimensions to identify. Default \code{1}. Needs to
+be equal to the number of columns in \code{Z}}
 
 \item{norm}{Numeric scalar. Normalize the impact response of the first
-variable to this value. Set to \code{1} for standard unit-effect normalization.}
+variable to this value. Defaults to \code{1} for standard unit-effect normalization.}
 
 \item{cum}{Logical scalar or vector of length N. If \code{TRUE} for variable \code{i},
-the cumulative IRF is reported. A single value is recycled to all
+the cumulative IRF is reported. A single value is applied to all
 variables. Default \code{FALSE}.}
 
 \item{cov_type}{Covariance estimator for local-projection standard errors:
@@ -82,24 +83,24 @@ correlated. \code{"NW"} remains available as an optional HAC robustness check.}
 
 \item{recursive}{Logical. If \code{TRUE}, imposes recursive zero restrictions
 across shock dimensions: for shock \code{e > 1}, the variables and instruments
-from dimensions \verb{1, ..., e-1} are added as controls. Default \code{FALSE}.}
+from dimensions \verb{1, ..., e-1} are added as controls. This implies that the
+shock identified for dimension e has no impact effect on the endogenous variables
+from dimensions \verb{1, ..., e-1}. Default \code{FALSE}.}
 
 \item{hpredict}{Integer. Horizon of the responses and forecast errors used
 for shock prediction, on the same scale as the row labels of \code{irf}.
-Defaults to 0 (impact response and one-step-ahead residual). Must lie
-between 0 and \code{H - 1}.}
+Defaults to 0 (recommended; the impact response and one-step-ahead residual are used).
+Must lie between 0 and \code{H - 1}.}
 
 \item{pooled}{Logical. If \code{FALSE} (default), the shock prediction uses the
 forecast errors and responses at horizon \code{hpredict} only. If \code{TRUE}, the
 forecast errors of all horizons \verb{0, ..., hpredict} are stacked and used
-jointly (pooled prediction), which weights every horizon by its
-signal-to-noise ratio; see \code{\link[=kfpredict]{kfpredict()}}. With \code{hpredict = 0} both
+jointly (pooled prediction); see \code{\link[=kfpredict]{kfpredict()}}. With \code{hpredict = 0} both
 options coincide.}
 
-\item{details}{Logical. If \code{TRUE}, returns detailed results including IV
-model objects, OLS residuals, and covariance matrices. If \code{FALSE} (default),
-returns only impulse responses and standard errors (faster; use for
-bootstrap).}
+\item{details}{Logical. If \code{TRUE}, saves detailed IV results, weak instrument
+tests, and shock prediction results, which is slightly slower. If \code{FALSE},
+returns only impulse responses and standard errors.}
 }
 \value{
 A named list. Always contains:
@@ -125,8 +126,8 @@ regression of the first shock at the impact horizon).}
 \code{h} giving the number of observations \code{Tobs}, the homoskedastic
 first-stage F statistic \code{F_hom} (the squared t statistic of the
 proxy; Stock and Yogo, 2005) and the robust effective F statistic
-\code{F_rob} of Montiel Olea and Pflueger (2013), computed with the
-covariance estimator in \code{cov_type}. The statistics do not depend on
+\code{F_rob} of Montiel Olea and Pflueger (2013), always computed with HAC
+robust covariance estimator. The statistics do not depend on
 the outcome variable. \code{NULL} for \code{E > 1}.}
 \item{\code{WeakTest}}{For \code{E > 1}: data frame with one row per horizon \code{h}
 and outcome variable \code{i} giving the results of \code{\link[=gweakivtest]{gweakivtest()}} for
@@ -137,7 +138,10 @@ the horizon only through the sample), \code{cv} and \code{cv_simplified}
 and horizon), and the Stock-Yogo statistic \code{sy_stat} with its
 critical value \code{sy_cv} (\code{NaN} unless over-identified). Rows where
 the outcome is a policy variable on impact are omitted. \code{NULL} for
-\code{E = 1}.}
+\code{E = 1}. Note that the test statistic is always based on HAC robust
+covariance, the target is always the \code{e} endogenous variable,
+and the relative criterion is reported for comparability
+with Montiel Olea and Pflueger (2013).}
 \item{\code{et}}{Data frame of forecast errors on event days used for shock
 prediction, one column per variable and horizon (\code{y1.h0}, ...,
 \code{yN.h0}, \code{y1.h1}, ...): horizon \code{hpredict} only if \code{pooled = FALSE},
@@ -156,18 +160,20 @@ the Lewis-Mertens (2025) weak instrument test.}
 }
 }
 \description{
-Estimates impulse response functions (IRFs) using user-provided external
-instruments (proxies) combined with local projections (Jorda, 2005). The
-proxy variables serve directly as instruments for the endogenous shock
-variables. Optionally imposes recursive zero restrictions across shock
-dimensions and supports deterministic controls following the same
-conventions as \code{\link[=hetiv]{hetiv()}}.
+Estimates impulse response functions (IRFs) using external
+instruments (proxies) combined with local projections
+(Jorda, 2005, Stock and Watson, 2018). The proxy variables serve
+as instruments for the endogenous variables. Optionally imposes
+recursive zero restrictions across shock dimensions. It also returns
+weak instrument tests as well as shock predictions on event days, and supports
+deterministic controls following the same conventions as \code{\link[=hetiv]{hetiv()}}.
 }
 \details{
 For \code{E > 1}, identification can be order-dependent: the column order
 of \code{y} defines the endogenous shock variables and normalizations, the
 column order of \code{Z} assigns proxies to shock dimensions, and
-\code{recursive = TRUE} imposes restrictions in that order.
+\code{recursive = TRUE} imposes zero restrictions in that order. If \code{recursive = FALSE}
+the instruments are assumed to be valid across dimensions.
 }
 \examples{
 set.seed(1)

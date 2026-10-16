@@ -798,10 +798,14 @@ knitr::kable(
 
 | Specification | Statistic | LM critical value | Strong instruments? |
 |:---|---:|---:|:---|
-| HET-IV, no controls | 14.34 | 38.48 | No |
-| HET-IV, with controls | 84.51 | 46.43 | Yes |
-| Proxy-IV, with controls | 29.12 | 25.41 | Yes |
-| Proxy-IV, with controls + recursive restriction | 29.12 | 25.41 | Yes |
+| HET-IV, no controls | 47.13 | 14.19 | Yes |
+| HET-IV, no controls | 24.51 | 25.04 | No |
+| HET-IV, with controls | 727.88 | 14.19 | Yes |
+| HET-IV, with controls | 137.26 | 23.45 | Yes |
+| Proxy-IV, with controls | 150.41 | 14.19 | Yes |
+| Proxy-IV, with controls | 22.45 | 22.63 | No |
+| Proxy-IV, with controls + recursive restriction | 150.41 | 14.19 | Yes |
+| Proxy-IV, with controls + recursive restriction | 22.45 | 22.63 | No |
 
 Weak instrument test results on impact (Lewis-Mertens generalised
 minimum eigenvalue test) {.table}
@@ -842,14 +846,22 @@ knitr::kable(
 
 | Horizon | Variable | Obs. | Statistic | LM critical value | Strong instruments? |
 |--------:|---------:|-----:|----------:|------------------:|:--------------------|
-|       0 |        3 |  498 |     84.51 |             46.43 | Yes                 |
-|       5 |        3 |  493 |     88.21 |             35.96 | Yes                 |
-|      10 |        3 |  488 |     88.41 |             35.91 | Yes                 |
-|      19 |        3 |  479 |     89.14 |             36.09 | Yes                 |
-|       0 |        4 |  498 |     84.51 |             36.59 | Yes                 |
-|       5 |        4 |  493 |     88.21 |             35.76 | Yes                 |
-|      10 |        4 |  488 |     88.41 |             35.95 | Yes                 |
-|      19 |        4 |  479 |     89.14 |             35.98 | Yes                 |
+|       0 |        3 |  498 |    727.88 |             14.19 | Yes                 |
+|       5 |        3 |  493 |    740.13 |             14.19 | Yes                 |
+|      10 |        3 |  488 |    752.16 |             14.19 | Yes                 |
+|      19 |        3 |  479 |    811.65 |             14.19 | Yes                 |
+|       0 |        4 |  498 |    727.88 |             14.19 | Yes                 |
+|       5 |        4 |  493 |    740.13 |             14.19 | Yes                 |
+|      10 |        4 |  488 |    752.16 |             14.19 | Yes                 |
+|      19 |        4 |  479 |    811.65 |             14.19 | Yes                 |
+|       0 |        3 |  498 |    137.26 |             23.45 | Yes                 |
+|       5 |        3 |  493 |    140.97 |             23.63 | Yes                 |
+|      10 |        3 |  488 |    140.92 |             23.64 | Yes                 |
+|      19 |        3 |  479 |    143.17 |             23.51 | Yes                 |
+|       0 |        4 |  498 |    137.26 |             23.59 | Yes                 |
+|       5 |        4 |  493 |    140.97 |             23.42 | Yes                 |
+|      10 |        4 |  488 |    140.92 |             23.47 | Yes                 |
+|      19 |        4 |  479 |    143.17 |             23.51 | Yes                 |
 
 Weak instrument test by horizon and outcome variable (HET-IV with
 controls) {.table style="width:100%;"}

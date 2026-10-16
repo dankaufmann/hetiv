@@ -73,7 +73,7 @@
                         <h4 data-toc-skip class="author">Daniel
 Kaufmann, Marc Burri, Valentin Grob</h4>
             
-            <h4 data-toc-skip class="date">2026-10-14</h4>
+            <h4 data-toc-skip class="date">2026-10-16</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/dankaufmann/hetiv/blob/main/vignettes/hetiv-introduction.Rmd" class="external-link"><code>vignettes/hetiv-introduction.Rmd</code></a></small>
       <div class="d-none name"><code>hetiv-introduction.Rmd</code></div>
@@ -997,27 +997,51 @@ generalised minimum eigenvalue test)</caption>
 <tbody>
 <tr class="odd">
 <td align="left">HET-IV, no controls</td>
-<td align="right">14.34</td>
-<td align="right">38.48</td>
+<td align="right">47.13</td>
+<td align="right">14.19</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="even">
+<td align="left">HET-IV, no controls</td>
+<td align="right">24.51</td>
+<td align="right">25.04</td>
 <td align="left">No</td>
+</tr>
+<tr class="odd">
+<td align="left">HET-IV, with controls</td>
+<td align="right">727.88</td>
+<td align="right">14.19</td>
+<td align="left">Yes</td>
 </tr>
 <tr class="even">
 <td align="left">HET-IV, with controls</td>
-<td align="right">84.51</td>
-<td align="right">46.43</td>
+<td align="right">137.26</td>
+<td align="right">23.45</td>
 <td align="left">Yes</td>
 </tr>
 <tr class="odd">
 <td align="left">Proxy-IV, with controls</td>
-<td align="right">29.12</td>
-<td align="right">25.41</td>
+<td align="right">150.41</td>
+<td align="right">14.19</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="even">
+<td align="left">Proxy-IV, with controls</td>
+<td align="right">22.45</td>
+<td align="right">22.63</td>
+<td align="left">No</td>
+</tr>
+<tr class="odd">
+<td align="left">Proxy-IV, with controls + recursive restriction</td>
+<td align="right">150.41</td>
+<td align="right">14.19</td>
 <td align="left">Yes</td>
 </tr>
 <tr class="even">
 <td align="left">Proxy-IV, with controls + recursive restriction</td>
-<td align="right">29.12</td>
-<td align="right">25.41</td>
-<td align="left">Yes</td>
+<td align="right">22.45</td>
+<td align="right">22.63</td>
+<td align="left">No</td>
 </tr>
 </tbody>
 </table>
@@ -1073,64 +1097,128 @@ with controls)</caption>
 <td align="right">0</td>
 <td align="right">3</td>
 <td align="right">498</td>
-<td align="right">84.51</td>
-<td align="right">46.43</td>
+<td align="right">727.88</td>
+<td align="right">14.19</td>
 <td align="left">Yes</td>
 </tr>
 <tr class="even">
 <td align="right">5</td>
 <td align="right">3</td>
 <td align="right">493</td>
-<td align="right">88.21</td>
-<td align="right">35.96</td>
+<td align="right">740.13</td>
+<td align="right">14.19</td>
 <td align="left">Yes</td>
 </tr>
 <tr class="odd">
 <td align="right">10</td>
 <td align="right">3</td>
 <td align="right">488</td>
-<td align="right">88.41</td>
-<td align="right">35.91</td>
+<td align="right">752.16</td>
+<td align="right">14.19</td>
 <td align="left">Yes</td>
 </tr>
 <tr class="even">
 <td align="right">19</td>
 <td align="right">3</td>
 <td align="right">479</td>
-<td align="right">89.14</td>
-<td align="right">36.09</td>
+<td align="right">811.65</td>
+<td align="right">14.19</td>
 <td align="left">Yes</td>
 </tr>
 <tr class="odd">
 <td align="right">0</td>
 <td align="right">4</td>
 <td align="right">498</td>
-<td align="right">84.51</td>
-<td align="right">36.59</td>
+<td align="right">727.88</td>
+<td align="right">14.19</td>
 <td align="left">Yes</td>
 </tr>
 <tr class="even">
 <td align="right">5</td>
 <td align="right">4</td>
 <td align="right">493</td>
-<td align="right">88.21</td>
-<td align="right">35.76</td>
+<td align="right">740.13</td>
+<td align="right">14.19</td>
 <td align="left">Yes</td>
 </tr>
 <tr class="odd">
 <td align="right">10</td>
 <td align="right">4</td>
 <td align="right">488</td>
-<td align="right">88.41</td>
-<td align="right">35.95</td>
+<td align="right">752.16</td>
+<td align="right">14.19</td>
 <td align="left">Yes</td>
 </tr>
 <tr class="even">
 <td align="right">19</td>
 <td align="right">4</td>
 <td align="right">479</td>
-<td align="right">89.14</td>
-<td align="right">35.98</td>
+<td align="right">811.65</td>
+<td align="right">14.19</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="odd">
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">498</td>
+<td align="right">137.26</td>
+<td align="right">23.45</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="even">
+<td align="right">5</td>
+<td align="right">3</td>
+<td align="right">493</td>
+<td align="right">140.97</td>
+<td align="right">23.63</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="odd">
+<td align="right">10</td>
+<td align="right">3</td>
+<td align="right">488</td>
+<td align="right">140.92</td>
+<td align="right">23.64</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="even">
+<td align="right">19</td>
+<td align="right">3</td>
+<td align="right">479</td>
+<td align="right">143.17</td>
+<td align="right">23.51</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="odd">
+<td align="right">0</td>
+<td align="right">4</td>
+<td align="right">498</td>
+<td align="right">137.26</td>
+<td align="right">23.59</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="even">
+<td align="right">5</td>
+<td align="right">4</td>
+<td align="right">493</td>
+<td align="right">140.97</td>
+<td align="right">23.42</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="odd">
+<td align="right">10</td>
+<td align="right">4</td>
+<td align="right">488</td>
+<td align="right">140.92</td>
+<td align="right">23.47</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="even">
+<td align="right">19</td>
+<td align="right">4</td>
+<td align="right">479</td>
+<td align="right">143.17</td>
+<td align="right">23.51</td>
 <td align="left">Yes</td>
 </tr>
 </tbody>

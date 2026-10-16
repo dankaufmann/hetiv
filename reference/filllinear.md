@@ -22,7 +22,8 @@ filllinear(DF, gap)
 
 ## Value
 
-The data frame `DF` with short gaps linearly interpolated.
+The data frame `DF` with short gaps up to a maximum of `gap` consecutive
+missings linearly interpolated.
 
 ## Examples
 

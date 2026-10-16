@@ -10,12 +10,14 @@ heteroskedasticity-IV identification (Rigobon, 2003; Rigobon and Sack, 2004;
 Lewis, 2022; Burri and Kaufmann, 2026a, 2026b) combined with local projections
 (Jorda, 2005). Identification exploits the difference in variance between
 policy event days and control days to construct instruments for the
-endogenous variables."><meta property="og:description" content="Estimates impulse response functions (IRFs) using recursive
+endogenous variables. It also returns weak instrument tests as well as shock
+predictions on event days."><meta property="og:description" content="Estimates impulse response functions (IRFs) using recursive
 heteroskedasticity-IV identification (Rigobon, 2003; Rigobon and Sack, 2004;
 Lewis, 2022; Burri and Kaufmann, 2026a, 2026b) combined with local projections
 (Jorda, 2005). Identification exploits the difference in variance between
 policy event days and control days to construct instruments for the
-endogenous variables."><meta property="og:image" content="https://dankaufmann.github.io/hetiv/logo.png"></head><body>
+endogenous variables. It also returns weak instrument tests as well as shock
+predictions on event days."><meta property="og:image" content="https://dankaufmann.github.io/hetiv/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -64,7 +66,8 @@ heteroskedasticity-IV identification (Rigobon, 2003; Rigobon and Sack, 2004;
 Lewis, 2022; Burri and Kaufmann, 2026a, 2026b) combined with local projections
 (Jorda, 2005). Identification exploits the difference in variance between
 policy event days and control days to construct instruments for the
-endogenous variables.</p>
+endogenous variables. It also returns weak instrument tests as well as shock
+predictions on event days.</p>
     </div>
 
     <div class="section level2">
@@ -92,15 +95,15 @@ endogenous variables.</p>
 
 
 <dl><dt id="arg-y">y<a class="anchor" aria-label="anchor" href="#arg-y"></a></dt>
-<dd><p>Numeric matrix of stationary outcome variables (T x N). The effect on
+<dd><p>Numeric matrix of outcome variables (T x N). The effect on
 the first variable in each dimension is normalized to unity at horizon 0.
 These variables are also used to construct heteroskedasticity-based instruments
 and for recursive ordering to identify multiple dimensions.</p></dd>
 
 
 <dt id="arg-o">O<a class="anchor" aria-label="anchor" href="#arg-o"></a></dt>
-<dd><p>Numeric matrix of information set variables (T x M). May be
-identical to <code>y</code>. Included as lags 1 through <code>P</code>.</p></dd>
+<dd><p>Numeric matrix of information set variables (T x M). Should include at least
+<code>y</code> in case of non-stationary variables. Included as lags 1 through <code>P</code>.</p></dd>
 
 
 <dt id="arg-x">X<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
@@ -132,7 +135,7 @@ ordering.</p></dd>
 
 <dt id="arg-norm">norm<a class="anchor" aria-label="anchor" href="#arg-norm"></a></dt>
 <dd><p>Numeric scalar. Normalize the impact response of the first
-variable to a specific value. Set to <code>1</code> for standard unit-effect
+variable to a specific value. Defaults to <code>1</code> for standard unit-effect
 normalization.</p></dd>
 
 
@@ -160,29 +163,37 @@ correlated. <code>"NW"</code> remains available as an optional HAC robustness ch
 <dt id="arg-hpredict">hpredict<a class="anchor" aria-label="anchor" href="#arg-hpredict"></a></dt>
 <dd><p>Integer. Horizon of the responses and forecast errors used
 for shock prediction, on the same scale as the row labels of <code>irf</code>.
-Defaults to 0 (impact response and one-step-ahead residual). Must lie
-between 0 and <code>H - 1</code>.</p></dd>
+Defaults to 0 (recommended; impact response and one-step-ahead residual are used)
+Must lie between 0 and <code>H - 1</code>.</p></dd>
 
 
 <dt id="arg-pooled">pooled<a class="anchor" aria-label="anchor" href="#arg-pooled"></a></dt>
 <dd><p>Logical. If <code>FALSE</code> (default), the shock prediction uses the
 forecast errors and responses at horizon <code>hpredict</code> only. If <code>TRUE</code>, the
 forecast errors of all horizons <code>0, ..., hpredict</code> are stacked and used
-jointly (pooled prediction), which weights every horizon by its
-signal-to-noise ratio; see <code><a href="kfpredict.html">kfpredict()</a></code>. With <code>hpredict = 0</code> both
+jointly (pooled prediction); see <code><a href="kfpredict.html">kfpredict()</a></code>. With <code>hpredict = 0</code> both
 options coincide.</p></dd>
 
 
 <dt id="arg-details">details<a class="anchor" aria-label="anchor" href="#arg-details"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, saves detailed IV results and predicts
-the shocks, which is slightly slower. If <code>FALSE</code>, returns only impulse
-responses and standard errors (e.g. for bootstrap).</p></dd>
+<dd><p>Logical. If <code>TRUE</code>, saves detailed IV results, weak instrument
+tests, and shock prediction results, which is slightly slower. If <code>FALSE</code>,
+returns only impulse responses and standard errors.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A named list. If <code>details = FALSE</code>, it contains <code>irf</code>, <code>se</code> and
-<code>Method</code>. If <code>details = TRUE</code>, it contains:</p><dl><dt><code>irf</code></dt>
+    <p>A named list. Always contains:</p><dl><dt><code>irf</code></dt>
+<dd><p>Array (H x N x E) of estimated impulse responses.</p></dd>
+
+<dt><code>se</code></dt>
+<dd><p>Array (H x N x E) of local-projection standard errors.</p></dd>
+
+<dt><code>Method</code></dt>
+<dd><p>Character string <code>"Heteroskedasticity-IV"</code>.</p></dd>
+
+
+</dl><p>With <code>details = TRUE</code>, additionally contains:</p><dl><dt><code>irf</code></dt>
 <dd><p>Array (H x N x E) of estimated impulse responses.</p></dd>
 
 <dt><code>se</code></dt>
@@ -209,14 +220,15 @@ underlying the instrument, one per shock dimension.</p></dd>
 <dd><p>For <code>E = 1</code>: data frame with one row per horizon
 <code>h</code> giving the number of observations <code>Tobs</code>, the homoskedastic
 first-stage F statistic <code>F_hom</code> (the squared t statistic of the
-instrument; Stock and Yogo, 2005) and the robust effective F
-statistic <code>F_rob</code> of Montiel Olea and Pflueger (2013), computed with
-the covariance estimator in <code>cov_type</code>. The statistics do not depend
-on the outcome variable. <code>NULL</code> for <code>E &gt; 1</code>.</p></dd>
+proxy; Stock and Yogo, 2005) and the robust effective F statistic
+<code>F_rob</code> of Montiel Olea and Pflueger (2013), always computed with HAC
+robust covariance estimator. The statistics do not depend on
+the outcome variable. <code>NULL</code> for <code>E &gt; 1</code>.</p></dd>
 
 <dt><code>WeakTest</code></dt>
 <dd><p>For <code>E &gt; 1</code>: data frame with one row per horizon <code>h</code>
-and outcome variable <code>i</code> giving the results of <code><a href="gweakivtest.html">gweakivtest()</a></code> for
+and outcome variable <code>i</code> and shock dimension <code>e</code>
+giving the results of <code><a href="gweakivtest.html">gweakivtest()</a></code> for
 the system with <code>E</code> endogenous policy variables and <code>E</code> instruments:
 <code>gmin</code> (generalized minimum eigenvalue statistic, which depends on
 the horizon only through the sample), <code>cv</code> and <code>cv_simplified</code>
@@ -224,14 +236,17 @@ the horizon only through the sample), <code>cv</code> and <code>cv_simplified</c
 and horizon), and the Stock-Yogo statistic <code>sy_stat</code> with its
 critical value <code>sy_cv</code> (<code>NaN</code> unless over-identified). Rows where
 the outcome is a policy variable on impact are omitted. <code>NULL</code> for
-<code>E = 1</code>.</p></dd>
+<code>E = 1</code>. Note that the test statistic is always based on HAC robust
+covariance, the target is always the <code>e</code> endogenous variable,
+and the relative criterion is reported for comparability
+with Montiel Olea and Pflueger (2013).</p></dd>
 
 <dt><code>Obs</code></dt>
 <dd><p>Data frame with observation counts: <code>Tp</code> (policy days),
 <code>Tc</code> (control days), <code>To</code> (contaminated days), <code>Tt</code> (total used).</p></dd>
 
 <dt><code>Method</code></dt>
-<dd><p>Character string <code>"Heteroscedasticity-IV"</code>.</p></dd>
+<dd><p>Character string <code>"Heteroskedasticity-IV"</code>.</p></dd>
 
 <dt><code>et</code></dt>
 <dd><p>Data frame of forecast errors on event days used for shock

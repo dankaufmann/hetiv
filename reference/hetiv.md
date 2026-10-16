@@ -5,7 +5,8 @@ heteroskedasticity-IV identification (Rigobon, 2003; Rigobon and Sack,
 2004; Lewis, 2022; Burri and Kaufmann, 2026a, 2026b) combined with local
 projections (Jorda, 2005). Identification exploits the difference in
 variance between policy event days and control days to construct
-instruments for the endogenous variables.
+instruments for the endogenous variables. It also returns weak
+instrument tests as well as shock predictions on event days.
 
 ## Usage
 
@@ -32,16 +33,17 @@ hetiv(
 
 - y:
 
-  Numeric matrix of stationary outcome variables (T x N). The effect on
-  the first variable in each dimension is normalized to unity at
-  horizon 0. These variables are also used to construct
-  heteroskedasticity-based instruments and for recursive ordering to
-  identify multiple dimensions.
+  Numeric matrix of outcome variables (T x N). The effect on the first
+  variable in each dimension is normalized to unity at horizon 0. These
+  variables are also used to construct heteroskedasticity-based
+  instruments and for recursive ordering to identify multiple
+  dimensions.
 
 - O:
 
-  Numeric matrix of information set variables (T x M). May be identical
-  to `y`. Included as lags 1 through `P`.
+  Numeric matrix of information set variables (T x M). Should include at
+  least `y` in case of non-stationary variables. Included as lags 1
+  through `P`.
 
 - X:
 
@@ -76,7 +78,8 @@ hetiv(
 - norm:
 
   Numeric scalar. Normalize the impact response of the first variable to
-  a specific value. Set to `1` for standard unit-effect normalization.
+  a specific value. Defaults to `1` for standard unit-effect
+  normalization.
 
 - interact:
 
@@ -104,29 +107,41 @@ hetiv(
 
   Integer. Horizon of the responses and forecast errors used for shock
   prediction, on the same scale as the row labels of `irf`. Defaults to
-  0 (impact response and one-step-ahead residual). Must lie between 0
-  and `H - 1`.
+  0 (recommended; impact response and one-step-ahead residual are used)
+  Must lie between 0 and `H - 1`.
 
 - pooled:
 
   Logical. If `FALSE` (default), the shock prediction uses the forecast
   errors and responses at horizon `hpredict` only. If `TRUE`, the
   forecast errors of all horizons `0, ..., hpredict` are stacked and
-  used jointly (pooled prediction), which weights every horizon by its
-  signal-to-noise ratio; see
+  used jointly (pooled prediction); see
   [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md).
   With `hpredict = 0` both options coincide.
 
 - details:
 
-  Logical. If `TRUE`, saves detailed IV results and predicts the shocks,
-  which is slightly slower. If `FALSE`, returns only impulse responses
-  and standard errors (e.g. for bootstrap).
+  Logical. If `TRUE`, saves detailed IV results, weak instrument tests,
+  and shock prediction results, which is slightly slower. If `FALSE`,
+  returns only impulse responses and standard errors.
 
 ## Value
 
-A named list. If `details = FALSE`, it contains `irf`, `se` and
-`Method`. If `details = TRUE`, it contains:
+A named list. Always contains:
+
+- `irf`:
+
+  Array (H x N x E) of estimated impulse responses.
+
+- `se`:
+
+  Array (H x N x E) of local-projection standard errors.
+
+- `Method`:
+
+  Character string `"Heteroskedasticity-IV"`.
+
+With `details = TRUE`, additionally contains:
 
 - `irf`:
 
@@ -162,16 +177,16 @@ A named list. If `details = FALSE`, it contains `irf`, `se` and
 
   For `E = 1`: data frame with one row per horizon `h` giving the number
   of observations `Tobs`, the homoskedastic first-stage F statistic
-  `F_hom` (the squared t statistic of the instrument; Stock and
-  Yogo, 2005) and the robust effective F statistic `F_rob` of Montiel
-  Olea and Pflueger (2013), computed with the covariance estimator in
-  `cov_type`. The statistics do not depend on the outcome variable.
-  `NULL` for `E > 1`.
+  `F_hom` (the squared t statistic of the proxy; Stock and Yogo, 2005)
+  and the robust effective F statistic `F_rob` of Montiel Olea and
+  Pflueger (2013), always computed with HAC robust covariance estimator.
+  The statistics do not depend on the outcome variable. `NULL` for
+  `E > 1`.
 
 - `WeakTest`:
 
   For `E > 1`: data frame with one row per horizon `h` and outcome
-  variable `i` giving the results of
+  variable `i` and shock dimension `e` giving the results of
   [`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md)
   for the system with `E` endogenous policy variables and `E`
   instruments: `gmin` (generalized minimum eigenvalue statistic, which
@@ -180,7 +195,10 @@ A named list. If `details = FALSE`, it contains `irf`, `se` and
   the outcome and horizon), and the Stock-Yogo statistic `sy_stat` with
   its critical value `sy_cv` (`NaN` unless over-identified). Rows where
   the outcome is a policy variable on impact are omitted. `NULL` for
-  `E = 1`.
+  `E = 1`. Note that the test statistic is always based on HAC robust
+  covariance, the target is always the `e` endogenous variable, and the
+  relative criterion is reported for comparability with Montiel Olea and
+  Pflueger (2013).
 
 - `Obs`:
 
@@ -189,7 +207,7 @@ A named list. If `details = FALSE`, it contains `irf`, `se` and
 
 - `Method`:
 
-  Character string `"Heteroscedasticity-IV"`.
+  Character string `"Heteroskedasticity-IV"`.
 
 - `et`:
 

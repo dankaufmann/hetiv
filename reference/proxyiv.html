@@ -5,17 +5,19 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Estimate impulse responses via proxy-IV local projections — proxyiv"><meta name="description" content="Estimates impulse response functions (IRFs) using user-provided external
-instruments (proxies) combined with local projections (Jorda, 2005). The
-proxy variables serve directly as instruments for the endogenous shock
-variables. Optionally imposes recursive zero restrictions across shock
-dimensions and supports deterministic controls following the same
-conventions as hetiv()."><meta property="og:description" content="Estimates impulse response functions (IRFs) using user-provided external
-instruments (proxies) combined with local projections (Jorda, 2005). The
-proxy variables serve directly as instruments for the endogenous shock
-variables. Optionally imposes recursive zero restrictions across shock
-dimensions and supports deterministic controls following the same
-conventions as hetiv()."><meta property="og:image" content="https://dankaufmann.github.io/hetiv/logo.png"></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Estimate impulse responses via proxy-IV local projections — proxyiv"><meta name="description" content="Estimates impulse response functions (IRFs) using external
+instruments (proxies) combined with local projections
+(Jorda, 2005, Stock and Watson, 2018). The proxy variables serve
+as instruments for the endogenous variables. Optionally imposes
+recursive zero restrictions across shock dimensions. It also returns
+weak instrument tests as well as shock predictions on event days, and supports
+deterministic controls following the same conventions as hetiv()."><meta property="og:description" content="Estimates impulse response functions (IRFs) using external
+instruments (proxies) combined with local projections
+(Jorda, 2005, Stock and Watson, 2018). The proxy variables serve
+as instruments for the endogenous variables. Optionally imposes
+recursive zero restrictions across shock dimensions. It also returns
+weak instrument tests as well as shock predictions on event days, and supports
+deterministic controls following the same conventions as hetiv()."><meta property="og:image" content="https://dankaufmann.github.io/hetiv/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -59,12 +61,13 @@ conventions as hetiv()."><meta property="og:image" content="https://dankaufmann.
     </div>
 
     <div class="ref-description section level2">
-    <p>Estimates impulse response functions (IRFs) using user-provided external
-instruments (proxies) combined with local projections (Jorda, 2005). The
-proxy variables serve directly as instruments for the endogenous shock
-variables. Optionally imposes recursive zero restrictions across shock
-dimensions and supports deterministic controls following the same
-conventions as <code><a href="hetiv.html">hetiv()</a></code>.</p>
+    <p>Estimates impulse response functions (IRFs) using external
+instruments (proxies) combined with local projections
+(Jorda, 2005, Stock and Watson, 2018). The proxy variables serve
+as instruments for the endogenous variables. Optionally imposes
+recursive zero restrictions across shock dimensions. It also returns
+weak instrument tests as well as shock predictions on event days, and supports
+deterministic controls following the same conventions as <code><a href="hetiv.html">hetiv()</a></code>.</p>
     </div>
 
     <div class="section level2">
@@ -93,27 +96,27 @@ conventions as <code><a href="hetiv.html">hetiv()</a></code>.</p>
 
 
 <dl><dt id="arg-y">y<a class="anchor" aria-label="anchor" href="#arg-y"></a></dt>
-<dd><p>Numeric matrix of stationary outcome variables (T x N). The effect
+<dd><p>Numeric matrix of outcome variables (T x N). The effect
 on the first variable in each dimension is normalized to <code>norm</code> at horizon
 0. These variables are also used as the endogenous regressors instrumented
 by the columns of <code>Z</code>.</p></dd>
 
 
 <dt id="arg-o">O<a class="anchor" aria-label="anchor" href="#arg-o"></a></dt>
-<dd><p>Numeric matrix of information set variables (T x M). May be
-identical to <code>y</code>. Included as lags 1 through <code>P</code>.</p></dd>
+<dd><p>Numeric matrix of information set variables (T x M). For non-stationary
+variables <code>y</code>, it should at least include <code>y</code>. Included as lags 1 through <code>P</code>.</p></dd>
 
 
 <dt id="arg-z">Z<a class="anchor" aria-label="anchor" href="#arg-z"></a></dt>
 <dd><p>Numeric matrix of external instruments (T x E). Column <code>e</code> is used
-as the proxy for shock dimension <code>e</code>. Following the proxy-SVAR literature
-(Mertens and Ravn, 2013), the recommended convention is to set the proxy
-to zero on control days (<code>Ind == 0</code>): these days then remain in the IV
-sample and sharpen the estimates of the control coefficients, while the
-identifying moments are unaffected. Alternatively, missing values on
-control days are treated as contaminated and excluded from estimation,
+as the proxy for shock dimension <code>e</code> for the corresponding endogenous variable.
+Following the proxy-SVAR literature (Mertens and Ravn, 2013), the recommended
+convention is to set the proxy to zero on control days (<code>Ind == 0</code>).
+These days then remain in the IV sample and sharpen the estimates of the
+control coefficients, while the identifying moments are unaffected. Alternatively,
+missing values control days are treated as contaminated and excluded from estimation,
 which reproduces the event-day sample of the event-study literature
-(Nakamura and Steinsson, 2018). With zeros, prefer the robust first-stage
+(Nakamura and Steinsson, 2018). With zeros, always prefer the robust first-stage
 statistics (<code>F_rob</code>, <code>WeakTest</code>) over the homoskedastic F, which treats
 the zero observations as informative. Missing values on policy days
 (<code>Ind == 1</code>) remain labelled as events for residual-based shock
@@ -145,17 +148,18 @@ estimated.</p></dd>
 
 
 <dt id="arg-e">E<a class="anchor" aria-label="anchor" href="#arg-e"></a></dt>
-<dd><p>Integer. Number of shock dimensions to identify. Default <code>1</code>.</p></dd>
+<dd><p>Integer. Number of shock dimensions to identify. Default <code>1</code>. Needs to
+be equal to the number of columns in <code>Z</code></p></dd>
 
 
 <dt id="arg-norm">norm<a class="anchor" aria-label="anchor" href="#arg-norm"></a></dt>
 <dd><p>Numeric scalar. Normalize the impact response of the first
-variable to this value. Set to <code>1</code> for standard unit-effect normalization.</p></dd>
+variable to this value. Defaults to <code>1</code> for standard unit-effect normalization.</p></dd>
 
 
 <dt id="arg-cum">cum<a class="anchor" aria-label="anchor" href="#arg-cum"></a></dt>
 <dd><p>Logical scalar or vector of length N. If <code>TRUE</code> for variable <code>i</code>,
-the cumulative IRF is reported. A single value is recycled to all
+the cumulative IRF is reported. A single value is applied to all
 variables. Default <code>FALSE</code>.</p></dd>
 
 
@@ -172,30 +176,30 @@ correlated. <code>"NW"</code> remains available as an optional HAC robustness ch
 <dt id="arg-recursive">recursive<a class="anchor" aria-label="anchor" href="#arg-recursive"></a></dt>
 <dd><p>Logical. If <code>TRUE</code>, imposes recursive zero restrictions
 across shock dimensions: for shock <code>e &gt; 1</code>, the variables and instruments
-from dimensions <code>1, ..., e-1</code> are added as controls. Default <code>FALSE</code>.</p></dd>
+from dimensions <code>1, ..., e-1</code> are added as controls. This implies that the
+shock identified for dimension e has no impact effect on the endogenous variables
+from dimensions <code>1, ..., e-1</code>. Default <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-hpredict">hpredict<a class="anchor" aria-label="anchor" href="#arg-hpredict"></a></dt>
 <dd><p>Integer. Horizon of the responses and forecast errors used
 for shock prediction, on the same scale as the row labels of <code>irf</code>.
-Defaults to 0 (impact response and one-step-ahead residual). Must lie
-between 0 and <code>H - 1</code>.</p></dd>
+Defaults to 0 (recommended; the impact response and one-step-ahead residual are used).
+Must lie between 0 and <code>H - 1</code>.</p></dd>
 
 
 <dt id="arg-pooled">pooled<a class="anchor" aria-label="anchor" href="#arg-pooled"></a></dt>
 <dd><p>Logical. If <code>FALSE</code> (default), the shock prediction uses the
 forecast errors and responses at horizon <code>hpredict</code> only. If <code>TRUE</code>, the
 forecast errors of all horizons <code>0, ..., hpredict</code> are stacked and used
-jointly (pooled prediction), which weights every horizon by its
-signal-to-noise ratio; see <code><a href="kfpredict.html">kfpredict()</a></code>. With <code>hpredict = 0</code> both
+jointly (pooled prediction); see <code><a href="kfpredict.html">kfpredict()</a></code>. With <code>hpredict = 0</code> both
 options coincide.</p></dd>
 
 
 <dt id="arg-details">details<a class="anchor" aria-label="anchor" href="#arg-details"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, returns detailed results including IV
-model objects, OLS residuals, and covariance matrices. If <code>FALSE</code> (default),
-returns only impulse responses and standard errors (faster; use for
-bootstrap).</p></dd>
+<dd><p>Logical. If <code>TRUE</code>, saves detailed IV results, weak instrument
+tests, and shock prediction results, which is slightly slower. If <code>FALSE</code>,
+returns only impulse responses and standard errors.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -234,8 +238,8 @@ regression of the first shock at the impact horizon).</p></dd>
 <code>h</code> giving the number of observations <code>Tobs</code>, the homoskedastic
 first-stage F statistic <code>F_hom</code> (the squared t statistic of the
 proxy; Stock and Yogo, 2005) and the robust effective F statistic
-<code>F_rob</code> of Montiel Olea and Pflueger (2013), computed with the
-covariance estimator in <code>cov_type</code>. The statistics do not depend on
+<code>F_rob</code> of Montiel Olea and Pflueger (2013), always computed with HAC
+robust covariance estimator. The statistics do not depend on
 the outcome variable. <code>NULL</code> for <code>E &gt; 1</code>.</p></dd>
 
 <dt><code>WeakTest</code></dt>
@@ -248,7 +252,10 @@ the horizon only through the sample), <code>cv</code> and <code>cv_simplified</c
 and horizon), and the Stock-Yogo statistic <code>sy_stat</code> with its
 critical value <code>sy_cv</code> (<code>NaN</code> unless over-identified). Rows where
 the outcome is a policy variable on impact are omitted. <code>NULL</code> for
-<code>E = 1</code>.</p></dd>
+<code>E = 1</code>. Note that the test statistic is always based on HAC robust
+covariance, the target is always the <code>e</code> endogenous variable,
+and the relative criterion is reported for comparability
+with Montiel Olea and Pflueger (2013).</p></dd>
 
 <dt><code>et</code></dt>
 <dd><p>Data frame of forecast errors on event days used for shock
@@ -282,7 +289,8 @@ the Lewis-Mertens (2025) weak instrument test.</p></dd>
     <p>For <code>E &gt; 1</code>, identification can be order-dependent: the column order
 of <code>y</code> defines the endogenous shock variables and normalizations, the
 column order of <code>Z</code> assigns proxies to shock dimensions, and
-<code>recursive = TRUE</code> imposes restrictions in that order.</p>
+<code>recursive = TRUE</code> imposes zero restrictions in that order. If <code>recursive = FALSE</code>
+the instruments are assumed to be valid across dimensions.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

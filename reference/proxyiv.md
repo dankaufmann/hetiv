@@ -1,11 +1,12 @@
 # Estimate impulse responses via proxy-IV local projections
 
-Estimates impulse response functions (IRFs) using user-provided external
-instruments (proxies) combined with local projections (Jorda, 2005). The
-proxy variables serve directly as instruments for the endogenous shock
-variables. Optionally imposes recursive zero restrictions across shock
-dimensions and supports deterministic controls following the same
-conventions as
+Estimates impulse response functions (IRFs) using external instruments
+(proxies) combined with local projections (Jorda, 2005, Stock and
+Watson, 2018). The proxy variables serve as instruments for the
+endogenous variables. Optionally imposes recursive zero restrictions
+across shock dimensions. It also returns weak instrument tests as well
+as shock predictions on event days, and supports deterministic controls
+following the same conventions as
 [`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md).
 
 ## Usage
@@ -34,32 +35,34 @@ proxyiv(
 
 - y:
 
-  Numeric matrix of stationary outcome variables (T x N). The effect on
-  the first variable in each dimension is normalized to `norm` at
-  horizon 0. These variables are also used as the endogenous regressors
-  instrumented by the columns of `Z`.
+  Numeric matrix of outcome variables (T x N). The effect on the first
+  variable in each dimension is normalized to `norm` at horizon 0. These
+  variables are also used as the endogenous regressors instrumented by
+  the columns of `Z`.
 
 - O:
 
-  Numeric matrix of information set variables (T x M). May be identical
-  to `y`. Included as lags 1 through `P`.
+  Numeric matrix of information set variables (T x M). For
+  non-stationary variables `y`, it should at least include `y`. Included
+  as lags 1 through `P`.
 
 - Z:
 
   Numeric matrix of external instruments (T x E). Column `e` is used as
-  the proxy for shock dimension `e`. Following the proxy-SVAR literature
-  (Mertens and Ravn, 2013), the recommended convention is to set the
-  proxy to zero on control days (`Ind == 0`): these days then remain in
-  the IV sample and sharpen the estimates of the control coefficients,
-  while the identifying moments are unaffected. Alternatively, missing
-  values on control days are treated as contaminated and excluded from
-  estimation, which reproduces the event-day sample of the event-study
-  literature (Nakamura and Steinsson, 2018). With zeros, prefer the
-  robust first-stage statistics (`F_rob`, `WeakTest`) over the
-  homoskedastic F, which treats the zero observations as informative.
-  Missing values on policy days (`Ind == 1`) remain labelled as events
-  for residual-based shock prediction, but are necessarily dropped from
-  IV regressions that use the missing proxy.
+  the proxy for shock dimension `e` for the corresponding endogenous
+  variable. Following the proxy-SVAR literature (Mertens and Ravn,
+  2013), the recommended convention is to set the proxy to zero on
+  control days (`Ind == 0`). These days then remain in the IV sample and
+  sharpen the estimates of the control coefficients, while the
+  identifying moments are unaffected. Alternatively, missing values
+  control days are treated as contaminated and excluded from estimation,
+  which reproduces the event-day sample of the event-study literature
+  (Nakamura and Steinsson, 2018). With zeros, always prefer the robust
+  first-stage statistics (`F_rob`, `WeakTest`) over the homoskedastic F,
+  which treats the zero observations as informative. Missing values on
+  policy days (`Ind == 1`) remain labelled as events for residual-based
+  shock prediction, but are necessarily dropped from IV regressions that
+  use the missing proxy.
 
 - X:
 
@@ -88,17 +91,18 @@ proxyiv(
 
 - E:
 
-  Integer. Number of shock dimensions to identify. Default `1`.
+  Integer. Number of shock dimensions to identify. Default `1`. Needs to
+  be equal to the number of columns in `Z`
 
 - norm:
 
   Numeric scalar. Normalize the impact response of the first variable to
-  this value. Set to `1` for standard unit-effect normalization.
+  this value. Defaults to `1` for standard unit-effect normalization.
 
 - cum:
 
   Logical scalar or vector of length N. If `TRUE` for variable `i`, the
-  cumulative IRF is reported. A single value is recycled to all
+  cumulative IRF is reported. A single value is applied to all
   variables. Default `FALSE`.
 
 - cov_type:
@@ -116,31 +120,31 @@ proxyiv(
 
   Logical. If `TRUE`, imposes recursive zero restrictions across shock
   dimensions: for shock `e > 1`, the variables and instruments from
-  dimensions `1, ..., e-1` are added as controls. Default `FALSE`.
+  dimensions `1, ..., e-1` are added as controls. This implies that the
+  shock identified for dimension e has no impact effect on the
+  endogenous variables from dimensions `1, ..., e-1`. Default `FALSE`.
 
 - hpredict:
 
   Integer. Horizon of the responses and forecast errors used for shock
   prediction, on the same scale as the row labels of `irf`. Defaults to
-  0 (impact response and one-step-ahead residual). Must lie between 0
-  and `H - 1`.
+  0 (recommended; the impact response and one-step-ahead residual are
+  used). Must lie between 0 and `H - 1`.
 
 - pooled:
 
   Logical. If `FALSE` (default), the shock prediction uses the forecast
   errors and responses at horizon `hpredict` only. If `TRUE`, the
   forecast errors of all horizons `0, ..., hpredict` are stacked and
-  used jointly (pooled prediction), which weights every horizon by its
-  signal-to-noise ratio; see
+  used jointly (pooled prediction); see
   [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md).
   With `hpredict = 0` both options coincide.
 
 - details:
 
-  Logical. If `TRUE`, returns detailed results including IV model
-  objects, OLS residuals, and covariance matrices. If `FALSE` (default),
-  returns only impulse responses and standard errors (faster; use for
-  bootstrap).
+  Logical. If `TRUE`, saves detailed IV results, weak instrument tests,
+  and shock prediction results, which is slightly slower. If `FALSE`,
+  returns only impulse responses and standard errors.
 
 ## Value
 
@@ -190,7 +194,7 @@ With `details = TRUE`, additionally contains:
   of observations `Tobs`, the homoskedastic first-stage F statistic
   `F_hom` (the squared t statistic of the proxy; Stock and Yogo, 2005)
   and the robust effective F statistic `F_rob` of Montiel Olea and
-  Pflueger (2013), computed with the covariance estimator in `cov_type`.
+  Pflueger (2013), always computed with HAC robust covariance estimator.
   The statistics do not depend on the outcome variable. `NULL` for
   `E > 1`.
 
@@ -205,7 +209,10 @@ With `details = TRUE`, additionally contains:
   simplified critical values, which depend on the outcome and horizon),
   and the Stock-Yogo statistic `sy_stat` with its critical value `sy_cv`
   (`NaN` unless over-identified). Rows where the outcome is a policy
-  variable on impact are omitted. `NULL` for `E = 1`.
+  variable on impact are omitted. `NULL` for `E = 1`. Note that the test
+  statistic is always based on HAC robust covariance, the target is
+  always the `e` endogenous variable, and the relative criterion is
+  reported for comparability with Montiel Olea and Pflueger (2013).
 
 - `et`:
 
@@ -241,7 +248,9 @@ With `details = TRUE`, additionally contains:
 For `E > 1`, identification can be order-dependent: the column order of
 `y` defines the endogenous shock variables and normalizations, the
 column order of `Z` assigns proxies to shock dimensions, and
-`recursive = TRUE` imposes restrictions in that order.
+`recursive = TRUE` imposes zero restrictions in that order. If
+`recursive = FALSE` the instruments are assumed to be valid across
+dimensions.
 
 ## References
 

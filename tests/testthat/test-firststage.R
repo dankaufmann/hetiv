@@ -68,7 +68,7 @@ test_that("hetiv and proxyiv run the Lewis-Mertens test by horizon and outcome f
   for (res in list(het, prox)) {
     wt <- res$WeakTest
     expect_null(res$FirstStage)
-    expect_named(wt, c("h", "i", "Tobs", "gmin", "cv", "cv_simplified", "sy_stat", "sy_cv"))
+    expect_named(wt, c("h", "i", "target", "Tobs", "gmin", "cv", "cv_simplified", "sy_stat", "sy_cv"))
     # All (h, i) pairs except the policy variables on impact
     expect_equal(nrow(wt), N * H - E)
     expect_false(any(wt$h == 0 & wt$i <= E))

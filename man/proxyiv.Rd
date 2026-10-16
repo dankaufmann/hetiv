@@ -126,22 +126,25 @@ regression of the first shock at the impact horizon).}
 \code{h} giving the number of observations \code{Tobs}, the homoskedastic
 first-stage F statistic \code{F_hom} (the squared t statistic of the
 proxy; Stock and Yogo, 2005) and the robust effective F statistic
-\code{F_rob} of Montiel Olea and Pflueger (2013), always computed with HAC
-robust covariance estimator. The statistics do not depend on
-the outcome variable. \code{NULL} for \code{E > 1}.}
-\item{\code{WeakTest}}{For \code{E > 1}: data frame with one row per horizon \code{h}
-and outcome variable \code{i} giving the results of \code{\link[=gweakivtest]{gweakivtest()}} for
-the system with \code{E} endogenous policy variables and \code{E} proxies:
-\code{gmin} (generalized minimum eigenvalue statistic, which depends on
-the horizon only through the sample), \code{cv} and \code{cv_simplified}
-(sharp and simplified critical values, which depend on the outcome
-and horizon), and the Stock-Yogo statistic \code{sy_stat} with its
-critical value \code{sy_cv} (\code{NaN} unless over-identified). Rows where
-the outcome is a policy variable on impact are omitted. \code{NULL} for
-\code{E = 1}. Note that the test statistic is always based on HAC robust
-covariance, the target is always the \code{e} endogenous variable,
-and the relative criterion is reported for comparability
-with Montiel Olea and Pflueger (2013).}
+\code{F_rob} of Montiel Olea and Pflueger (2013), always computed with
+the HAC (Newey-West) covariance estimator, irrespective of
+\code{cov_type}. The statistics do not depend on the outcome variable.
+\code{NULL} for \code{E > 1}.}
+\item{\code{WeakTest}}{For \code{E > 1}: data frame with one row per shock
+dimension \code{target} (\verb{e = 1, ..., E}), horizon \code{h} and outcome
+variable \code{i}, giving the results of \code{\link[=gweakivtest]{gweakivtest()}} for the system
+with the first \code{e} policy variables as endogenous regressors and the
+first \code{e} proxies as instruments, targeting the coefficient on
+policy variable \code{e}: \code{Tobs}, \code{gmin} (generalized minimum eigenvalue
+statistic, which depends on the horizon only through the sample),
+\code{cv} and \code{cv_simplified} (sharp and simplified critical values,
+which may depend on the outcome and horizon), and the Stock-Yogo
+statistic \code{sy_stat} with its critical value \code{sy_cv} (\code{NaN} unless
+over-identified). The test always uses the HAC (Newey-West)
+covariance estimator, irrespective of \code{cov_type}, and the relative
+bias criterion (\code{crit = "rel"}), for comparability with Montiel Olea
+and Pflueger (2013). Rows where the outcome is a policy variable
+(\code{i <= E}) on impact are omitted. \code{NULL} for \code{E = 1}.}
 \item{\code{et}}{Data frame of forecast errors on event days used for shock
 prediction, one column per variable and horizon (\code{y1.h0}, ...,
 \code{yN.h0}, \code{y1.h1}, ...): horizon \code{hpredict} only if \code{pooled = FALSE},

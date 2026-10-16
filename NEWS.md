@@ -25,7 +25,12 @@
   t statistic of the instrument) and the robust effective F statistic of
   Montiel Olea and Pflueger (2013) by horizon; for `E > 1`, a data frame
   `WeakTest` with the generalized Lewis and Mertens (2025) test from
-  `gweakivtest()` by horizon and outcome variable. `hetiv()` now also returns
+  `gweakivtest()` by shock dimension (`target`), horizon and outcome
+  variable. Both diagnostics always use the HAC (Newey-West) covariance
+  estimator, irrespective of `cov_type`. `WeakTest` reports, for each shock
+  dimension `e`, the test for the system with the first `e` policy variables
+  and instruments, targeting the coefficient on policy variable `e`, with the
+  relative bias criterion. `hetiv()` now also returns
   the OLS residual models in `OLSRes`, and `proxyiv()` computes `Tiv` on
   impact as documented.
 * Removed the `Hstep` argument from `hetiv()`, `proxyiv()` and `recols()`.

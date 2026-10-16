@@ -27,27 +27,24 @@ test_that("hetiv and proxyiv report first-stage F statistics for E = 1", {
     # The sample shrinks with the horizon
     expect_true(all(diff(res$FirstStage$Tobs) <= 0))
 
-    # On impact: F_hom = t^2 and F_rob = HC3 t^2 from the first stage on WeakData
+    # On impact: F_hom = t^2 and F_rob = Newey-West t^2 from the first stage
+    # on WeakData (F_rob is always HAC, whatever the estimator's cov_type)
     wd <- res$WeakData
     ctrl <- setdiff(names(wd), c(paste0("y", 1:3), "Z1"))
     fs <- lm(wd$y1 ~ wd$Z1 + as.matrix(wd[, ctrl]))
     t_hom <- coef(fs)[2] / sqrt(vcov(fs)[2, 2])
-    t_hc3 <- coef(fs)[2] / sqrt(sandwich::vcovHC(fs, type = "HC3")[2, 2])
+    t_nw <- coef(fs)[2] /
+      sqrt(sandwich::NeweyWest(fs, prewhite = FALSE, adjust = TRUE)[2, 2])
     expect_equal(res$FirstStage$F_hom[1], unname(t_hom^2), tolerance = 1e-8)
-    expect_equal(res$FirstStage$F_rob[1], unname(t_hc3^2), tolerance = 1e-8)
+    expect_equal(res$FirstStage$F_rob[1], unname(t_nw^2), tolerance = 1e-8)
     expect_equal(res$FirstStage$Tobs[1], stats::nobs(fs))
   }
 
-  # Newey-West version
+  # The first-stage statistics do not depend on the estimator's cov_type
   het_nw <- suppressWarnings(hetiv(
     y = d$y, O = d$O, Ind = d$Ind, P = 1, H = 2, cov_type = "NW", details = TRUE
   ))
-  wd <- het_nw$WeakData
-  ctrl <- setdiff(names(wd), c(paste0("y", 1:3), "Z1"))
-  fs <- lm(wd$y1 ~ wd$Z1 + as.matrix(wd[, ctrl]))
-  t_nw <- coef(fs)[2] /
-    sqrt(sandwich::NeweyWest(fs, prewhite = FALSE, adjust = TRUE)[2, 2])
-  expect_equal(het_nw$FirstStage$F_rob[1], unname(t_nw^2), tolerance = 1e-8)
+  expect_equal(het_nw$FirstStage$F_rob[1], het$FirstStage$F_rob[1])
   expect_equal(het_nw$FirstStage$F_hom[1], het$FirstStage$F_hom[1])
 
   # Not computed without details
@@ -69,21 +66,26 @@ test_that("hetiv and proxyiv run the Lewis-Mertens test by horizon and outcome f
     wt <- res$WeakTest
     expect_null(res$FirstStage)
     expect_named(wt, c("h", "i", "target", "Tobs", "gmin", "cv", "cv_simplified", "sy_stat", "sy_cv"))
-    # All (h, i) pairs except the policy variables on impact
-    expect_equal(nrow(wt), N * H - E)
+    # One block per shock dimension (target e), each with all (h, i) pairs
+    # except the policy variables on impact
+    expect_equal(nrow(wt), E * (N * H - E))
+    expect_equal(as.vector(table(wt$target)), rep(N * H - E, E))
     expect_false(any(wt$h == 0 & wt$i <= E))
-    # The statistic depends on the horizon only, the critical value on (h, i)
-    expect_equal(length(unique(round(wt$gmin[wt$h == 1], 8))), 1)
+    # Within a dimension, the statistic depends on the horizon only
+    for (e in 1:E) {
+      expect_equal(length(unique(round(wt$gmin[wt$h == 1 & wt$target == e], 8))), 1)
+    }
 
-    # Manual call on impact for outcome 3 reproduces the stored row
+    # Manual call on impact for outcome 3 and the last dimension reproduces
+    # the stored row (HAC covariance, relative bias, target e = E)
     wd <- res$WeakData
     ctrl <- setdiff(names(wd), c(paste0("y", 1:N), paste0("Z", 1:E)))
     man <- gweakivtest(
       y = wd$y3, Y = as.matrix(wd[, paste0("y", 1:E)]),
       X = as.matrix(wd[, ctrl]), Z = as.matrix(wd[, paste0("Z", 1:E)]),
-      cov_type = "EHW"
+      cov_type = "NW", crit = "rel", target = E
     )
-    row <- wt[wt$h == 0 & wt$i == 3, ]
+    row <- wt[wt$h == 0 & wt$i == 3 & wt$target == E, ]
     expect_equal(row$gmin, man$gmin_generalized, tolerance = 1e-8)
     expect_equal(row$cv, man$gmin_generalized_critical_value, tolerance = 1e-8)
     expect_equal(row$Tobs, man$nobs)

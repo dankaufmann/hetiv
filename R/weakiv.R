@@ -2,8 +2,11 @@
 
 # One row of the WeakTest data frame returned by hetiv() and proxyiv(): the
 # Lewis-Mertens (2025) test for outcome y (horizon h, variable i) in the system
-# with endogenous regressors Y (T x E), controls X (or NULL) and instruments Z
-# (T x E). cov_type "NW" maps to the HAC version, anything else to EHW.
+# with endogenous regressors Y (T x e), controls X (or NULL) and instruments Z
+# (T x e). cov_type "NW" maps to the HAC version, anything else to EHW.
+# target ("beta" or an integer <= e) and crit ("abs" or "rel") are passed to
+# gweakivtest(); hetiv() and proxyiv() use cov_type = "NW", crit = "rel" and
+# target = e.
 .lm_weaktest_row <- function(y, Y, X, Z, h, i, cov_type = "EHW", target = "beta", crit = "abs") {
   if (is.null(X)) X <- matrix(1, nrow = length(y), ncol = 1)
   wt <- gweakivtest(

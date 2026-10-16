@@ -83,23 +83,25 @@
 #'       `h` giving the number of observations `Tobs`, the homoskedastic
 #'       first-stage F statistic `F_hom` (the squared t statistic of the
 #'       proxy; Stock and Yogo, 2005) and the robust effective F statistic
-#'       `F_rob` of Montiel Olea and Pflueger (2013), always computed with HAC
-#'       robust covariance estimator. The statistics do not depend on
-#'       the outcome variable. `NULL` for `E > 1`.}
-#'     \item{`WeakTest`}{For `E > 1`: data frame with one row per horizon `h`
-#'       and outcome variable `i` and shock dimension `e` 
-#'       giving the results of [gweakivtest()] for
-#'       the system with `E` endogenous policy variables and `E` instruments:
-#'       `gmin` (generalized minimum eigenvalue statistic, which depends on
-#'       the horizon only through the sample), `cv` and `cv_simplified`
-#'       (sharp and simplified critical values, which depend on the outcome
-#'       and horizon), and the Stock-Yogo statistic `sy_stat` with its
-#'       critical value `sy_cv` (`NaN` unless over-identified). Rows where
-#'       the outcome is a policy variable on impact are omitted. `NULL` for
-#'       `E = 1`. Note that the test statistic is always based on HAC robust 
-#'        covariance, the target is always the `e` endogenous variable,
-#'        and the relative criterion is reported for comparability 
-#'        with Montiel Olea and Pflueger (2013).}
+#'       `F_rob` of Montiel Olea and Pflueger (2013), always computed with
+#'       the HAC (Newey-West) covariance estimator, irrespective of
+#'       `cov_type`. The statistics do not depend on the outcome variable.
+#'       `NULL` for `E > 1`.}
+#'     \item{`WeakTest`}{For `E > 1`: data frame with one row per shock
+#'       dimension `target` (`e = 1, ..., E`), horizon `h` and outcome
+#'       variable `i`, giving the results of [gweakivtest()] for the system
+#'       with the first `e` policy variables as endogenous regressors and the
+#'       first `e` instruments as instruments, targeting the coefficient on
+#'       policy variable `e`: `Tobs`, `gmin` (generalized minimum eigenvalue
+#'       statistic, which depends on the horizon only through the sample),
+#'       `cv` and `cv_simplified` (sharp and simplified critical values,
+#'       which may depend on the outcome and horizon), and the Stock-Yogo
+#'       statistic `sy_stat` with its critical value `sy_cv` (`NaN` unless
+#'       over-identified). The test always uses the HAC (Newey-West)
+#'       covariance estimator, irrespective of `cov_type`, and the relative
+#'       bias criterion (`crit = "rel"`), for comparability with Montiel Olea
+#'       and Pflueger (2013). Rows where the outcome is a policy variable
+#'       (`i <= E`) on impact are omitted. `NULL` for `E = 1`.}
 #'     \item{`Obs`}{Data frame with observation counts: `Tp` (policy days),
 #'       `Tc` (control days), `To` (contaminated days), `Tt` (total used).}
 #'     \item{`Method`}{Character string `"Heteroskedasticity-IV"`.}
@@ -398,7 +400,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
           ctrl <- controls.info[controls.info != "1"]
           Xctrl <- if (length(ctrl) > 0) as.matrix(DataIV[, ctrl, drop = FALSE]) else NULL
           if (E == 1 && i == 1) {
-            # One instrument: homoskedastic F (= t^2) and robust effective F
+            # One instrument: homoskedastic F (= t^2) and HAC-robust effective F
             # (Montiel Olea and Pflueger, 2013); identical for every outcome
             fs <- .firststage_f(DataIV$shockVar, DataIV$Z, X = Xctrl, cov_type = "NW")
             FirstStage <- rbind(FirstStage, data.frame(
@@ -407,9 +409,10 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
           }
           if (E > 1 && !(h == 1 && i <= E)) {
             # Several instruments: generalized test of Lewis and Mertens (2025)
-            # for the full system, whose critical values depend on the outcome
-            # at horizon h (skipped where the outcome is itself a policy
-            # variable on impact)
+            # for the system with the first e policy variables and instruments,
+            # targeting the coefficient on policy variable e (HAC covariance,
+            # relative bias); critical values may depend on the outcome at
+            # horizon h (skipped where the outcome is a policy variable on impact)
             WeakTest <- rbind(WeakTest, .lm_weaktest_row(
               y = DataIV$depVar.h,
               Y = as.matrix(DataIV[, paste0("y", seq_len(e)), drop = FALSE]),

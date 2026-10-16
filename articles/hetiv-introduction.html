@@ -930,28 +930,33 @@ the sample of every local projection. For a single shock
 (<code>E = 1</code>), the data frame <code>FirstStage</code> reports, by
 horizon, the homoskedastic first-stage F statistic (the squared t
 statistic of the instrument; Stock and Yogo, 2005) and the robust
-effective F statistic of Montiel Olea and Pflueger (2013), computed with
-the same covariance estimator as the standard errors
-(<code>cov_type</code>; HC3 by default, Newey West with
-<code>cov_type = "NW"</code>). When the proxy is set to zero on control
-days, the robust statistic should be preferred: the homoskedastic F
-treats the many zero observations as informative and overstates the
-strength of the instrument. <code><a href="../reference/svariv.html">svariv()</a></code> reports the same two
-statistics with <code>details = TRUE</code>, using HC0 by default. For
-several shocks (<code>E &gt; 1</code>), as in this example, the data
-frame <code>WeakTest</code> reports the generalised minimum eigenvalue
-statistic together with its critical values for every horizon
-<code>h</code> and outcome variable <code>i</code>. The statistic
+effective F statistic of Montiel Olea and Pflueger (2013), always
+computed with the HAC (Newey West) covariance estimator, irrespective of
+the <code>cov_type</code> used for the standard errors. When the proxy
+is set to zero on control days, the robust statistic should be
+preferred: the homoskedastic F treats the many zero observations as
+informative and overstates the strength of the instrument.
+<code><a href="../reference/svariv.html">svariv()</a></code> reports the same two statistics with
+<code>details = TRUE</code>, using HC0 by default. For several shocks
+(<code>E &gt; 1</code>), as in this example, the data frame
+<code>WeakTest</code> reports the generalised minimum eigenvalue
+statistic together with its critical values for every shock dimension
+(<code>target</code>), horizon <code>h</code> and outcome variable
+<code>i</code>. For shock dimension <code>e</code>, the test is applied
+to the system with the first <code>e</code> policy variables as
+endogenous regressors and the first <code>e</code> instruments, and
+targets the coefficient on policy variable <code>e</code>. The statistic
 depends on the horizon only through the estimation sample, whereas the
-critical values differ across outcomes and horizons. The
-heteroskedasticity-robust version is used if
-<code>cov_type = "HC3"</code> (the default), the HAR (Newey West)
-version if <code>cov_type = "NW"</code>. The test uses a bias tolerance
-of 10% at a significance level of 5%. The estimators also return a
-<code>WeakData</code> data frame with the variables expected by
-<code><a href="../reference/gweakivtest.html">gweakivtest()</a></code> for custom tests.</p>
+critical values may differ across outcomes and horizons. The test always
+uses the HAR (Newey West) covariance estimator, irrespective of
+<code>cov_type</code>, and the relative bias criterion, which makes the
+critical values comparable with those of Montiel Olea and Pflueger
+(2013). The test uses a bias tolerance of 10% at a significance level of
+5%. The estimators also return a <code>WeakData</code> data frame with
+the variables expected by <code><a href="../reference/gweakivtest.html">gweakivtest()</a></code> for custom
+tests.</p>
 <p>The table below shows the test on impact (<code>h = 0</code>) for the
-third variable for each of the four specifications.</p>
+third variable for each shock and each of the four specifications.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">specs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  <span class="st">"HET-IV, no controls"</span> <span class="op">=</span> <span class="va">res_het</span><span class="op">$</span><span class="va">WeakTest</span>,</span>
@@ -964,6 +969,7 @@ third variable for each of the four specifications.</p>
 <span>  <span class="va">r</span> <span class="op">&lt;-</span> <span class="va">specs</span><span class="op">[[</span><span class="va">nm</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="va">specs</span><span class="op">[[</span><span class="va">nm</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">h</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">&amp;</span> <span class="va">specs</span><span class="op">[[</span><span class="va">nm</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">i</span> <span class="op">==</span> <span class="fl">3</span>, <span class="op">]</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    Specification <span class="op">=</span> <span class="va">nm</span>,</span>
+<span>    Shock <span class="op">=</span> <span class="va">r</span><span class="op">$</span><span class="va">target</span>,</span>
 <span>    Statistic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">gmin</span>, <span class="fl">2</span><span class="op">)</span>,</span>
 <span>    LM_CV <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">cv</span>, <span class="fl">2</span><span class="op">)</span>,</span>
 <span>    Strong <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">gmin</span> <span class="op">&gt;</span> <span class="va">r</span><span class="op">$</span><span class="va">cv</span>, <span class="st">"Yes"</span>, <span class="st">"No"</span><span class="op">)</span>,</span>
@@ -974,7 +980,7 @@ third variable for each of the four specifications.</p>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="va">tab</span>,</span>
 <span>  col.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"Specification"</span>, <span class="st">"Statistic"</span>, <span class="st">"LM critical value"</span>,</span>
+<span>    <span class="st">"Specification"</span>, <span class="st">"Shock"</span>, <span class="st">"Statistic"</span>, <span class="st">"LM critical value"</span>,</span>
 <span>    <span class="st">"Strong instruments?"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  caption <span class="op">=</span> <span class="st">"Weak instrument test results on impact (Lewis-Mertens generalised minimum eigenvalue test)"</span></span>
@@ -983,13 +989,15 @@ third variable for each of the four specifications.</p>
 <caption>Weak instrument test results on impact (Lewis-Mertens
 generalised minimum eigenvalue test)</caption>
 <colgroup>
-<col width="50%">
-<col width="10%">
-<col width="18%">
-<col width="20%">
+<col width="47%">
+<col width="5%">
+<col width="9%">
+<col width="17%">
+<col width="19%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">Specification</th>
+<th align="right">Shock</th>
 <th align="right">Statistic</th>
 <th align="right">LM critical value</th>
 <th align="left">Strong instruments?</th>
@@ -997,85 +1005,98 @@ generalised minimum eigenvalue test)</caption>
 <tbody>
 <tr class="odd">
 <td align="left">HET-IV, no controls</td>
+<td align="right">1</td>
 <td align="right">47.13</td>
 <td align="right">14.19</td>
 <td align="left">Yes</td>
 </tr>
 <tr class="even">
 <td align="left">HET-IV, no controls</td>
+<td align="right">2</td>
 <td align="right">24.51</td>
 <td align="right">25.04</td>
 <td align="left">No</td>
 </tr>
 <tr class="odd">
 <td align="left">HET-IV, with controls</td>
+<td align="right">1</td>
 <td align="right">727.88</td>
 <td align="right">14.19</td>
 <td align="left">Yes</td>
 </tr>
 <tr class="even">
 <td align="left">HET-IV, with controls</td>
+<td align="right">2</td>
 <td align="right">137.26</td>
 <td align="right">23.45</td>
 <td align="left">Yes</td>
 </tr>
 <tr class="odd">
 <td align="left">Proxy-IV, with controls</td>
+<td align="right">1</td>
 <td align="right">150.41</td>
 <td align="right">14.19</td>
 <td align="left">Yes</td>
 </tr>
 <tr class="even">
 <td align="left">Proxy-IV, with controls</td>
+<td align="right">2</td>
 <td align="right">22.45</td>
 <td align="right">22.63</td>
 <td align="left">No</td>
 </tr>
 <tr class="odd">
 <td align="left">Proxy-IV, with controls + recursive restriction</td>
+<td align="right">1</td>
 <td align="right">150.41</td>
 <td align="right">14.19</td>
 <td align="left">Yes</td>
 </tr>
 <tr class="even">
 <td align="left">Proxy-IV, with controls + recursive restriction</td>
+<td align="right">2</td>
 <td align="right">22.45</td>
 <td align="right">22.63</td>
 <td align="left">No</td>
 </tr>
 </tbody>
 </table>
-<p>The specification without controls is affected by a weak instrument
-problem. The correctly specified model passes the weak instrument tests.
-Proxy-IV passes the test as well, but with a smaller margin. Note that
-this depends on the degree of noise used to construct the proxy and does
-not suggest that <code><a href="../reference/hetiv.html">hetiv()</a></code> is generally superior to
+<p>All specifications pass the test for the first shock by a wide
+margin. For the second shock, the specification without controls is
+affected by a weak instrument problem, whereas the correctly specified
+model passes the test. Proxy-IV is borderline for the second shock: the
+statistic lies just below the critical value. Note that this depends on
+the degree of noise used to construct the proxy and does not suggest
+that <code><a href="../reference/hetiv.html">hetiv()</a></code> is generally superior to
 <code><a href="../reference/proxyiv.html">proxyiv()</a></code>. The recursive restriction does not change the
-test, because the test is for the full system with <code>E</code>
-endogenous variables and <code>E</code> instruments. Interestingly, at
-least for HET-IV, the critical values are much higher than the common
-rule of thumb for the Stock and Yogo (2005) test and higher than in the
-HAR test for the univariate case by Montiel Olea and Pflueger (2013) and
-Lewis (2022), which is around 23.</p>
-<p>Because the critical values depend on the outcome variable and the
-horizon, it is useful to inspect the full <code>WeakTest</code> data
-frame. The following table shows, for HET-IV with controls, the
-statistic and the critical value for the third and fourth variables at
-selected horizons.</p>
+test, because the test does not depend on the recursive controls: the
+system for shock <code>e</code> always contains the first <code>e</code>
+policy variables and instruments. In this example, the critical values
+are around 14 for the first shock (one endogenous regressor) and around
+23 for the second shock (two endogenous regressors). The latter is close
+to the conservative critical value of the simplified HAR test for the
+univariate case by Montiel Olea and Pflueger (2013) and Lewis (2022).
+Both are higher than the common rule of thumb of 10 for the Stock and
+Yogo (2005) test.</p>
+<p>Because the critical values may depend on the outcome variable and
+the horizon, it is useful to inspect the full <code>WeakTest</code> data
+frame. The following table shows, for HET-IV with controls and the
+second shock, the statistic and the critical value for the third and
+fourth variables at selected horizons.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wt</span> <span class="op">&lt;-</span> <span class="va">res_het_X</span><span class="op">$</span><span class="va">WeakTest</span></span>
-<span><span class="va">wt</span> <span class="op">&lt;-</span> <span class="va">wt</span><span class="op">[</span><span class="va">wt</span><span class="op">$</span><span class="va">i</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">4</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">wt</span><span class="op">$</span><span class="va">h</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span>, <span class="fl">10</span>, <span class="fl">19</span><span class="op">)</span>, <span class="op">]</span></span>
+<span><span class="va">wt</span> <span class="op">&lt;-</span> <span class="va">wt</span><span class="op">[</span><span class="va">wt</span><span class="op">$</span><span class="va">target</span> <span class="op">==</span> <span class="fl">2</span> <span class="op">&amp;</span> <span class="va">wt</span><span class="op">$</span><span class="va">i</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">4</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">wt</span><span class="op">$</span><span class="va">h</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span>, <span class="fl">10</span>, <span class="fl">19</span><span class="op">)</span>, <span class="op">]</span></span>
 <span><span class="va">wt</span><span class="op">$</span><span class="va">Strong</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">wt</span><span class="op">$</span><span class="va">gmin</span> <span class="op">&gt;</span> <span class="va">wt</span><span class="op">$</span><span class="va">cv</span>, <span class="st">"Yes"</span>, <span class="st">"No"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="va">wt</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"h"</span>, <span class="st">"i"</span>, <span class="st">"Tobs"</span>, <span class="st">"gmin"</span>, <span class="st">"cv"</span>, <span class="st">"Strong"</span><span class="op">)</span><span class="op">]</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">2</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  col.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Horizon"</span>, <span class="st">"Variable"</span>, <span class="st">"Obs."</span>, <span class="st">"Statistic"</span>, <span class="st">"LM critical value"</span>, <span class="st">"Strong instruments?"</span><span class="op">)</span>,</span>
-<span>  caption <span class="op">=</span> <span class="st">"Weak instrument test by horizon and outcome variable (HET-IV with controls)"</span></span>
+<span>  caption <span class="op">=</span> <span class="st">"Weak instrument test by horizon and outcome variable (HET-IV with controls, second shock)"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <table style="width:100%;" class="table">
 <caption>Weak instrument test by horizon and outcome variable (HET-IV
-with controls)</caption>
+with controls, second shock)</caption>
 <colgroup>
 <col width="11%">
 <col width="12%">
@@ -1093,70 +1114,6 @@ with controls)</caption>
 <th align="left">Strong instruments?</th>
 </tr></thead>
 <tbody>
-<tr class="odd">
-<td align="right">0</td>
-<td align="right">3</td>
-<td align="right">498</td>
-<td align="right">727.88</td>
-<td align="right">14.19</td>
-<td align="left">Yes</td>
-</tr>
-<tr class="even">
-<td align="right">5</td>
-<td align="right">3</td>
-<td align="right">493</td>
-<td align="right">740.13</td>
-<td align="right">14.19</td>
-<td align="left">Yes</td>
-</tr>
-<tr class="odd">
-<td align="right">10</td>
-<td align="right">3</td>
-<td align="right">488</td>
-<td align="right">752.16</td>
-<td align="right">14.19</td>
-<td align="left">Yes</td>
-</tr>
-<tr class="even">
-<td align="right">19</td>
-<td align="right">3</td>
-<td align="right">479</td>
-<td align="right">811.65</td>
-<td align="right">14.19</td>
-<td align="left">Yes</td>
-</tr>
-<tr class="odd">
-<td align="right">0</td>
-<td align="right">4</td>
-<td align="right">498</td>
-<td align="right">727.88</td>
-<td align="right">14.19</td>
-<td align="left">Yes</td>
-</tr>
-<tr class="even">
-<td align="right">5</td>
-<td align="right">4</td>
-<td align="right">493</td>
-<td align="right">740.13</td>
-<td align="right">14.19</td>
-<td align="left">Yes</td>
-</tr>
-<tr class="odd">
-<td align="right">10</td>
-<td align="right">4</td>
-<td align="right">488</td>
-<td align="right">752.16</td>
-<td align="right">14.19</td>
-<td align="left">Yes</td>
-</tr>
-<tr class="even">
-<td align="right">19</td>
-<td align="right">4</td>
-<td align="right">479</td>
-<td align="right">811.65</td>
-<td align="right">14.19</td>
-<td align="left">Yes</td>
-</tr>
 <tr class="odd">
 <td align="right">0</td>
 <td align="right">3</td>

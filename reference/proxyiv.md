@@ -194,25 +194,28 @@ With `details = TRUE`, additionally contains:
   of observations `Tobs`, the homoskedastic first-stage F statistic
   `F_hom` (the squared t statistic of the proxy; Stock and Yogo, 2005)
   and the robust effective F statistic `F_rob` of Montiel Olea and
-  Pflueger (2013), always computed with HAC robust covariance estimator.
-  The statistics do not depend on the outcome variable. `NULL` for
-  `E > 1`.
+  Pflueger (2013), always computed with the HAC (Newey-West) covariance
+  estimator, irrespective of `cov_type`. The statistics do not depend on
+  the outcome variable. `NULL` for `E > 1`.
 
 - `WeakTest`:
 
-  For `E > 1`: data frame with one row per horizon `h` and outcome
-  variable `i` giving the results of
+  For `E > 1`: data frame with one row per shock dimension `target`
+  (`e = 1, ..., E`), horizon `h` and outcome variable `i`, giving the
+  results of
   [`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md)
-  for the system with `E` endogenous policy variables and `E` proxies:
-  `gmin` (generalized minimum eigenvalue statistic, which depends on the
-  horizon only through the sample), `cv` and `cv_simplified` (sharp and
-  simplified critical values, which depend on the outcome and horizon),
-  and the Stock-Yogo statistic `sy_stat` with its critical value `sy_cv`
-  (`NaN` unless over-identified). Rows where the outcome is a policy
-  variable on impact are omitted. `NULL` for `E = 1`. Note that the test
-  statistic is always based on HAC robust covariance, the target is
-  always the `e` endogenous variable, and the relative criterion is
-  reported for comparability with Montiel Olea and Pflueger (2013).
+  for the system with the first `e` policy variables as endogenous
+  regressors and the first `e` proxies as instruments, targeting the
+  coefficient on policy variable `e`: `Tobs`, `gmin` (generalized
+  minimum eigenvalue statistic, which depends on the horizon only
+  through the sample), `cv` and `cv_simplified` (sharp and simplified
+  critical values, which may depend on the outcome and horizon), and the
+  Stock-Yogo statistic `sy_stat` with its critical value `sy_cv` (`NaN`
+  unless over-identified). The test always uses the HAC (Newey-West)
+  covariance estimator, irrespective of `cov_type`, and the relative
+  bias criterion (`crit = "rel"`), for comparability with Montiel Olea
+  and Pflueger (2013). Rows where the outcome is a policy variable
+  (`i <= E`) on impact are omitted. `NULL` for `E = 1`.
 
 - `et`:
 

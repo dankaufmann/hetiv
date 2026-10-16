@@ -224,6 +224,6 @@ Ind[seq(5, nrow(y), by = 5)] <- 1L
 res <- recols(y = y, O = y, Ind = Ind, P = 1, H = 3, E = 2)
 res$irf[1, , ] # impact responses: unit diagonal, zero above it
 #>           [,1]         [,2]
-#> [1,] 1.0000000 5.329117e-17
-#> [2,] 0.2783758 1.000000e+00
+#> [1,] 1.0000000 -4.26246e-17
+#> [2,] 0.2783758  1.00000e+00
 ```

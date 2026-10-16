@@ -221,25 +221,27 @@ underlying the instrument, one per shock dimension.</p></dd>
 <code>h</code> giving the number of observations <code>Tobs</code>, the homoskedastic
 first-stage F statistic <code>F_hom</code> (the squared t statistic of the
 proxy; Stock and Yogo, 2005) and the robust effective F statistic
-<code>F_rob</code> of Montiel Olea and Pflueger (2013), always computed with HAC
-robust covariance estimator. The statistics do not depend on
-the outcome variable. <code>NULL</code> for <code>E &gt; 1</code>.</p></dd>
+<code>F_rob</code> of Montiel Olea and Pflueger (2013), always computed with
+the HAC (Newey-West) covariance estimator, irrespective of
+<code>cov_type</code>. The statistics do not depend on the outcome variable.
+<code>NULL</code> for <code>E &gt; 1</code>.</p></dd>
 
 <dt><code>WeakTest</code></dt>
-<dd><p>For <code>E &gt; 1</code>: data frame with one row per horizon <code>h</code>
-and outcome variable <code>i</code> and shock dimension <code>e</code>
-giving the results of <code><a href="gweakivtest.html">gweakivtest()</a></code> for
-the system with <code>E</code> endogenous policy variables and <code>E</code> instruments:
-<code>gmin</code> (generalized minimum eigenvalue statistic, which depends on
-the horizon only through the sample), <code>cv</code> and <code>cv_simplified</code>
-(sharp and simplified critical values, which depend on the outcome
-and horizon), and the Stock-Yogo statistic <code>sy_stat</code> with its
-critical value <code>sy_cv</code> (<code>NaN</code> unless over-identified). Rows where
-the outcome is a policy variable on impact are omitted. <code>NULL</code> for
-<code>E = 1</code>. Note that the test statistic is always based on HAC robust
-covariance, the target is always the <code>e</code> endogenous variable,
-and the relative criterion is reported for comparability
-with Montiel Olea and Pflueger (2013).</p></dd>
+<dd><p>For <code>E &gt; 1</code>: data frame with one row per shock
+dimension <code>target</code> (<code>e = 1, ..., E</code>), horizon <code>h</code> and outcome
+variable <code>i</code>, giving the results of <code><a href="gweakivtest.html">gweakivtest()</a></code> for the system
+with the first <code>e</code> policy variables as endogenous regressors and the
+first <code>e</code> instruments as instruments, targeting the coefficient on
+policy variable <code>e</code>: <code>Tobs</code>, <code>gmin</code> (generalized minimum eigenvalue
+statistic, which depends on the horizon only through the sample),
+<code>cv</code> and <code>cv_simplified</code> (sharp and simplified critical values,
+which may depend on the outcome and horizon), and the Stock-Yogo
+statistic <code>sy_stat</code> with its critical value <code>sy_cv</code> (<code>NaN</code> unless
+over-identified). The test always uses the HAC (Newey-West)
+covariance estimator, irrespective of <code>cov_type</code>, and the relative
+bias criterion (<code>crit = "rel"</code>), for comparability with Montiel Olea
+and Pflueger (2013). Rows where the outcome is a policy variable
+(<code>i &lt;= E</code>) on impact are omitted. <code>NULL</code> for <code>E = 1</code>.</p></dd>
 
 <dt><code>Obs</code></dt>
 <dd><p>Data frame with observation counts: <code>Tp</code> (policy days),

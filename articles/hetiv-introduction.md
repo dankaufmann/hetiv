@@ -742,29 +742,33 @@ run the weak instrument tests automatically on the sample of every local
 projection. For a single shock (`E = 1`), the data frame `FirstStage`
 reports, by horizon, the homoskedastic first-stage F statistic (the
 squared t statistic of the instrument; Stock and Yogo, 2005) and the
-robust effective F statistic of Montiel Olea and Pflueger (2013),
-computed with the same covariance estimator as the standard errors
-(`cov_type`; HC3 by default, Newey West with `cov_type = "NW"`). When
-the proxy is set to zero on control days, the robust statistic should be
-preferred: the homoskedastic F treats the many zero observations as
-informative and overstates the strength of the instrument.
+robust effective F statistic of Montiel Olea and Pflueger (2013), always
+computed with the HAC (Newey West) covariance estimator, irrespective of
+the `cov_type` used for the standard errors. When the proxy is set to
+zero on control days, the robust statistic should be preferred: the
+homoskedastic F treats the many zero observations as informative and
+overstates the strength of the instrument.
 [`svariv()`](https://dankaufmann.github.io/hetiv/reference/svariv.md)
 reports the same two statistics with `details = TRUE`, using HC0 by
 default. For several shocks (`E > 1`), as in this example, the data
 frame `WeakTest` reports the generalised minimum eigenvalue statistic
-together with its critical values for every horizon `h` and outcome
-variable `i`. The statistic depends on the horizon only through the
-estimation sample, whereas the critical values differ across outcomes
-and horizons. The heteroskedasticity-robust version is used if
-`cov_type = "HC3"` (the default), the HAR (Newey West) version if
-`cov_type = "NW"`. The test uses a bias tolerance of 10% at a
-significance level of 5%. The estimators also return a `WeakData` data
-frame with the variables expected by
+together with its critical values for every shock dimension (`target`),
+horizon `h` and outcome variable `i`. For shock dimension `e`, the test
+is applied to the system with the first `e` policy variables as
+endogenous regressors and the first `e` instruments, and targets the
+coefficient on policy variable `e`. The statistic depends on the horizon
+only through the estimation sample, whereas the critical values may
+differ across outcomes and horizons. The test always uses the HAR (Newey
+West) covariance estimator, irrespective of `cov_type`, and the relative
+bias criterion, which makes the critical values comparable with those of
+Montiel Olea and Pflueger (2013). The test uses a bias tolerance of 10%
+at a significance level of 5%. The estimators also return a `WeakData`
+data frame with the variables expected by
 [`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md)
 for custom tests.
 
 The table below shows the test on impact (`h = 0`) for the third
-variable for each of the four specifications.
+variable for each shock and each of the four specifications.
 
 ``` r
 
@@ -779,6 +783,7 @@ tab <- do.call(rbind, lapply(names(specs), function(nm) {
   r <- specs[[nm]][specs[[nm]]$h == 0 & specs[[nm]]$i == 3, ]
   data.frame(
     Specification = nm,
+    Shock = r$target,
     Statistic = round(r$gmin, 2),
     LM_CV = round(r$cv, 2),
     Strong = ifelse(r$gmin > r$cv, "Yes", "No"),
@@ -789,71 +794,68 @@ tab <- do.call(rbind, lapply(names(specs), function(nm) {
 knitr::kable(
   tab,
   col.names = c(
-    "Specification", "Statistic", "LM critical value",
+    "Specification", "Shock", "Statistic", "LM critical value",
     "Strong instruments?"
   ),
   caption = "Weak instrument test results on impact (Lewis-Mertens generalised minimum eigenvalue test)"
 )
 ```
 
-| Specification | Statistic | LM critical value | Strong instruments? |
-|:---|---:|---:|:---|
-| HET-IV, no controls | 47.13 | 14.19 | Yes |
-| HET-IV, no controls | 24.51 | 25.04 | No |
-| HET-IV, with controls | 727.88 | 14.19 | Yes |
-| HET-IV, with controls | 137.26 | 23.45 | Yes |
-| Proxy-IV, with controls | 150.41 | 14.19 | Yes |
-| Proxy-IV, with controls | 22.45 | 22.63 | No |
-| Proxy-IV, with controls + recursive restriction | 150.41 | 14.19 | Yes |
-| Proxy-IV, with controls + recursive restriction | 22.45 | 22.63 | No |
+| Specification | Shock | Statistic | LM critical value | Strong instruments? |
+|:---|---:|---:|---:|:---|
+| HET-IV, no controls | 1 | 47.13 | 14.19 | Yes |
+| HET-IV, no controls | 2 | 24.51 | 25.04 | No |
+| HET-IV, with controls | 1 | 727.88 | 14.19 | Yes |
+| HET-IV, with controls | 2 | 137.26 | 23.45 | Yes |
+| Proxy-IV, with controls | 1 | 150.41 | 14.19 | Yes |
+| Proxy-IV, with controls | 2 | 22.45 | 22.63 | No |
+| Proxy-IV, with controls + recursive restriction | 1 | 150.41 | 14.19 | Yes |
+| Proxy-IV, with controls + recursive restriction | 2 | 22.45 | 22.63 | No |
 
 Weak instrument test results on impact (Lewis-Mertens generalised
 minimum eigenvalue test) {.table}
 
-The specification without controls is affected by a weak instrument
-problem. The correctly specified model passes the weak instrument tests.
-Proxy-IV passes the test as well, but with a smaller margin. Note that
-this depends on the degree of noise used to construct the proxy and does
-not suggest that
+All specifications pass the test for the first shock by a wide margin.
+For the second shock, the specification without controls is affected by
+a weak instrument problem, whereas the correctly specified model passes
+the test. Proxy-IV is borderline for the second shock: the statistic
+lies just below the critical value. Note that this depends on the degree
+of noise used to construct the proxy and does not suggest that
 [`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md) is
 generally superior to
 [`proxyiv()`](https://dankaufmann.github.io/hetiv/reference/proxyiv.md).
-The recursive restriction does not change the test, because the test is
-for the full system with `E` endogenous variables and `E` instruments.
-Interestingly, at least for HET-IV, the critical values are much higher
-than the common rule of thumb for the Stock and Yogo (2005) test and
-higher than in the HAR test for the univariate case by Montiel Olea and
-Pflueger (2013) and Lewis (2022), which is around 23.
+The recursive restriction does not change the test, because the test
+does not depend on the recursive controls: the system for shock `e`
+always contains the first `e` policy variables and instruments. In this
+example, the critical values are around 14 for the first shock (one
+endogenous regressor) and around 23 for the second shock (two endogenous
+regressors). The latter is close to the conservative critical value of
+the simplified HAR test for the univariate case by Montiel Olea and
+Pflueger (2013) and Lewis (2022). Both are higher than the common rule
+of thumb of 10 for the Stock and Yogo (2005) test.
 
-Because the critical values depend on the outcome variable and the
+Because the critical values may depend on the outcome variable and the
 horizon, it is useful to inspect the full `WeakTest` data frame. The
-following table shows, for HET-IV with controls, the statistic and the
-critical value for the third and fourth variables at selected horizons.
+following table shows, for HET-IV with controls and the second shock,
+the statistic and the critical value for the third and fourth variables
+at selected horizons.
 
 ``` r
 
 wt <- res_het_X$WeakTest
-wt <- wt[wt$i %in% c(3, 4) & wt$h %in% c(0, 5, 10, 19), ]
+wt <- wt[wt$target == 2 & wt$i %in% c(3, 4) & wt$h %in% c(0, 5, 10, 19), ]
 wt$Strong <- ifelse(wt$gmin > wt$cv, "Yes", "No")
 
 knitr::kable(
   wt[, c("h", "i", "Tobs", "gmin", "cv", "Strong")],
   digits = 2, row.names = FALSE,
   col.names = c("Horizon", "Variable", "Obs.", "Statistic", "LM critical value", "Strong instruments?"),
-  caption = "Weak instrument test by horizon and outcome variable (HET-IV with controls)"
+  caption = "Weak instrument test by horizon and outcome variable (HET-IV with controls, second shock)"
 )
 ```
 
 | Horizon | Variable | Obs. | Statistic | LM critical value | Strong instruments? |
 |--------:|---------:|-----:|----------:|------------------:|:--------------------|
-|       0 |        3 |  498 |    727.88 |             14.19 | Yes                 |
-|       5 |        3 |  493 |    740.13 |             14.19 | Yes                 |
-|      10 |        3 |  488 |    752.16 |             14.19 | Yes                 |
-|      19 |        3 |  479 |    811.65 |             14.19 | Yes                 |
-|       0 |        4 |  498 |    727.88 |             14.19 | Yes                 |
-|       5 |        4 |  493 |    740.13 |             14.19 | Yes                 |
-|      10 |        4 |  488 |    752.16 |             14.19 | Yes                 |
-|      19 |        4 |  479 |    811.65 |             14.19 | Yes                 |
 |       0 |        3 |  498 |    137.26 |             23.45 | Yes                 |
 |       5 |        3 |  493 |    140.97 |             23.63 | Yes                 |
 |      10 |        3 |  488 |    140.92 |             23.64 | Yes                 |
@@ -864,7 +866,7 @@ knitr::kable(
 |      19 |        4 |  479 |    143.17 |             23.51 | Yes                 |
 
 Weak instrument test by horizon and outcome variable (HET-IV with
-controls) {.table style="width:100%;"}
+controls, second shock) {.table style="width:100%;"}
 
 ## References
 

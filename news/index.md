@@ -38,7 +38,12 @@
   Montiel Olea and Pflueger (2013) by horizon; for `E > 1`, a data frame
   `WeakTest` with the generalized Lewis and Mertens (2025) test from
   [`gweakivtest()`](https://dankaufmann.github.io/hetiv/reference/gweakivtest.md)
-  by horizon and outcome variable.
+  by shock dimension (`target`), horizon and outcome variable. Both
+  diagnostics always use the HAC (Newey-West) covariance estimator,
+  irrespective of `cov_type`. `WeakTest` reports, for each shock
+  dimension `e`, the test for the system with the first `e` policy
+  variables and instruments, targeting the coefficient on policy
+  variable `e`, with the relative bias criterion.
   [`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md)
   now also returns the OLS residual models in `OLSRes`, and
   [`proxyiv()`](https://dankaufmann.github.io/hetiv/reference/proxyiv.md)

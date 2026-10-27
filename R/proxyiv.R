@@ -430,7 +430,16 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
     Sig <- sk$Sig
     SigR <- sk$SigR
     Psi <- sk$Psi
-    Shocks <- kfpredict(Sig, SigR, Psi, et)
+    
+    # Check whether SigR is NA (not NA if no control days). In this case, do
+    # not scale the shock using control days
+    if(any(is.na(SigR))){
+      SigR <- 0
+      scale <- FALSE
+    }else{
+      scale <- TRUE
+    }
+    Shocks <- kfpredict(Sig, SigR, Psi, et, scale = scale)
     
     # Data for Lewis-Mertens (2025) weak instrument test
     if (controls.info[1] != "1") {

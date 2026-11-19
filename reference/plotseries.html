@@ -75,6 +75,7 @@ series and, for two series, reports their correlation in the panel.</p>
 <span>  show_cor <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  show_n <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  connect <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  legend_position <span class="op">=</span> <span class="st">"bottom"</span>,</span>
 <span>  linewidth <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>  xlim <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -135,6 +136,13 @@ observations is added to the correlation label.</p></dd>
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
 <dd><p>Integer. Number of digits of the correlation label.</p></dd>
+
+
+<dt id="arg-connect">connect<a class="anchor" aria-label="anchor" href="#arg-connect"></a></dt>
+<dd><p>Logical. If <code>TRUE</code> (default), missing values of a series
+are dropped before plotting, so that the line connects the observations
+on both sides of a gap. If <code>FALSE</code>, the line is interrupted at missing
+values.</p></dd>
 
 
 <dt id="arg-legend-position">legend_position<a class="anchor" aria-label="anchor" href="#arg-legend-position"></a></dt>

@@ -45,7 +45,8 @@
 - New functions:
   [`plotseries()`](https://dankaufmann.github.io/hetiv/reference/plotseries.md)
   (line plot of several series with a single legend, optional
-  standardisation and correlation label),
+  standardisation and correlation label; lines connect across missing
+  values unless `connect = FALSE`),
   [`gss_pca()`](https://dankaufmann.github.io/hetiv/reference/gss_pca.md)
   (target and path factors of Gurkaynak, Sack and Swanson, 2005, with EM
   principal components for missing values),

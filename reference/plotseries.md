@@ -20,6 +20,7 @@ plotseries(
   show_cor = FALSE,
   show_n = TRUE,
   digits = 2,
+  connect = TRUE,
   legend_position = "bottom",
   linewidth = 0.5,
   xlim = NULL,
@@ -79,6 +80,12 @@ plotseries(
 - digits:
 
   Integer. Number of digits of the correlation label.
+
+- connect:
+
+  Logical. If `TRUE` (default), missing values of a series are dropped
+  before plotting, so that the line connects the observations on both
+  sides of a gap. If `FALSE`, the line is interrupted at missing values.
 
 - legend_position:
 

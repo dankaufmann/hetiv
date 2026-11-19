@@ -55,9 +55,10 @@ Defaults to \code{c("steelblue", "darkred", "darkgreen")}.}
 \code{"recentred"} (default) or \code{"percentile"}. See Details. Ignored when no
 bootstrap draws are supplied.}
 
-\item{legend}{Logical. If \code{TRUE}, a legend with \code{names} is added to each
-panel when more than one set of impulse responses is plotted. Default
-\code{FALSE}.}
+\item{legend}{Logical. If \code{TRUE} and more than one set of impulse
+responses is plotted, a legend with \code{names} is added once per shock, to
+the first panel. \code{\link[=arrangeirf]{arrangeirf()}} moves this legend below the arranged
+figure, so that all panels keep the same size. Default \code{FALSE}.}
 }
 \value{
 A list of \code{ggplot} objects, one per variable-shock combination,

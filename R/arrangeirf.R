@@ -2,7 +2,9 @@
 #'
 #' Arranges a list of IRF panels, as returned by [plotirf()] or [plot2irf()],
 #' into a grid with one figure per shock dimension and a common x-axis label.
-#' Optionally saves each figure as a PDF.
+#' If the panels carry a legend (see `legend` in [plotirf()]), it is removed
+#' from the panels and drawn once below each figure. Optionally saves each
+#' figure as a PDF.
 #'
 #' @param myGraphs List of `ggplot` objects of length `E * N`, ordered by
 #'   shock (outer loop) and then by variable (inner loop), as returned by
@@ -19,13 +21,15 @@
 #'   saved.
 #' @param figScaleW Numeric. Width of one panel column in inches.
 #' @param figScaleH Numeric. Height of one panel row in inches. The saved
-#'   figure has height `0.9 * nRows * figScaleH`.
+#'   figure has height `0.9 * nRows * figScaleH`, plus the height of the
+#'   common legend if there is one.
 #'
 #' @return Invisibly, a list of length `E` of arranged figures (`gtable`
 #'   objects), which can be redrawn with [grid::grid.draw()]. Each figure is
 #'   also drawn on the current graphics device as a side effect.
 #'
-#' @importFrom gridExtra grid.arrange
+#' @importFrom gridExtra grid.arrange arrangeGrob
+#' @importFrom ggplot2 ggplotGrob
 #' @importFrom grid textGrob gpar
 #' @importFrom ggplot2 ggsave
 #'
@@ -77,18 +81,60 @@ arrangeirf <- function(myGraphs, E = 1, N, nRows = 1, xLab = "Horizon", title = 
     } else {
       grid::textGrob(title[e], gp = grid::gpar(fontsize = 11))
     }
+    panels <- myGraphs[((e - 1) * N + 1):(e * N)]
+
+    # Common legend: take it from the first panel that has one and remove the
+    # legends from all panels, so that it is drawn only once per figure
+    lg <- .extract_legend(panels)
+    if (!is.null(lg)) {
+      panels <- lapply(panels, function(g) {
+        if (inherits(g, "ggplot")) g + ggplot2::theme(legend.position = "none") else g
+      })
+    }
+
+    # x-axis label, with the common legend below it if there is one
+    lgH <- 0
+    if (is.null(lg)) {
+      myBottom <- myXLab
+    } else {
+      lgH <- grid::convertHeight(sum(lg$heights), "in", valueOnly = TRUE)
+      myBottom <- gridExtra::arrangeGrob(
+        myXLab, lg,
+        ncol = 1,
+        heights = grid::unit.c(grid::unit(1.2, "lines"), grid::unit(lgH, "in"))
+      )
+    }
+
     figs[[e]] <- gridExtra::grid.arrange(
-      grobs = myGraphs[((e - 1) * N + 1):(e * N)],
-      nrow = nRows, ncol = nCols, bottom = myXLab, top = myTop
+      grobs = panels,
+      nrow = nRows, ncol = nCols, bottom = myBottom, top = myTop
     )
 
     if (!is.na(file)) {
       ggplot2::ggsave(
         filename = paste0(file, "_", e, ".pdf"), plot = figs[[e]],
-        width = nCols * figScaleW, height = nRows * 0.9 * figScaleH
+        width = nCols * figScaleW, height = nRows * 0.9 * figScaleH + lgH
       )
     }
   }
 
   invisible(figs)
+}
+
+# Legend grob ("guide-box") of the first ggplot in `panels` that shows a
+# legend, or NULL if no panel has one. Used by arrangeirf() to draw a single
+# common legend.
+.extract_legend <- function(panels) {
+  for (g in panels) {
+    if (!inherits(g, "ggplot")) next
+    pos <- g$theme$legend.position
+    if (is.null(pos) || identical(pos, "none")) next
+    gt <- ggplot2::ggplotGrob(g)
+    idx <- which(grepl("guide-box", gt$layout$name))
+    for (k in idx) {
+      gb <- gt$grobs[[k]]
+      if (!inherits(gb, "zeroGrob")) return(gb)
+    }
+  }
+  NULL
 }

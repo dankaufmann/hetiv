@@ -56,16 +56,21 @@ remotes::install_github("dankaufmann/hetiv")
 | `svariv()` | Estimates impulse response functions via a proxy SVAR (SVAR-IV) with optional wild-bootstrap bands |
 | `recols()` | Estimates impulse response functions via recursive (Cholesky) local projections, as a benchmark |
 | `gweakivtest()` | Tests for weak instruments using the generalised minimum eigenvalue statistic of Lewis and Mertens (2025) |
-| `kfpredict()` | Extracts structural shocks from reduced-form residuals via Kalman filter |
+| `predict_shocks()` | Extracts structural shocks from reduced-form residuals via Kalman filter |
+| `prediction_corr()` | Computes the squared correlation between predicted and true shocks implied by the estimates, as a measure of precision |
+| `gss_pca()` | Extracts target and path factors from a panel of surprises (Gurkaynak, Sack and Swanson, 2005), allowing for missing values |
+| `lag_opt()` | Selects the lag length of a VAR by an information criterion (requires the `vars` package) |
 | `computeirf()` | Recursively computes IRFs from an impact matrix and VAR coefficients |
 | `normalize()` | Standardizes a time series to zero mean and unit standard deviation |
 | `logdiff()` | Computes the log-difference of a time series |
 | `firstdiff()` | Computes the first difference of a time series |
 | `filllinear()` | Linearly interpolates short gaps of missing values in a data frame |
+| `rescale_to_match()` | Rescales a series to the mean and variance of another series |
 | `plotirf()` | Plots IRFs of up to three estimation approaches with confidence bands from standard errors or bootstrap draws |
 | `plot2irf()` | Plots and compares IRFs from two estimation approaches (wrapper around `plotirf()`, kept for backward compatibility) |
 | `arrangeirf()` | Arranges IRF panels into one figure per shock and optionally saves them as PDF |
 | `plotpval()` | Plots p-values of IRF coefficients across horizons with significance reference lines |
+| `plotseries()` | Plots one or several series in one panel with a single legend, optionally with their correlation |
 | `simulatedata()` | Simulates VAR data with heteroskedastic event shocks |
 
 ## Usage
@@ -170,8 +175,41 @@ wt <- gweakivtest(y = y_w, Y = Y_w, X = X_w, Z = Z_w)
 ``` r
 # Use estimates from hetiv() or proxyiv() to predict the unobserved underlying
 # shocks with the Kalman filter.
-shocks <- kfpredict(Sig = res$Sig, SigR = res$SigR,
+shocks <- predict_shocks(Sig = res$Sig, SigR = res$SigR,
                     Psi = res$Psi, et = res$et)
+
+# With details = TRUE, the estimators return the predicted shocks directly
+# (res$Shocks), together with the squared correlation between the predicted
+# and the true shocks implied by the estimates (res$PredR2):
+prediction_corr(Psi = res$Psi, SigR = res$SigR, Sig = res$Sig)
+
+# Coefficients of the one-step regressions on the information set
+res$Phi    # N x M x P: lags of O
+res$Theta  # N x K: exogenous variables X
+
+# Fitted regression objects are returned only on request (they are large)
+res_models <- hetiv(y = y, O = O, Ind = Ind, P = 2, H = 20,
+                    details = TRUE, models = TRUE)
+```
+
+### Compare series
+
+``` r
+# Predicted shock and proxy on event days, with their correlation
+df <- data.frame(t = seq_along(res$Shocks[, 1]),
+                 prediction = res$Shocks[, 1], proxy = Z[, 1])
+plotseries(df, x_var = "t",
+           series = c(prediction = "Prediction", proxy = "Proxy"),
+           standardize = TRUE, show_cor = TRUE)
+```
+
+### Construct a proxy from several surprise series
+
+``` r
+# X_surp: events x series matrix of high-frequency surprises; the first
+# column defines the target factor
+fac <- gss_pca(X_surp, n_factors = 2)
+fac$factors   # columns "target" and "path"
 ```
 
 ### Simulate data

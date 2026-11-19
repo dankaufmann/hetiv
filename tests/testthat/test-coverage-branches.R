@@ -178,19 +178,19 @@ test_that("estimators cover optional controls, cumulation, interactions, and HAC
   expect_true(all(is.finite(prox$irf)))
 })
 
-test_that("kfpredict covers unscaled and weak-heteroskedasticity branches", {
+test_that("predict_shocks covers unscaled and weak-heteroskedasticity branches", {
   Sig <- diag(2)
   Psi <- matrix(c(1, 0.5), nrow = 2)
   et <- matrix(rnorm(20), ncol = 2)
 
-  raw <- kfpredict(
+  raw <- predict_shocks(
     Sig = Sig, SigR = diag(2), Psi = Psi, et = et,
     scale = FALSE, tol = 0
   )
   expect_equal(dim(raw), c(10, 1))
 
   expect_warning(
-    scaled <- kfpredict(
+    scaled <- predict_shocks(
       Sig = diag(c(0.5, 0.5)), SigR = diag(2),
       Psi = Psi, et = et, scale = TRUE
     ),

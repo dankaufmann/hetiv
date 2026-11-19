@@ -54,11 +54,15 @@
 #' @param pooled Logical. If `FALSE` (default), the shock prediction uses the
 #'   forecast errors and responses at horizon `hpredict` only. If `TRUE`, the
 #'   forecast errors of all horizons `0, ..., hpredict` are stacked and used
-#'   jointly (pooled prediction); see [kfpredict()]. With `hpredict = 0` both
+#'   jointly (pooled prediction); see [predict_shocks()]. With `hpredict = 0` both
 #'   options coincide.
 #' @param details Logical. If `TRUE`, saves detailed IV results, weak instrument
 #'   tests, and shock prediction results, which is slightly slower. If `FALSE`, 
 #'   returns only impulse responses and standard errors.
+#' @param models Logical. Only used with `details = TRUE`. If `TRUE`, the
+#'   fitted regression objects are returned as well (`IVRes`, `OLSRes`, `ORTHRes`). These objects
+#'   are large (several megabytes per regression), and the regressions are
+#'   then estimated with [ivreg::ivreg()] and `sandwich`, which is slower. Default `FALSE`.
 #'
 #' @return A named list. Always contains:
 #'   \describe{
@@ -71,13 +75,13 @@
 #'     \item{`irf`}{Array (H x N x E) of estimated impulse responses.}
 #'     \item{`se`}{Array (H x N x E) of local-projection standard errors.}
 #'     \item{`Shocks`}{Predicted structural shocks on event days from
-#'       [kfpredict()], based on the responses at horizon `hpredict`.}
-#'     \item{`IVRes`}{List of `ivreg` model objects, one per horizon, variable,
+#'       [predict_shocks()], based on the responses at horizon `hpredict`.}
+#'     \item{`IVRes`}{With `models = TRUE` only. List of `ivreg` model objects, one per horizon, variable,
 #'       and shock dimension.}
-#'     \item{`OLSRes`}{List of the information-set regressions whose residuals
+#'     \item{`OLSRes`}{With `models = TRUE` only. List of the information-set regressions whose residuals
 #'       enter the shock prediction, named `OLS.n<i>.h<h>` by outcome
 #'       variable and horizon.}
-#'     \item{`ORTHRes`}{List of OLS models used to orthogonalize the variable
+#'     \item{`ORTHRes`}{With `models = TRUE` only. List of OLS models used to orthogonalize the variable
 #'       underlying the instrument, one per shock dimension.}
 #'     \item{`FirstStage`}{For `E = 1`: data frame with one row per horizon
 #'       `h` giving the number of observations `Tobs`, the homoskedastic
@@ -105,6 +109,24 @@
 #'     \item{`Obs`}{Data frame with observation counts: `Tp` (policy days),
 #'       `Tc` (control days), `To` (contaminated days), `Tt` (total used).}
 #'     \item{`Method`}{Character string `"Heteroskedasticity-IV"`.}
+#'     \item{`PredR2`}{Numeric vector of length `E`: squared correlation
+#'       between the predicted and the true shocks implied by the estimates,
+#'       a measure of the precision of the prediction; see
+#'       [prediction_corr()].}
+#'     \item{`Phi`}{Array N x M x P with the coefficients on the lags of the
+#'       information set `O` in the one-step (horizon 0) regressions of each
+#'       variable in `y`, whose residuals are the one-step forecast errors:
+#'       `Phi[i, j, p]` is the coefficient of lag `p` of variable `j` in `O`
+#'       in the equation of variable `i`. With `O = y` these are the
+#'       autoregressive matrices of a VAR(P). With
+#'       `interact = TRUE`, `Phi` and `const` refer to control days}
+#'     \item{`Theta`}{Matrix N x K with the coefficients on the exogenous
+#'       variables `X` in the same regressions (`NULL` if `X = NULL`).}
+#'     \item{`const`}{Numeric vector of length N with the intercepts of the
+#'       same regressions.}
+#'     \item{`PhiE`, `constE`}{With `interact = TRUE` only: coefficients on
+#'       the lags and intercepts on event days, in the layout of `Phi` and
+#'       `const`. `NULL` otherwise.}
 #'     \item{`et`}{Data frame of forecast errors on event days used for shock
 #'       prediction: residuals of the regression of `y_{t+h}` on the
 #'       information set dated `t - 1`, one column per variable and horizon
@@ -166,7 +188,7 @@
 #' @export
 hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
                   cum = FALSE, cov_type = "HC3", hpredict = 0,
-                  pooled = FALSE, details = FALSE) {
+                  pooled = FALSE, details = FALSE, models = FALSE) {
   args <- .validate_estimator_inputs(
     y = y, O = O, X = X, Ind = Ind, P = P, H = H, E = E, norm = norm,
     cum = cum, cov_type = cov_type, hpredict = hpredict, pooled = pooled
@@ -190,7 +212,12 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
   hres <- if (pooled) seq_len(hrow) else hrow
   etList <- list()
   vtList <- list()
+  infoCoef <- list() # coefficients of the horizon-0 information-set regressions
   details <- .check_logical_scalar(details, "details")
+  models <- .check_logical_scalar(models, "models")
+  # Model objects are needed only if they are returned; otherwise the
+  # regressions are estimated by matrix algebra (see .lp_fit())
+  keep_models <- details && models
 
   # Collect various properties of the data and observations to be used
   Nobs <- dim(y)[1] # Number of observations in y
@@ -323,7 +350,7 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
     # variables are used, this is just a regression of Ze on a constant.
     myFormula <- paste0("Ze ~ ", paste(controls.info, collapse = "+"))
     orthModel <- lm(
-      as.formula(myFormula),
+      as.formula(myFormula, env = baseenv()),
       data = subset(DataMSub, Ind < 2),
       na.action = "na.exclude"
     )
@@ -387,13 +414,29 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
 
         # Estimate IV regression and compute local-projection standard errors
         DataIV <- subset(DataMSub, Ind < 2)
-        IV.mod <- ivreg::ivreg(as.formula(myFormula), data = DataIV)
-        if (cov_type == "NW") {
-          IV.vcov <- sandwich::NeweyWest(IV.mod, prewhite = FALSE, adjust = TRUE)
-        } else {
-          IV.vcov <- sandwich::vcovHC(IV.mod, type = "HC3")
+        fit <- NULL
+        if (!keep_models) {
+          # Fast path: coefficient and standard error by matrix algebra
+          fit <- .lp_fit(
+            y = DataIV$depVar.h, x = DataIV$shockVar,
+            W = .ctrl_matrix(DataIV, controls.lp),
+            z = DataIV$Z, Wz = .ctrl_matrix(DataIV, controls.iv),
+            cov_type = cov_type
+          )
         }
-        IV.se <- sqrt(diag(IV.vcov))
+        if (is.null(fit)) {
+          # Model path: model objects requested, or collinear regressors
+          IV.mod <- ivreg::ivreg(as.formula(myFormula, env = baseenv()), data = DataIV)
+          if (cov_type == "NW") {
+            IV.vcov <- sandwich::NeweyWest(IV.mod, prewhite = FALSE, adjust = TRUE)
+          } else {
+            IV.vcov <- sandwich::vcovHC(IV.mod, type = "HC3")
+          }
+          fit <- list(
+            coef = unname(IV.mod$coefficients["shockVar"]),
+            se = unname(sqrt(diag(IV.vcov))["shockVar"])
+          )
+        }
 
         # Weak-instrument diagnostics on the sample of the IV regression
         if (details == TRUE) {
@@ -426,22 +469,26 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
         if (details == TRUE) {
           # Residuals of the information-set regression at the horizons used
           # for shock prediction (event and control days; once, for e = 1)
-          if (e == 1 && h %in% hres) {
+          if (e == 1 && (h %in% hres || h == 1)) {
             sr <- .shock_residuals(DataMSub, controls.info, DataM$Ind, beg, end, Nobs, h - 1)
-            lab <- paste0("y", i, ".h", h - 1)
-            etList[[lab]] <- sr$et
-            vtList[[lab]] <- sr$vt
-            OLSRes[[paste0("OLS.n", i, ".h", h - 1)]] <- sr$mod
+            if (h %in% hres) {
+              lab <- paste0("y", i, ".h", h - 1)
+              etList[[lab]] <- sr$et
+              vtList[[lab]] <- sr$vt
+              if (keep_models) OLSRes[[paste0("OLS.n", i, ".h", h - 1)]] <- sr$mod
+            }
+            # Horizon 0: coefficients on the lags and exogenous variables
+            if (h == 1) infoCoef[[i]] <- stats::coef(sr$mod)
           }
         }
 
         # Normalizes IRFs to a specific value. Because initial response
-        irfest[h_idx, i, e] <- IV.mod$coefficients["shockVar"] * norm
-        irfse[h_idx, i, e] <- IV.se["shockVar"] * abs(norm)
+        irfest[h_idx, i, e] <- fit$coef * norm
+        irfse[h_idx, i, e] <- fit$se * abs(norm)
         
 
         # Save IV results for every variable and every horizon
-        if (details == TRUE) {
+        if (keep_models) {
           IVRes[[paste0("IV.h", h, ".n", i, ".e", e)]] <- IV.mod
 
           if (h == 1) {
@@ -467,7 +514,26 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
     Sig <- sk$Sig
     SigR <- sk$SigR
     Psi <- sk$Psi
-    Shocks <- kfpredict(Sig, SigR, Psi, et)
+    Shocks <- predict_shocks(Sig, SigR, Psi, et)
+
+    # Squared correlation of the predicted with the true shocks (precision
+    # measure). predict_shocks() has already warned about negative shock
+    # variances, so only that warning is muffled here
+    PredR2 <- if (is.matrix(SigR)) {
+      withCallingHandlers(
+        prediction_corr(Psi, SigR, Sig = Sig),
+        warning = function(w) {
+          if (grepl("shock variances are negative", conditionMessage(w))) {
+            invokeRestart("muffleWarning")
+          }
+        }
+      )
+    } else {
+      rep(NA_real_, E)
+    }
+
+    # Coefficients of the one-step information-set regressions
+    ic <- .info_coefficients(infoCoef, N, M, P, K, interact = interact)
     
     # Save data for weak instruments test by Lewis-Mertens (2025)
     if (controls.info[1] != "1") {
@@ -492,14 +558,21 @@ hetiv <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1, interact = FALSE,
   Method <- "Heteroskedasticity-IV"
 
   if (details == TRUE) {
-    return(list(
+    out <- list(
       irf = irfest, se = irfse,
       Shocks = Shocks,
-      IVRes = IVRes, OLSRes = OLSRes, ORTHRes = ORTHRes,
       Obs = Obs, Method = Method,
+      PredR2 = PredR2,
+      Phi = ic$Phi, Theta = ic$Theta, const = ic$const,
+      PhiE = ic$PhiE, constE = ic$constE,
       et = as.matrix(et), Sig = Sig, SigR = SigR, Psi = Psi, WeakData = WeakData,
       FirstStage = FirstStage, WeakTest = WeakTest
-    ))
+    )
+    # Fitted regression objects only on request (large)
+    if (keep_models) {
+      out <- c(out, list(IVRes = IVRes, OLSRes = OLSRes, ORTHRes = ORTHRes))
+    }
+    return(out)
   } else {
     return(list(irf = irfest, se = irfse, Method = Method))
   }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/kfpredict.R
 \name{kfpredict}
 \alias{kfpredict}
-\title{Extract monetary policy shocks via Kalman filter}
+\title{Deprecated: extract shocks via Kalman filter}
 \usage{
 kfpredict(Sig, SigR, Psi, et, tol = sqrt(.Machine$double.eps), scale = TRUE)
 }
@@ -34,65 +34,11 @@ so that \verb{Sig - SigR = sum_i sigma_i Psi_i Psi_i'}. If \code{FALSE}, the raw
 Kalman filter projection is returned.}
 }
 \value{
-A numeric matrix (T x E) of extracted structural shocks, with the
-same number of rows as \code{et} and one column per shock dimension. Rows with
-missing residuals give missing shocks.
+See \code{\link[=predict_shocks]{predict_shocks()}}.
 }
 \description{
-Extracts structural shocks from reduced-form residuals using the Kalman
-filter formula. Given the response matrix \code{Psi} and the covariance matrices
-of residuals on event and control days, the function recovers the latent
-shocks for each observation. Optionally rescales shocks to unit variance.
+\code{kfpredict()} has been renamed to \code{\link[=predict_shocks]{predict_shocks()}}. It is kept for
+backward compatibility, issues a deprecation warning and will be removed in
+a future release.
 }
-\details{
-The prediction is the linear projection of the shocks on the
-residuals, \verb{eps_t = Sig_eps Psi' Sig^\{-1\} e_t}, up to the scaling
-described under \code{scale}. It applies to any set of forecast errors that is
-linear in the shocks:
-\itemize{
-\item One horizon: \code{Psi} is the N x E response at horizon h and \code{et}
-holds the T x N forecast errors of \verb{y_\{t+h\}} given information dated
-\code{t - 1}. With h = 0 these are the impact responses and the one-step
-residuals.
-\item Pooled horizons: the forecast errors of several horizons are
-stacked, \code{Psi} has one block of N rows per horizon and \code{et} one block
-of N columns per horizon, in the same order. The pooled prediction
-weights every horizon by its signal-to-noise ratio and accounts for
-the correlation of the forecast errors across horizons. It has a
-weakly smaller mean squared error than the prediction from any single
-horizon, and coincides with the impact prediction when all responses
-are complete on impact.
-}
-For convenience, \code{Psi} may be supplied as an array N x E x M and \code{et} as
-an array T x N x M (one slice per horizon); both are then stacked
-internally. \code{Sig} and \code{SigR} must be of dimension N*M in that case.
-
-The pooled prediction requires a nonsingular covariance of the stacked
-forecast errors. A sufficient condition is that at least as many
-non-policy shocks as variables drive the data (the one-day non-policy
-covariance has full rank). If fewer shocks are present, as in a stylised
-simulation with fewer regular shocks than variables, \code{Sig} is singular
-for stacked horizons, and the generalized inverse yields a regularized
-prediction that is sensitive to estimation error in \code{Psi}. A warning is
-issued when \code{Sig} is (nearly) singular, including when the number of
-complete rows of \code{et} does not exceed its number of columns.
-}
-\examples{
-Sig <- diag(2)
-SigR <- diag(c(0.5, 0.5))
-Psi <- matrix(c(1, 0.5), nrow = 2)
-et <- matrix(rnorm(20), ncol = 2)
-kfpredict(Sig = Sig, SigR = SigR, Psi = Psi, et = et)
-
-# Pooled prediction from two horizons (arrays with one slice per horizon)
-Psi2 <- array(c(Psi, 0.5 * Psi), dim = c(2, 1, 2))
-et2 <- array(rnorm(40), dim = c(10, 2, 2))
-et2m <- matrix(et2, nrow = 10)
-kfpredict(Sig = var(et2m), SigR = 0.5 * var(et2m), Psi = Psi2, et = et2)
-
-}
-\references{
-Burri, M. and Kaufmann, D. (2026a). Measuring monetary policy shocks.
-IRENE Working Papers 24-03, IRENE Institute of Economic Research,
-University of Neuchatel.
-}
+\keyword{internal}

@@ -17,7 +17,8 @@ recols(
   cov_type = "HC3",
   hpredict = 0,
   pooled = FALSE,
-  details = FALSE
+  details = FALSE,
+  models = FALSE
 )
 }
 \arguments{
@@ -74,12 +75,18 @@ between 0 and \code{H - 1}.}
 forecast errors and responses at horizon \code{hpredict} only. If \code{TRUE}, the
 forecast errors of all horizons \verb{0, ..., hpredict} are stacked and used
 jointly (pooled prediction), which weights every horizon by its
-signal-to-noise ratio; see \code{\link[=kfpredict]{kfpredict()}}. With \code{hpredict = 0} both
+signal-to-noise ratio; see \code{\link[=predict_shocks]{predict_shocks()}}. With \code{hpredict = 0} both
 options coincide.}
 
 \item{details}{Logical. If \code{TRUE}, saves detailed OLS results and extracts
 shocks, which is slightly slower. If \code{FALSE}, returns only impulse
 responses and standard errors (e.g. for bootstrap).}
+
+\item{models}{Logical. Only used with \code{details = TRUE}. If \code{TRUE}, the
+fitted regression objects are returned as well (\code{OLSRes}). These objects
+are large (several megabytes per regression), and the regressions are
+then estimated with \code{\link[stats:lm]{stats::lm()}} and \code{sandwich}, which is slower.
+Default \code{FALSE}.}
 }
 \value{
 A named list. If \code{details = FALSE}, it contains \code{irf}, \code{se}, and
@@ -87,12 +94,26 @@ A named list. If \code{details = FALSE}, it contains \code{irf}, \code{se}, and
 \describe{
 \item{\code{irf}}{Array (H x N x E) of estimated impulse responses.}
 \item{\code{se}}{Array (H x N x E) of local-projection standard errors.}
-\item{\code{Shocks}}{Output of \code{\link[=kfpredict]{kfpredict()}}: predicted structural shocks.}
-\item{\code{OLSRes}}{List of \code{lm} model objects, one per horizon, variable,
+\item{\code{Shocks}}{Output of \code{\link[=predict_shocks]{predict_shocks()}}: predicted structural shocks.}
+\item{\code{OLSRes}}{With \code{models = TRUE} only. List of \code{lm} model objects, one per horizon, variable,
 and shock dimension.}
 \item{\code{Obs}}{Data frame with observation counts: \code{Tp} (policy days),
 \code{Tc} (control days), \code{To} (contaminated days), \code{Tt} (total used).}
 \item{\code{Method}}{Character string \code{"Recursive-OLS"}.}
+\item{\code{PredR2}}{Numeric vector of length \code{E}: squared correlation
+between the predicted and the true shocks implied by the estimates,
+a measure of the precision of the prediction; see
+\code{\link[=prediction_corr]{prediction_corr()}}.}
+\item{\code{Phi}}{Array N x M x P with the coefficients on the lags of the
+information set \code{O} in the one-step (horizon 0) regressions of each
+variable in \code{y}, whose residuals are the one-step forecast errors:
+\code{Phi[i, j, p]} is the coefficient of lag \code{p} of variable \code{j} in \code{O}
+in the equation of variable \code{i}. With \code{O = y} these are the
+autoregressive matrices of a VAR(P).}
+\item{\code{Theta}}{Matrix N x K with the coefficients on the exogenous
+variables \code{X} in the same regressions (\code{NULL} if \code{X = NULL}).}
+\item{\code{const}}{Numeric vector of length N with the intercepts of the
+same regressions.}
 \item{\code{et}}{Matrix of forecast errors on event days used for shock
 prediction, one column per variable and horizon (\code{y1.h0}, ...,
 \code{yN.h0}, \code{y1.h1}, ...): horizon \code{hpredict} only if \code{pooled = FALSE},

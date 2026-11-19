@@ -45,19 +45,21 @@ test_that("pooled prediction stacks residuals and responses over horizons", {
     expect_equal(dim(r$SigR), c(6, 6))
     # Psi stacks the IRF rows 1..3 horizon by horizon
     expect_equal(unname(r$Psi[, 1]), c(r$irf[1, , 1], r$irf[2, , 1], r$irf[3, , 1]))
-    # Shocks reproduce kfpredict() on the stored inputs
-    expect_equal(r$Shocks, kfpredict(r$Sig, r$SigR, r$Psi, r$et))
+    # Shocks reproduce predict_shocks() on the stored inputs
+    expect_equal(r$Shocks, predict_shocks(r$Sig, r$SigR, r$Psi, r$et))
     # ... and on the 3-D array interface
     et3 <- array(as.matrix(r$et), dim = c(nrow(r$et), 2, 3))
     Psi3 <- array(r$irf[1:3, , 1], dim = c(3, 2, 1))
     Psi3 <- aperm(Psi3, c(2, 3, 1)) # N x E x M
-    expect_equal(r$Shocks, kfpredict(r$Sig, r$SigR, Psi3, et3))
+    expect_equal(r$Shocks, predict_shocks(r$Sig, r$SigR, Psi3, et3))
     # Residuals at horizon 0 equal the single-horizon ones
     expect_true(all(is.na(r$Shocks[d$Ind == 0, ])))
   }
   single <- suppressWarnings(hetiv(y = d$y, O = d$y, Ind = d$Ind, P = 1, H = 4, details = TRUE))
   expect_equal(fits$het$et[, 1:2], single$et)
-  expect_equal(names(fits$het$OLSRes)[1:3], c("OLS.n1.h0", "OLS.n1.h1", "OLS.n1.h2"))
+  het_models <- suppressWarnings(hetiv(y = d$y, O = d$y, Ind = d$Ind, P = 1, H = 4,
+    hpredict = 2, pooled = TRUE, details = TRUE, models = TRUE))
+  expect_equal(names(het_models$OLSRes)[1:3], c("OLS.n1.h0", "OLS.n1.h1", "OLS.n1.h2"))
   # Pooled shocks are highly, but not perfectly, correlated with the impact ones
   rho <- cor(single$Shocks, fits$het$Shocks, use = "complete.obs")
   expect_gt(rho, 0.5)
@@ -89,11 +91,11 @@ test_that(".shock_residuals drops control days with an event in the window", {
   expect_equal(extra, c(8, 9, 18, 19, 23, 24, 28, 29))
 })
 
-test_that("kfpredict warns when the residual covariance is singular", {
+test_that("predict_shocks warns when the residual covariance is singular", {
   et <- matrix(rnorm(12), nrow = 3, ncol = 4)
   Sig <- var(et)
   expect_warning(
-    kfpredict(Sig = Sig, SigR = Sig, Psi = matrix(1, 4, 1), et = et, scale = FALSE),
+    predict_shocks(Sig = Sig, SigR = Sig, Psi = matrix(1, 4, 1), et = et, scale = FALSE),
     "singular"
   )
   expect_error(

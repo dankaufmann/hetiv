@@ -30,14 +30,21 @@ reference:
       - gweakivtest
   - title: Shock extraction and IRF computation
     contents:
-      - kfpredict
+      - predict_shocks
+      - prediction_corr
       - computeirf
+  - title: Proxies and model specification
+    desc: Construct surprise factors and choose the lag length
+    contents:
+      - gss_pca
+      - lag_opt
   - title: Plotting
     contents:
       - plotirf
       - plot2irf
       - plotpval
       - arrangeirf
+      - plotseries
   - title: Simulation
     contents:
       - simulatedata
@@ -47,3 +54,4 @@ reference:
       - logdiff
       - firstdiff
       - filllinear
+      - rescale_to_match

@@ -78,8 +78,8 @@ test_that("computeirf computes cumulated responses", {
   expect_equal(as.numeric(out[, 2, 1]), c(2, 0.5, 0.125))
 })
 
-test_that("kfpredict accepts one-shock impact vectors", {
-  out <- kfpredict(
+test_that("predict_shocks accepts one-shock impact vectors", {
+  out <- predict_shocks(
     Sig = diag(2),
     SigR = diag(c(0.5, 0.5)),
     Psi = c(1, 0.5),
@@ -90,9 +90,9 @@ test_that("kfpredict accepts one-shock impact vectors", {
   expect_equal(dim(out), c(10, 1))
 })
 
-test_that("kfpredict validates dimensions", {
+test_that("predict_shocks validates dimensions", {
   expect_error(
-    kfpredict(
+    predict_shocks(
       Sig = diag(2),
       SigR = diag(2),
       Psi = matrix(1, 3, 1),
@@ -244,4 +244,17 @@ test_that("gweakivtest reports singular designs clearly", {
     ),
     "Z is rank deficient"
   )
+})
+
+test_that("kfpredict is deprecated and matches predict_shocks", {
+  set.seed(42)
+  et <- matrix(rnorm(60), ncol = 2)
+  Sig <- var(et)
+  SigR <- 0.5 * Sig
+  Psi <- matrix(c(1, 0.5), ncol = 1)
+  expect_warning(
+    old <- kfpredict(Sig = Sig, SigR = SigR, Psi = Psi, et = et),
+    "deprecated"
+  )
+  expect_equal(old, predict_shocks(Sig = Sig, SigR = SigR, Psi = Psi, et = et))
 })

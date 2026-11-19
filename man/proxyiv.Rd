@@ -19,7 +19,8 @@ proxyiv(
   recursive = FALSE,
   hpredict = 0,
   pooled = FALSE,
-  details = FALSE
+  details = FALSE,
+  models = FALSE
 )
 }
 \arguments{
@@ -95,12 +96,17 @@ Must lie between 0 and \code{H - 1}.}
 \item{pooled}{Logical. If \code{FALSE} (default), the shock prediction uses the
 forecast errors and responses at horizon \code{hpredict} only. If \code{TRUE}, the
 forecast errors of all horizons \verb{0, ..., hpredict} are stacked and used
-jointly (pooled prediction); see \code{\link[=kfpredict]{kfpredict()}}. With \code{hpredict = 0} both
+jointly (pooled prediction); see \code{\link[=predict_shocks]{predict_shocks()}}. With \code{hpredict = 0} both
 options coincide.}
 
 \item{details}{Logical. If \code{TRUE}, saves detailed IV results, weak instrument
 tests, and shock prediction results, which is slightly slower. If \code{FALSE},
 returns only impulse responses and standard errors.}
+
+\item{models}{Logical. Only used with \code{details = TRUE}. If \code{TRUE}, the
+fitted regression objects are returned as well (\code{IVRes}, \code{OLSRes}). These objects
+are large (several megabytes per regression), and the regressions are
+then estimated with \code{\link[ivreg:ivreg]{ivreg::ivreg()}} and \code{sandwich}, which is slower. Default \code{FALSE}.}
 }
 \value{
 A named list. Always contains:
@@ -112,10 +118,10 @@ A named list. Always contains:
 With \code{details = TRUE}, additionally contains:
 \describe{
 \item{\code{Shocks}}{Predicted structural shocks on event days from
-\code{\link[=kfpredict]{kfpredict()}}, based on the responses at horizon \code{hpredict}.}
-\item{\code{IVRes}}{List of \code{ivreg} model objects, one per horizon, variable,
+\code{\link[=predict_shocks]{predict_shocks()}}, based on the responses at horizon \code{hpredict}.}
+\item{\code{IVRes}}{With \code{models = TRUE} only. List of \code{ivreg} model objects, one per horizon, variable,
 and shock dimension.}
-\item{\code{OLSRes}}{List of the information-set regressions whose residuals
+\item{\code{OLSRes}}{With \code{models = TRUE} only. List of the information-set regressions whose residuals
 enter the shock prediction, named \verb{OLS.n<i>.h<h>} by outcome
 variable and horizon.}
 \item{\code{Obs}}{Data frame with observation counts: \code{Tp} (policy days),
@@ -145,6 +151,20 @@ covariance estimator, irrespective of \code{cov_type}, and the relative
 bias criterion (\code{crit = "rel"}), for comparability with Montiel Olea
 and Pflueger (2013). Rows where the outcome is a policy variable
 (\code{i <= E}) on impact are omitted. \code{NULL} for \code{E = 1}.}
+\item{\code{PredR2}}{Numeric vector of length \code{E}: squared correlation
+between the predicted and the true shocks implied by the estimates,
+a measure of the precision of the prediction; see
+\code{\link[=prediction_corr]{prediction_corr()}}.}
+\item{\code{Phi}}{Array N x M x P with the coefficients on the lags of the
+information set \code{O} in the one-step (horizon 0) regressions of each
+variable in \code{y}, whose residuals are the one-step forecast errors:
+\code{Phi[i, j, p]} is the coefficient of lag \code{p} of variable \code{j} in \code{O}
+in the equation of variable \code{i}. With \code{O = y} these are the
+autoregressive matrices of a VAR(P).}
+\item{\code{Theta}}{Matrix N x K with the coefficients on the exogenous
+variables \code{X} in the same regressions (\code{NULL} if \code{X = NULL}).}
+\item{\code{const}}{Numeric vector of length N with the intercepts of the
+same regressions.}
 \item{\code{et}}{Data frame of forecast errors on event days used for shock
 prediction, one column per variable and horizon (\code{y1.h0}, ...,
 \code{yN.h0}, \code{y1.h1}, ...): horizon \code{hpredict} only if \code{pooled = FALSE},

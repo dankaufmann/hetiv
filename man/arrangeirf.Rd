@@ -40,7 +40,8 @@ saved.}
 \item{figScaleW}{Numeric. Width of one panel column in inches.}
 
 \item{figScaleH}{Numeric. Height of one panel row in inches. The saved
-figure has height \code{0.9 * nRows * figScaleH}.}
+figure has height \code{0.9 * nRows * figScaleH}, plus the height of the
+common legend if there is one.}
 }
 \value{
 Invisibly, a list of length \code{E} of arranged figures (\code{gtable}
@@ -50,7 +51,9 @@ also drawn on the current graphics device as a side effect.
 \description{
 Arranges a list of IRF panels, as returned by \code{\link[=plotirf]{plotirf()}} or \code{\link[=plot2irf]{plot2irf()}},
 into a grid with one figure per shock dimension and a common x-axis label.
-Optionally saves each figure as a PDF.
+If the panels carry a legend (see \code{legend} in \code{\link[=plotirf]{plotirf()}}), it is removed
+from the panels and drawn once below each figure. Optionally saves each
+figure as a PDF.
 }
 \examples{
 irf <- array(c(1, 0.5, 0.2, 0.1, 0, 0.3, 0.2, 0.1), dim = c(4, 2, 1))

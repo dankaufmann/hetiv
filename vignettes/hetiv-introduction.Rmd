@@ -41,7 +41,7 @@ robustness check.
 
 The package allows for multiple shocks and endogenous variables. Weak-instrument HAR inference is implemented via the generalised minimum eigenvalue test of Lewis and Mertens (2025), which nests the classical Stock-Yogo (2005) test for the univariate homoskedastic case. `gweakivtest()` is a direct port of the Matlab files by Lewis and Mertens (2025) available on **https://karelmertens.com/research/**.
 
-In addition, the package provides `kfpredict()` for predicting the underlying unobserved shocks based on the Kalman filter, as suggested by Burri and Kaufmann (2026a). We currently work on an extension to exploit multiple IRF horizons for shock extraction.
+In addition, the package provides `predict_shocks()` for predicting the underlying unobserved shocks based on the Kalman filter, as suggested by Burri and Kaufmann (2026a). We currently work on an extension to exploit multiple IRF horizons for shock extraction.
 
 This vignette demonstrates the functionality using a simulated four-variable VAR
 with two structural shocks.
@@ -49,7 +49,7 @@ with two structural shocks.
 ## Simulated data
 
 We simulate data from a VAR(2) with $N = 4$ variables, $E = 2$ event (policy)
-shocks, $R = 2$ regular shocks, and $P = 2$ lags over $T = 500$ observations. The model reads:
+shocks, $R = 4$ regular shocks, and $P = 2$ lags over $T = 500$ observations. The model reads:
 
 $$y_t = \Psi \varepsilon_t + \Gamma v_t + \Phi(L) y_{t-1} + \beta X_t \ \ \text{for } t\in \mathcal{P}$$
 
@@ -57,7 +57,7 @@ $$y_t =  \Gamma v_t + \Phi(L) y_{t-1} + \beta X_t \ \ \text{for } t\in \mathcal{
 
 where $\mathcal{P}, \mathcal{C}$ denote policy event and other days, respectively, $\Psi$ is the impact matrix of $E$ policy event shocks and $\Gamma$ the impact matrix of $R$ other shocks. $\Phi(L)$ is a conformable lag polynomial, and $X_t$ is a matrix of deterministic terms.
 
-Regular shocks occur on all days. A policy event occurs every 10th period (approximately 10% of observations). The latter introduces heteroskedasticity in the variance-covariance matrix of the reduced-form residuals `hetiv()` exploits to identify the impulse response functions. Shocks are drawn from a standard normal distribution. The impact matrix is lower-triangular, corresponding to the identifying assumption by Burri and Kaufmann (2026b) that the first shock has a contemporaneous effect on all variables, while the second shock has no contemporaneous effect on the first variable. Deterministic weekday patterns are added to variables 3 and 4 to illustrate the role of controls. The event indicator `Ind` equals 1 on policy event days and 0 on control days.
+Regular shocks occur on all days. There are as many regular shocks as variables, so that the covariance matrix of the reduced-form residuals on control days has full rank. A policy event occurs every 10th period (approximately 10% of observations). The latter introduces heteroskedasticity in the variance-covariance matrix of the reduced-form residuals `hetiv()` exploits to identify the impulse response functions. Shocks are drawn from a standard normal distribution. The impact matrix is lower-triangular, corresponding to the identifying assumption by Burri and Kaufmann (2026b) that the first shock has a contemporaneous effect on all variables, while the second shock has no contemporaneous effect on the first variable. Deterministic weekday patterns are added to variables 3 and 4 to illustrate the role of controls. The event indicator `Ind` equals 1 on policy event days and 0 on control days.
 
 
 ```{r dgp}
@@ -66,7 +66,7 @@ library(hetiv)
 # Dimensions
 N <- 4 # variables
 E <- 2 # event shocks
-R <- 2 # regular shocks
+R <- 4 # regular shocks (as many as variables)
 P <- 2 # VAR lag order
 H <- 20 # IRF horizons
 Nevn <- 10 # Frequency of event shocks
@@ -82,6 +82,8 @@ SigE <- 4 # event shock variance (scalar, applies to all E shocks)
 PsiR <- matrix(0, N, R)
 PsiR[, 1] <- c(1.0, -0.3, 0.2, 0.1)
 PsiR[, 2] <- c(0.2, 1.0, -0.1, 0.4)
+PsiR[, 3] <- c(0.1, 0.2, 1.0, -0.2)
+PsiR[, 4] <- c(-0.1, 0.1, 0.3, 1.0)
 
 # VAR coefficient matrices at lags 1 and 2
 Phi <- array(0, dim = c(N, N, P))
@@ -167,9 +169,29 @@ res_het_X <- hetiv(
 )
 ```
 
+With `details = TRUE`, the result also contains the coefficients of the one-step regressions of each variable on the information set: `Phi` (an N x M x P array with the coefficients on the lags of `O`), `Theta` (an N x K matrix with the coefficients on the exogenous variables `X`) and `const` (the intercepts). Because the information set consists of the variables themselves (`O = y`), `Phi` estimates the autoregressive matrices of the VAR. The estimated coefficients on the first lag are close to the true matrix used in the simulation.
+
+```{r het-coefficients}
+# Estimated (left) and true (right) coefficients on the first lag
+knitr::kable(
+  cbind(res_het_X$Phi[, , 1], Phi[, , 1]),
+  digits = 2, row.names = FALSE,
+  col.names = c(paste0("Est. y", 1:N), paste0("True y", 1:N)),
+  caption = "Coefficients on the first lag: estimated (Phi) and true"
+)
+```
+
+The number of lags can be chosen with `lag_opt()`, which selects the lag length of a VAR by an information criterion (it requires the `vars` package).
+
+```{r lag-opt, eval = requireNamespace("vars", quietly = TRUE)}
+lag_opt(y_data, X = X_data, crit = "AIC", lag.max = 8)
+```
+
+The fitted regression objects are not returned by default, because they are large. They can be requested with `models = TRUE` (lists `IVRes`, `OLSRes` and `ORTHRes`); the regressions are then estimated with `ivreg::ivreg()`, which is slower.
+
 ### Proxy-IV
 
-Third, we use the external instrument to estimate the model via proxy-IV. The same lags are included as in the second model. However, the weekday dummies are dropped due to collinearity, as only the event days are used to identify the responses. Note that the proxy-IV function still requires `Ind` as an input, because, in case the instrument is missing, but `Ind = 1`, we can later on predict the unobserved shock using the Kalman filter with `kfpredict()` (see Burri and Kaufmann, 2026a).
+Third, we use the external instrument to estimate the model via proxy-IV. The same lags are included as in the second model. However, the weekday dummies are dropped due to collinearity, as only the event days are used to identify the responses. Note that the proxy-IV function still requires `Ind` as an input, because, in case the instrument is missing, but `Ind = 1`, we can later on predict the unobserved shock using the Kalman filter with `predict_shocks()` (see Burri and Kaufmann, 2026a).
 
 ```{r proxy-iv}
 res_proxy <- proxyiv(
@@ -376,21 +398,21 @@ invisible(arrangeirf(
 
 ## Shock extraction
 
-`kfpredict()` recovers structural shocks from reduced-form residuals via a
+`predict_shocks()` recovers structural shocks from reduced-form residuals via a
 Kalman filter prediction. It requires the estimated impact matrix `Psi`, the
 residual covariance matrices on event and control days (`Sig`, `SigR`), and the
-residuals `et`. With `details = TRUE`, the estimators call `kfpredict()` automatically and return the predicted shocks as `Shocks`. By default, the prediction is based on the one-step-ahead residuals and the impact responses; the option `hpredict` selects a longer horizon instead (`hpredict = 0` is the impact horizon, matching the row labels of `irf`).
+residuals `et`. With `details = TRUE`, the estimators call `predict_shocks()` automatically and return the predicted shocks as `Shocks`. By default, the prediction is based on the one-step-ahead residuals and the impact responses; the option `hpredict` selects a longer horizon instead (`hpredict = 0` is the impact horizon, matching the row labels of `irf`).
 
-```{r kfpredict}
+```{r predict_shocks}
 shocks_het <- res_het$Shocks
 shocks_het_X <- res_het_X$Shocks
 shocks_proxy <- res_proxy$Shocks
 shocks_proxy_rec <- res_proxy_rec$Shocks
 
-# The same prediction can be obtained by calling kfpredict() directly
+# The same prediction can be obtained by calling predict_shocks() directly
 all.equal(
   shocks_het_X,
-  kfpredict(
+  predict_shocks(
     Sig = res_het_X$Sig, SigR = res_het_X$SigR,
     Psi = res_het_X$Psi, et = res_het_X$et
   )
@@ -439,13 +461,32 @@ knitr::kable(
 )
 ```
 
-The correlation between the true shocks and the proxy is slightly lower than one due to an attenuation bias (see Burri and Kaufmann, 2026a), which depends on the variance of the noise term affecting the proxy. The correlation of the prediction is also relatively low if we use a misspecified model. However, if we use the correct model, the correlation is close to unity for Shock 1 and 0.94 for Shock 2. Proxy-IV with controls yields a high correlation as well, at least for Shock 1. Note that the specific values depend on the exact nature of the simulated data.
+The correlation between the true shocks and the proxy is lower than one due to an attenuation bias (see Burri and Kaufmann, 2026a), which depends on the variance of the noise term affecting the proxy. The predictions from the correctly specified models, HET-IV and proxy-IV with controls, have a correlation of about 0.91 with the true shocks, similar to the proxy. For the first shock, the correlation is lower if we use the misspecified model (0.87). The predictions are not perfectly accurate, because the regular shocks add noise to the forecast errors on event days. Note that the specific values depend on the exact nature of the simulated data.
+
+`plotseries()` plots several series in one panel. Here we compare the predicted first shock with the true shock on event days. The prediction is rescaled to the mean and variance of the true shock with `rescale_to_match()`.
+
+```{r plotseries, fig.height = 3.5}
+ev <- which(Ind == 1 & !is.na(shocks_het_X[, 1]))
+shock_df <- data.frame(
+  event      = seq_along(ev),
+  true       = true_shocks[ev, 1],
+  prediction = rescale_to_match(true_shocks[ev, 1], shocks_het_X[ev, 1])
+)
+
+plotseries(
+  shock_df,
+  x_var    = "event",
+  series   = c(true = "True shock", prediction = "Prediction (HET-IV with controls)"),
+  x_lab    = "Policy event",
+  show_cor = TRUE
+)
+```
 
 ### Prediction from several horizons
 
 By default, the shocks are predicted from the one-step-ahead forecast errors and the impact responses. The same projection applies to the forecast errors of `y_{t+h}` given the information dated `t-1`, with the impact responses replaced by the horizon-`h` responses (`hpredict = h`), and to the forecast errors of all horizons `0, ..., h` jointly (`pooled = TRUE`). The pooled prediction weights every horizon by its signal-to-noise ratio and, in population, has a weakly smaller mean squared error than the prediction from any single horizon. If all responses are complete on impact, it coincides with the impact prediction, and a single later horizon can only add noise.
 
-The pooled prediction requires a nonsingular covariance of the stacked forecast errors, which is estimated on event days only. A sufficient condition is that at least as many non-policy shocks as variables drive the data. The simulated model above violates this condition deliberately: two regular shocks drive four variables, so the twelve stacked forecast errors of horizons 0 to 2 are driven by only eight shocks and their covariance is singular. `kfpredict()` warns in this case and falls back on a generalised inverse, which makes the prediction sensitive to estimation error in the responses. The table shows the consequence: the pooled prediction is better than the single horizon-2 prediction but clearly worse than the impact prediction.
+The pooled prediction requires a nonsingular covariance of the stacked forecast errors, which is estimated on event days only. A sufficient condition is that at least as many non-policy shocks as variables drive the data. The simulated model satisfies this condition, because four regular shocks drive four variables. The table shows that the pooled prediction is about as accurate as the impact prediction (a correlation of 0.88 against 0.91 for both shocks), while the prediction from horizon 2 alone is clearly worse. In this model all responses are complete on impact, so the later horizons add no information. The small remaining gap between the pooled and the impact prediction reflects the estimation of a 12 by 12 covariance from about 50 event days.
 
 ```{r shock-pooled}
 res_het_h2 <- hetiv(
@@ -474,42 +515,77 @@ knitr::kable(
   tab_pool,
   col.names = c("Impact (hpredict = 0)", "Horizon 2 (hpredict = 2)", "Pooled (horizons 0-2)"),
   row.names = TRUE,
-  caption = "Correlation of predicted shocks with true shocks by prediction horizon (two regular shocks, singular stacked covariance)"
-)
-```
-
-With as many regular shocks as variables, the stacked covariance is nonsingular and the pooled prediction behaves as the theory predicts. We simulate a second data set that differs from the first only in two additional regular shocks. The impact prediction is less accurate than before, because the additional shocks add noise on impact, but the pooled prediction is now about as accurate as the impact prediction, while the single horizon-2 prediction remains clearly worse. The small remaining gap reflects the estimation of a 12 by 12 covariance from about 50 event days.
-
-```{r shock-pooled-fullrank}
-PsiR4 <- cbind(PsiR, c(0.1, 0.2, 1.0, -0.2), c(-0.1, 0.1, 0.3, 1.0))
-sim4 <- simulatedata(
-  Phi = Phi, SigE = SigE, PsiE = PsiE, PsiR = PsiR4,
-  Nobs = Nobs, Nbin = Nbin, N = N, R = ncol(PsiR4), E = E,
-  Nevn = Nevn, P = P, eDist = 0, seed = 42
-)
-y4 <- sim4$y
-Ind4 <- as.integer(sim4$IndE[, 1])
-fit4 <- function(...) {
-  hetiv(y = y4, O = y4, Ind = Ind4, P = P, H = H, E = E, norm = 1, details = TRUE, ...)
-}
-res4_0 <- fit4()
-res4_h2 <- fit4(hpredict = 2)
-res4_pool <- fit4(hpredict = 2, pooled = TRUE)
-
-tab_pool4 <- round(rbind(
-  cor_pool(sim4$eE, res4_0, res4_h2, res4_pool, 1),
-  cor_pool(sim4$eE, res4_0, res4_h2, res4_pool, 2)
-), 2)
-rownames(tab_pool4) <- c("Shock 1", "Shock 2")
-knitr::kable(
-  tab_pool4,
-  col.names = c("Impact (hpredict = 0)", "Horizon 2 (hpredict = 2)", "Pooled (horizons 0-2)"),
-  row.names = TRUE,
   caption = "Correlation of predicted shocks with true shocks by prediction horizon (four regular shocks, nonsingular stacked covariance)"
 )
 ```
 
+The condition matters. To illustrate, we simulate a second data set that differs from the first only in that two of the four regular shocks are dropped (and without the weekday pattern). Two regular shocks then drive four variables, so the twelve stacked forecast errors of horizons 0 to 2 are driven by only eight shocks and their covariance is singular. `predict_shocks()` warns in this case and falls back on a generalised inverse, which makes the prediction sensitive to estimation error in the responses. The table shows the consequence. The impact prediction is more accurate than in the first simulation, because fewer shocks add noise on impact. The pooled prediction, however, is clearly worse than the impact prediction, and for the second shock even slightly worse than the prediction from horizon 2 alone.
+
+```{r shock-pooled-singular}
+sim2 <- simulatedata(
+  Phi = Phi, SigE = SigE, PsiE = PsiE, PsiR = PsiR[, 1:2],
+  Nobs = Nobs, Nbin = Nbin, N = N, R = 2, E = E,
+  Nevn = Nevn, P = P, eDist = 0, seed = 42
+)
+y2 <- sim2$y
+Ind2 <- as.integer(sim2$IndE[, 1])
+fit2 <- function(...) {
+  hetiv(y = y2, O = y2, Ind = Ind2, P = P, H = H, E = E, norm = 1, details = TRUE, ...)
+}
+res2_0 <- fit2()
+res2_h2 <- fit2(hpredict = 2)
+res2_pool <- fit2(hpredict = 2, pooled = TRUE)
+
+tab_pool2 <- round(rbind(
+  cor_pool(sim2$eE, res2_0, res2_h2, res2_pool, 1),
+  cor_pool(sim2$eE, res2_0, res2_h2, res2_pool, 2)
+), 2)
+rownames(tab_pool2) <- c("Shock 1", "Shock 2")
+knitr::kable(
+  tab_pool2,
+  col.names = c("Impact (hpredict = 0)", "Horizon 2 (hpredict = 2)", "Pooled (horizons 0-2)"),
+  row.names = TRUE,
+  caption = "Correlation of predicted shocks with true shocks by prediction horizon (two regular shocks, singular stacked covariance)"
+)
+```
+
 The pooled prediction is therefore most useful when the responses build up after the event, so that later horizons carry information that the impact response misses, and when the number of event days is large relative to the dimension of the stacked covariance.
+
+### Precision of the prediction
+
+The estimators also report how precise the prediction should be according to the estimated model: `PredR2` is the squared correlation between the predicted and the true shock implied by the estimated responses and covariance matrices (see `prediction_corr()`). Unlike the correlations above, it does not require the true shocks, so it is available in applications. The following table compares it with the realised squared correlation, for the three predictions of the first simulation.
+
+```{r pred-r2}
+# Realised squared correlation of the predictions with the true shocks
+realised_r2 <- function(res, true) {
+  diag(cor(res$Shocks, true, use = "complete.obs"))^2
+}
+
+tab_r2 <- rbind(
+  res_het_X$PredR2, realised_r2(res_het_X, true_shocks),
+  res_het_h2$PredR2, realised_r2(res_het_h2, true_shocks),
+  res_het_pool$PredR2, realised_r2(res_het_pool, true_shocks)
+)
+rownames(tab_r2) <- paste0(
+  rep(c("Impact", "Horizon 2", "Pooled"), each = 2),
+  rep(c(": PredR2", ": realised"), 3)
+)
+
+knitr::kable(
+  tab_r2,
+  digits = 2, col.names = c("Shock 1", "Shock 2"),
+  caption = "Squared correlation of predicted and true shocks: implied by the estimates (PredR2) and realised"
+)
+```
+
+`PredR2` is close to the realised value for the impact prediction and correctly indicates that the prediction from horizon 2 alone is much less precise. For the pooled prediction it is too optimistic. The reason is that `PredR2` is a population measure evaluated at the estimates: it ignores estimation error, which is larger for the pooled prediction with its twelve stacked forecast errors. It is also informative only if the responses are consistently estimated.
+
+The measure also requires a nonsingular covariance of the forecast errors on control days. In the second simulation, where two regular shocks drive four variables, this covariance is nearly singular. `PredR2` is then close to one whatever the realised accuracy, and the estimators issue a warning (see the warnings above).
+
+```{r pred-r2-singular}
+# Second simulation (two regular shocks): implied and realised
+round(rbind(PredR2 = res2_0$PredR2, realised = realised_r2(res2_0, sim2$eE)), 2)
+```
 
 ## Weak instrument test
 
@@ -551,7 +627,7 @@ knitr::kable(
 )
 ```
 
-All specifications pass the test for the first shock by a wide margin. For the second shock, the specification without controls is affected by a weak instrument problem, whereas the correctly specified model passes the test. Proxy-IV is borderline for the second shock: the statistic lies just below the critical value. Note that this depends on the degree of noise used to construct the proxy and does not suggest that `hetiv()` is generally superior to `proxyiv()`. The recursive restriction does not change the test, because the test does not depend on the recursive controls: the system for shock `e` always contains the first `e` policy variables and instruments. In this example, the critical values are around 14 for the first shock (one endogenous regressor) and around 23 for the second shock (two endogenous regressors). The latter is close to the conservative critical value of the simplified HAR test for the univariate case by Montiel Olea and Pflueger (2013) and Lewis (2022). Both are higher than the common rule of thumb of 10 for the Stock and Yogo (2005) test.
+All specifications pass the test for the first shock by a wide margin. For the second shock, the specification without controls is affected by a weak instrument problem, whereas the correctly specified model passes the test. Proxy-IV passes the test for the second shock as well, with a smaller margin than HET-IV with controls. Note that this depends on the degree of noise used to construct the proxy and does not suggest that `hetiv()` is generally superior to `proxyiv()`. The recursive restriction does not change the test, because the test does not depend on the recursive controls: the system for shock `e` always contains the first `e` policy variables and instruments. In this example, the critical values are around 14 for the first shock (one endogenous regressor) and between 23 and 29 for the second shock (two endogenous regressors). The latter are close to, or somewhat above, the conservative critical value of the simplified HAR test for the univariate case by Montiel Olea and Pflueger (2013) and Lewis (2022). Both are higher than the common rule of thumb of 10 for the Stock and Yogo (2005) test.
 
 Because the critical values may depend on the outcome variable and the horizon, it is useful to inspect the full `WeakTest` data frame. The following table shows, for HET-IV with controls and the second shock, the statistic and the critical value for the third and fourth variables at selected horizons.
 
@@ -569,6 +645,46 @@ knitr::kable(
 ```
 
 
+## Constructing a proxy from several series
+
+In applications, the proxy is often constructed from a panel of high-frequency surprises in several financial market series. `gss_pca()` extracts one or two factors from such a panel, following Gurkaynak, Sack and Swanson (2005). With two factors, the second factor ("path") is rotated to have no effect on the first series, so that the first factor ("target") is the only one that moves it. Missing values in the panel are handled by EM principal components.
+
+To illustrate, we simulate six surprise series on the event days. They are driven by the two event shocks and series-specific noise. The first series responds to the first shock only.
+
+```{r gss-pca}
+set.seed(42)
+ev_all <- which(Ind == 1)
+
+# Loadings of the six series on the two event shocks
+L_surp <- cbind(
+  c(1.0, 0.9, 0.7, 0.5, 0.3, 0.2),
+  c(0.0, 0.3, 0.6, 0.8, 1.0, 0.9)
+)
+surprises <- sim$eE[ev_all, ] %*% t(L_surp) +
+  matrix(rnorm(length(ev_all) * 6, sd = 0.5), ncol = 6)
+colnames(surprises) <- paste0("s", 1:6)
+surprises[c(3, 17), 5] <- NA # some missing observations
+
+factors <- gss_pca(surprises, n_factors = 2)
+factors
+
+# Correlation of the factors with the true event shocks
+round(cor(factors$factors, sim$eE[ev_all, ]), 2)
+```
+
+The factors can be used as proxies in `proxyiv()`: place them in a T x 2 matrix `Z` that contains the factors on event days and zeros on control days.
+
+```{r gss-proxy}
+Z_gss <- matrix(0, nrow = Nobs, ncol = 2)
+Z_gss[ev_all, ] <- factors$factors
+
+res_proxy_gss <- proxyiv(
+  y = y_data, O = y_data, Z = Z_gss, Ind = Ind,
+  P = P, H = H, E = E, details = TRUE
+)
+round(res_proxy_gss$PredR2, 2)
+```
+
 ## References
 
 Burri, M. and Kaufmann, D. (2026a). Measuring monetary policy shocks.
@@ -581,6 +697,10 @@ data: A heteroskedasticity IV approach. *Economics Letters*, 268, 113091.
 
 Gertler, M. and Karadi, P. (2015). Monetary policy surprises, credit costs, and
 economic activity. *American Economic Journal: Macroeconomics*, 7(1), 44–76.
+
+Gürkaynak, R. S., Sack, B. and Swanson, E. T. (2005). Do actions speak louder
+than words? The response of asset prices to monetary policy actions and
+statements. *International Journal of Central Banking*, 1(1), 55–93.
 
 Jordà, Ò. (2005). Estimation and inference of impulse responses by local
 projections. *American Economic Review*, 95(1), 161–182.

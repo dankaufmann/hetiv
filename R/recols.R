@@ -63,23 +63,42 @@
 #'   forecast errors and responses at horizon `hpredict` only. If `TRUE`, the
 #'   forecast errors of all horizons `0, ..., hpredict` are stacked and used
 #'   jointly (pooled prediction), which weights every horizon by its
-#'   signal-to-noise ratio; see [kfpredict()]. With `hpredict = 0` both
+#'   signal-to-noise ratio; see [predict_shocks()]. With `hpredict = 0` both
 #'   options coincide.
 #' @param details Logical. If `TRUE`, saves detailed OLS results and extracts
 #'   shocks, which is slightly slower. If `FALSE`, returns only impulse
 #'   responses and standard errors (e.g. for bootstrap).
+#' @param models Logical. Only used with `details = TRUE`. If `TRUE`, the
+#'   fitted regression objects are returned as well (`OLSRes`). These objects
+#'   are large (several megabytes per regression), and the regressions are
+#'   then estimated with [stats::lm()] and `sandwich`, which is slower.
+#'   Default `FALSE`.
 #'
 #' @return A named list. If `details = FALSE`, it contains `irf`, `se`, and
 #'   `Method`. If `details = TRUE`, it contains:
 #'   \describe{
 #'     \item{`irf`}{Array (H x N x E) of estimated impulse responses.}
 #'     \item{`se`}{Array (H x N x E) of local-projection standard errors.}
-#'     \item{`Shocks`}{Output of [kfpredict()]: predicted structural shocks.}
-#'     \item{`OLSRes`}{List of `lm` model objects, one per horizon, variable,
+#'     \item{`Shocks`}{Output of [predict_shocks()]: predicted structural shocks.}
+#'     \item{`OLSRes`}{With `models = TRUE` only. List of `lm` model objects, one per horizon, variable,
 #'       and shock dimension.}
 #'     \item{`Obs`}{Data frame with observation counts: `Tp` (policy days),
 #'       `Tc` (control days), `To` (contaminated days), `Tt` (total used).}
 #'     \item{`Method`}{Character string `"Recursive-OLS"`.}
+#'     \item{`PredR2`}{Numeric vector of length `E`: squared correlation
+#'       between the predicted and the true shocks implied by the estimates,
+#'       a measure of the precision of the prediction; see
+#'       [prediction_corr()].}
+#'     \item{`Phi`}{Array N x M x P with the coefficients on the lags of the
+#'       information set `O` in the one-step (horizon 0) regressions of each
+#'       variable in `y`, whose residuals are the one-step forecast errors:
+#'       `Phi[i, j, p]` is the coefficient of lag `p` of variable `j` in `O`
+#'       in the equation of variable `i`. With `O = y` these are the
+#'       autoregressive matrices of a VAR(P).}
+#'     \item{`Theta`}{Matrix N x K with the coefficients on the exogenous
+#'       variables `X` in the same regressions (`NULL` if `X = NULL`).}
+#'     \item{`const`}{Numeric vector of length N with the intercepts of the
+#'       same regressions.}
 #'     \item{`et`}{Matrix of forecast errors on event days used for shock
 #'       prediction, one column per variable and horizon (`y1.h0`, ...,
 #'       `yN.h0`, `y1.h1`, ...): horizon `hpredict` only if `pooled = FALSE`,
@@ -123,7 +142,7 @@
 #' @export
 recols <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1,
                    cum = FALSE, cov_type = "HC3", hpredict = 0,
-                   pooled = FALSE, details = FALSE) {
+                   pooled = FALSE, details = FALSE, models = FALSE) {
   args <- .validate_estimator_inputs(
     y = y, O = O, X = X, Ind = Ind, P = P, H = H, E = E, norm = norm,
     cum = cum, cov_type = cov_type, hpredict = hpredict, pooled = pooled
@@ -145,7 +164,12 @@ recols <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1,
   hres <- if (pooled) seq_len(hrow) else hrow
   etList <- list()
   vtList <- list()
+  infoCoef <- list() # coefficients of the horizon-0 information-set regressions
   details <- .check_logical_scalar(details, "details")
+  models <- .check_logical_scalar(models, "models")
+  # Model objects are needed only if they are returned; otherwise the
+  # regressions are estimated by matrix algebra (see .lp_fit())
+  keep_models <- details && models
 
   # Collect various properties of the data and observations to be used
   Nobs <- dim(y)[1] # Number of observations in y
@@ -271,36 +295,55 @@ recols <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1,
         # At h = 0 the regressions of y_1, ..., y_e on the shock and recursive
         # controls fit perfectly by construction, so the "essentially perfect
         # fit" warning from summary.lm() is expected and muffled
-        OLS.mod <- lm(as.formula(myFormula), data = subset(DataMSub, Ind < 2))
-        OLS.vcov <- withCallingHandlers(
-          if (cov_type == "NW") {
-            sandwich::NeweyWest(OLS.mod, prewhite = FALSE, adjust = TRUE)
-          } else {
-            sandwich::vcovHC(OLS.mod, type = "HC3")
-          },
-          warning = function(w) {
-            if (grepl("essentially perfect fit", conditionMessage(w))) {
-              invokeRestart("muffleWarning")
+        DataOLS <- subset(DataMSub, Ind < 2)
+        fit <- NULL
+        if (!keep_models) {
+          # Fast path: coefficient and standard error by matrix algebra
+          fit <- .lp_fit(
+            y = DataOLS$depVar.h, x = DataOLS$shockVar,
+            W = .ctrl_matrix(DataOLS, controls.lp), cov_type = cov_type
+          )
+        }
+        if (is.null(fit)) {
+          # Model path: model objects requested, or collinear regressors
+          OLS.mod <- lm(as.formula(myFormula, env = baseenv()), data = DataOLS)
+          OLS.vcov <- withCallingHandlers(
+            if (cov_type == "NW") {
+              sandwich::NeweyWest(OLS.mod, prewhite = FALSE, adjust = TRUE)
+            } else {
+              sandwich::vcovHC(OLS.mod, type = "HC3")
+            },
+            warning = function(w) {
+              if (grepl("essentially perfect fit", conditionMessage(w))) {
+                invokeRestart("muffleWarning")
+              }
             }
-          }
-        )
-        OLS.se <- sqrt(diag(OLS.vcov))
+          )
+          fit <- list(
+            coef = unname(OLS.mod$coefficients["shockVar"]),
+            se = unname(sqrt(diag(OLS.vcov))["shockVar"])
+          )
+        }
 
         # Normalize IRFs (impact response of variable e to shock e equals norm)
-        irfest[h_idx, i, e] <- OLS.mod$coefficients["shockVar"] * norm
-        irfse[h_idx, i, e] <- OLS.se["shockVar"] * abs(norm)
+        irfest[h_idx, i, e] <- fit$coef * norm
+        irfse[h_idx, i, e] <- fit$se * abs(norm)
 
         if (details == TRUE) {
           # Save LP results for every variable, horizon, and shock dimension
-          OLSRes[[paste0("OLS.h", h, ".n", i, ".e", e)]] <- OLS.mod
+          if (keep_models) OLSRes[[paste0("OLS.h", h, ".n", i, ".e", e)]] <- OLS.mod
 
           # Residuals of the information-set regression at the horizons used
           # for shock prediction (event and control days; once, for e = 1)
-          if (e == 1 && h %in% hres) {
+          if (e == 1 && (h %in% hres || h == 1)) {
             sr <- .shock_residuals(DataMSub, controls.info, DataM$Ind, beg, end, Nobs, h - 1)
-            lab <- paste0("y", i, ".h", h - 1)
-            etList[[lab]] <- sr$et
-            vtList[[lab]] <- sr$vt
+            if (h %in% hres) {
+              lab <- paste0("y", i, ".h", h - 1)
+              etList[[lab]] <- sr$et
+              vtList[[lab]] <- sr$vt
+            }
+            # Horizon 0: coefficients on the lags and exogenous variables
+            if (h == 1) infoCoef[[i]] <- stats::coef(sr$mod)
           }
         }
       }
@@ -332,15 +375,40 @@ recols <- function(y, O, X = NULL, Ind, P, H, E = 1, norm = 1,
     }
     Shocks <- kfpredict(Sig, SigR, Psi, et, scale = scale)
     
+    Shocks <- predict_shocks(Sig, SigR, Psi, et)
+
+    # Squared correlation of the predicted with the true shocks (precision
+    # measure). predict_shocks() has already warned about negative shock
+    # variances, so only that warning is muffled here
+    PredR2 <- if (is.matrix(SigR)) {
+      withCallingHandlers(
+        prediction_corr(Psi, SigR, Sig = Sig),
+        warning = function(w) {
+          if (grepl("shock variances are negative", conditionMessage(w))) {
+            invokeRestart("muffleWarning")
+          }
+        }
+      )
+    } else {
+      rep(NA_real_, E)
+    }
+
+    # Coefficients of the one-step information-set regressions
+    ic <- .info_coefficients(infoCoef, N, M, P, K)
+
     Obs <- data.frame(Tp = Te, Tc = Tn, To = To, Tt = Tt)
 
-    return(list(
+    out <- list(
       irf = irfest, se = irfse,
       Shocks = Shocks,
-      OLSRes = OLSRes,
       Obs = Obs, Method = Method,
+      PredR2 = PredR2,
+      Phi = ic$Phi, Theta = ic$Theta, const = ic$const,
       et = as.matrix(et), Sig = Sig, SigR = SigR, Psi = Psi
-    ))
+    )
+    # Fitted regression objects only on request (large)
+    if (keep_models) out <- c(out, list(OLSRes = OLSRes))
+    return(out)
   } else {
     return(list(irf = irfest, se = irfse, Method = Method))
   }

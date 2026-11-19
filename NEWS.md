@@ -1,3 +1,36 @@
+# hetiv 0.1.4
+
+* **Breaking change:** `hetiv()`, `proxyiv()` and `recols()` with
+  `details = TRUE` no longer return the fitted regression objects (`IVRes`,
+  `OLSRes`, `ORTHRes`) by default, because they made saved results very large
+  (hundreds of megabytes). Use the new argument `models = TRUE` to obtain
+  them. Stored models no longer keep the environment of the estimator.
+* The local projections in `hetiv()`, `proxyiv()` and `recols()` are now
+  estimated by matrix algebra instead of `ivreg::ivreg()`/`lm()` with
+  `sandwich`, unless `models = TRUE`. Impulse responses and standard errors
+  (HC3 and Newey-West) are unchanged; estimation is several times faster.
+* `kfpredict()` has been renamed to `predict_shocks()`. `kfpredict()` is kept
+  as a deprecated wrapper and issues a warning.
+* `hetiv()`, `proxyiv()` and `recols()` with `details = TRUE` additionally
+  return the coefficients of the one-step (horizon 0) regressions on the
+  information set: `Phi` (N x M x P, lags of `O`), `Theta` (N x K, exogenous
+  variables `X`) and `const` (intercepts). With `hetiv(interact = TRUE)`,
+  `Phi` and `const` refer to control days and `PhiE` and `constE` to event
+  days.
+* New function `prediction_corr()`: squared correlation between the predicted
+  and the true shocks as a measure of the precision of the prediction. It
+  warns if the covariance on control days is (nearly) singular. The
+  estimators return it as `PredR2` with `details = TRUE`.
+* New functions: `plotseries()` (line plot of several series with a single
+  legend, optional standardisation and correlation label), `gss_pca()`
+  (target and path factors of Gurkaynak, Sack and Swanson, 2005, with EM
+  principal components for missing values), `lag_opt()` (lag length of a VAR
+  by information criterion; requires the suggested package `vars`) and
+  `rescale_to_match()`.
+* `plotirf(legend = TRUE)` now adds the legend only once per shock (to the
+  first panel) and `arrangeirf()` draws it once below the arranged figure.
+  The legend shows the lines only (no separate key for the bands).
+
 # hetiv 0.1.3
 
 * `plotirf()` now plots up to three sets of impulse responses in the same

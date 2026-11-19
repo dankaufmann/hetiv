@@ -32,14 +32,15 @@ test_that("recols returns details, excludes contaminated days, and validates inp
   d <- make_recursive_data(200)
   Ind <- d$Ind
   Ind[seq(3, 200, by = 10)] <- 2L
-  # iid data: kfpredict() warns about weak heteroskedasticity, which is expected here
+  # iid data: predict_shocks() warns about weak heteroskedasticity, which is expected here
   fit <- suppressWarnings(
-    recols(y = d$y, O = d$y, Ind = Ind, P = 1, H = 3, details = TRUE)
+    recols(y = d$y, O = d$y, Ind = Ind, P = 1, H = 3, details = TRUE, models = TRUE)
   )
 
   expect_named(fit, c(
-    "irf", "se", "Shocks", "OLSRes", "Obs", "Method",
-    "et", "Sig", "SigR", "Psi"
+    "irf", "se", "Shocks", "Obs", "Method",
+    "PredR2", "Phi", "Theta", "const",
+    "et", "Sig", "SigR", "Psi", "OLSRes"
   ))
   expect_equal(fit$Obs$Tp, sum(Ind[-1] == 1))
   expect_equal(fit$Obs$To, sum(Ind[-1] == 2))

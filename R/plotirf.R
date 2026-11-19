@@ -54,9 +54,10 @@
 #' @param boot_type Character. How bootstrap draws are turned into bands:
 #'   `"recentred"` (default) or `"percentile"`. See Details. Ignored when no
 #'   bootstrap draws are supplied.
-#' @param legend Logical. If `TRUE`, a legend with `names` is added to each
-#'   panel when more than one set of impulse responses is plotted. Default
-#'   `FALSE`.
+#' @param legend Logical. If `TRUE` and more than one set of impulse
+#'   responses is plotted, a legend with `names` is added once per shock, to
+#'   the first panel. [arrangeirf()] moves this legend below the arranged
+#'   figure, so that all panels keep the same size. Default `FALSE`.
 #'
 #' @return A list of `ggplot` objects, one per variable-shock combination,
 #'   ordered by shock (outer loop) then variable (inner loop).
@@ -201,7 +202,8 @@ plotirf <- function(IRF, IRFse = NULL, HTick, Labels, ci = 0.90,
 
       g1 <- g1 +
         ggplot2::scale_colour_manual(values = colors, breaks = names) +
-        ggplot2::scale_fill_manual(values = colors, breaks = names) +
+        # Bands use the line colours; the legend shows the lines only
+        ggplot2::scale_fill_manual(values = colors, breaks = names, guide = "none") +
         ggplot2::scale_linetype_manual(values = ltypes, breaks = names) +
         ggplot2::labs(colour = NULL, fill = NULL, linetype = NULL) +
         ggplot2::theme(
@@ -215,7 +217,9 @@ plotirf <- function(IRF, IRFse = NULL, HTick, Labels, ci = 0.90,
         ) +
         ggplot2::theme(plot.margin = grid::unit(c(0.1, 0.1, 0.1, 0.1), "cm"))
 
-      if (legend && nIRF > 1) {
+      # The legend is shown once per shock, on the first panel only;
+      # arrangeirf() moves it below the arranged figure
+      if (legend && nIRF > 1 && i == 1) {
         g1 <- g1 + ggplot2::theme(
           legend.position = "bottom",
           legend.text = ggplot2::element_text(size = 8),

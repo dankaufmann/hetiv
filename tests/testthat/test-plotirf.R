@@ -89,7 +89,28 @@ test_that("plotirf overlays up to three IRFs and plot2irf is a wrapper", {
   expect_length(g3, 4)
   expect_equal(sum(layer_classes(g3[[1]]) == "GeomLine"), 3)
   expect_equal(sum(layer_classes(g3[[1]]) == "GeomRibbon"), 1)
+  # The legend is shown once per shock (first panel) and arrangeirf() draws
+  # it once below the figure
   expect_identical(g3[[1]]$theme$legend.position, "bottom")
+  expect_identical(g3[[2]]$theme$legend.position, "none")
+  expect_identical(g3[[3]]$theme$legend.position, "bottom")
+  grDevices::pdf(NULL)
+  figs <- arrangeirf(g3, E = 2, N = 2)
+  grDevices::dev.off()
+  expect_length(figs, 2)
+  # No panel keeps its own legend; the common one sits in the bottom grob
+  n_panel_legends <- function(fig) {
+    sum(vapply(fig$grobs, function(g) {
+      inherits(g, "gtable") && "panel" %in% g$layout$name &&
+        any(vapply(
+          g$grobs[grepl("guide-box", g$layout$name)],
+          function(q) !inherits(q, "zeroGrob"), logical(1)
+        ))
+    }, logical(1)))
+  }
+  expect_equal(n_panel_legends(figs[[1]]), 0)
+  expect_s3_class(hetiv:::.extract_legend(g3[1:2]), "gtable")
+  expect_null(hetiv:::.extract_legend(g3[2]))
 
   expect_error(
     plotirf(list(irf, irf, irf, irf), HTick = 1, Labels = labels),

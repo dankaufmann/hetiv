@@ -494,7 +494,8 @@ gweakivtest <- function(y, Y, X, Z,
     stop("points must be a positive integer.")
   }
   points <- as.integer(points)
-  if (!is.numeric(seed) || length(seed) != 1) {
+  # Accept a numeric scalar or a scalar NA of any type (a bare NA is logical)
+  if (length(seed) != 1 || !(is.numeric(seed) || (is.atomic(seed) && is.na(seed)))) {
     stop("seed must be a numeric scalar or NA.")
   }
   if (!is.na(seed)) seed <- as.integer(seed)

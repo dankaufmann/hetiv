@@ -54,6 +54,38 @@ test_that("simulatedata rejects malformed inputs", {
   )
 })
 
+test_that("simulatedata and gweakivtest accept seed = NA", {
+  # A bare NA is logical; it must skip seeding instead of failing validation
+  sim_args <- list(
+    Phi = array(0, dim = c(2, 2, 1)),
+    SigE = 2,
+    PsiE = matrix(c(1, 0.5), 2, 1),
+    PsiR = matrix(c(1, 0.2), 2, 1),
+    Nobs = 30, Nbin = 5, N = 2, R = 1, E = 1, Nevn = 5, P = 1, eDist = 0
+  )
+  set.seed(3)
+  sim1 <- do.call(simulatedata, c(sim_args, list(seed = NA)))
+  set.seed(3)
+  sim2 <- do.call(simulatedata, c(sim_args, list(seed = NA_integer_)))
+  expect_equal(dim(sim1$y), c(30, 2))
+  expect_equal(sim1$y, sim2$y)
+  expect_error(do.call(simulatedata, c(sim_args, list(seed = "a"))), "seed must be")
+  expect_error(do.call(simulatedata, c(sim_args, list(seed = c(1, 2)))), "seed must be")
+
+  set.seed(5)
+  n <- 100
+  Z <- cbind(rnorm(n), rnorm(n), rnorm(n))
+  X <- matrix(rnorm(n), ncol = 1)
+  Y <- cbind(
+    0.8 * Z[, 1] + 0.3 * Z[, 2] + rnorm(n),
+    0.7 * Z[, 2] + 0.2 * Z[, 3] + rnorm(n)
+  )
+  y <- 1.2 * Y[, 1] - 0.5 * Y[, 2] + X[, 1] + rnorm(n)
+  out <- gweakivtest(y, Y, X, Z, points = 2, seed = NA)
+  expect_true(is.finite(out$gmin_generalized))
+  expect_error(gweakivtest(y, Y, X, Z, points = 2, seed = "a"), "seed must be")
+})
+
 test_that("computeirf validates malformed cum", {
   expect_error(
     computeirf(

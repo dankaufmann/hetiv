@@ -68,7 +68,8 @@ simulatedata <- function(Phi, SigE, PsiE, PsiR, Nobs, Nbin, N, R, E, Nevn, P, eD
   Nbin <- .check_integerish_scalar(Nbin, "Nbin", min = 0)
   Nevn <- .check_integerish_scalar(Nevn, "Nevn", min = 0)
   SigE <- .check_numeric_scalar(SigE, "SigE", min = 0)
-  if (!is.numeric(seed) || length(seed) != 1) {
+  # Accept a numeric scalar or a scalar NA of any type (a bare NA is logical)
+  if (length(seed) != 1 || !(is.numeric(seed) || (is.atomic(seed) && is.na(seed)))) {
     stop("seed must be a numeric scalar or NA.", call. = FALSE)
   }
   Phi <- .as_numeric_array3(Phi, "Phi", dim = c(N, N, P), allow_na = FALSE)

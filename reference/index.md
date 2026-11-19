@@ -25,10 +25,23 @@ Test for weak instruments (Lewis-Mertens 2025)
 
 ## Shock extraction and IRF computation
 
-- [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md)
+- [`predict_shocks()`](https://dankaufmann.github.io/hetiv/reference/predict_shocks.md)
   : Extract monetary policy shocks via Kalman filter
+- [`prediction_corr()`](https://dankaufmann.github.io/hetiv/reference/prediction_corr.md)
+  : Squared correlation of the predicted shocks with the true shocks
 - [`computeirf()`](https://dankaufmann.github.io/hetiv/reference/computeirf.md)
   : Compute impulse response functions for a VAR(P)
+
+## Proxies and model specification
+
+Construct surprise factors and choose the lag length
+
+- [`gss_pca()`](https://dankaufmann.github.io/hetiv/reference/gss_pca.md)
+  [`print(`*`<gss_pca>`*`)`](https://dankaufmann.github.io/hetiv/reference/gss_pca.md)
+  : Monetary policy surprise factors from a panel of financial market
+  series
+- [`lag_opt()`](https://dankaufmann.github.io/hetiv/reference/lag_opt.md)
+  : Optimal lag length of a VAR
 
 ## Plotting
 
@@ -40,6 +53,8 @@ Test for weak instruments (Lewis-Mertens 2025)
   : Plot p-values across horizons
 - [`arrangeirf()`](https://dankaufmann.github.io/hetiv/reference/arrangeirf.md)
   : Arrange impulse response plots into one figure per shock
+- [`plotseries()`](https://dankaufmann.github.io/hetiv/reference/plotseries.md)
+  : Plot one or several series in one panel
 
 ## Simulation
 
@@ -56,3 +71,5 @@ Test for weak instruments (Lewis-Mertens 2025)
   : First-difference transformation
 - [`filllinear()`](https://dankaufmann.github.io/hetiv/reference/filllinear.md)
   : Linearly interpolate gaps in a data frame
+- [`rescale_to_match()`](https://dankaufmann.github.io/hetiv/reference/rescale_to_match.md)
+  : Rescale a series to match the mean and variance of another series

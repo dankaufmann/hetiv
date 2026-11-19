@@ -1,5 +1,64 @@
 # Changelog
 
+## hetiv 0.1.4
+
+- **Breaking change:**
+  [`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md),
+  [`proxyiv()`](https://dankaufmann.github.io/hetiv/reference/proxyiv.md)
+  and
+  [`recols()`](https://dankaufmann.github.io/hetiv/reference/recols.md)
+  with `details = TRUE` no longer return the fitted regression objects
+  (`IVRes`, `OLSRes`, `ORTHRes`) by default, because they made saved
+  results very large (hundreds of megabytes). Use the new argument
+  `models = TRUE` to obtain them. Stored models no longer keep the
+  environment of the estimator.
+- The local projections in
+  [`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md),
+  [`proxyiv()`](https://dankaufmann.github.io/hetiv/reference/proxyiv.md)
+  and
+  [`recols()`](https://dankaufmann.github.io/hetiv/reference/recols.md)
+  are now estimated by matrix algebra instead of
+  [`ivreg::ivreg()`](https://zeileis.github.io/ivreg/reference/ivreg.html)/[`lm()`](https://rdrr.io/r/stats/lm.html)
+  with `sandwich`, unless `models = TRUE`. Impulse responses and
+  standard errors (HC3 and Newey-West) are unchanged; estimation is
+  several times faster.
+- [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md)
+  has been renamed to
+  [`predict_shocks()`](https://dankaufmann.github.io/hetiv/reference/predict_shocks.md).
+  [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md)
+  is kept as a deprecated wrapper and issues a warning.
+- [`hetiv()`](https://dankaufmann.github.io/hetiv/reference/hetiv.md),
+  [`proxyiv()`](https://dankaufmann.github.io/hetiv/reference/proxyiv.md)
+  and
+  [`recols()`](https://dankaufmann.github.io/hetiv/reference/recols.md)
+  with `details = TRUE` additionally return the coefficients of the
+  one-step (horizon 0) regressions on the information set: `Phi` (N x M
+  x P, lags of `O`), `Theta` (N x K, exogenous variables `X`) and
+  `const` (intercepts). With `hetiv(interact = TRUE)`, `Phi` and `const`
+  refer to control days and `PhiE` and `constE` to event days.
+- New function
+  [`prediction_corr()`](https://dankaufmann.github.io/hetiv/reference/prediction_corr.md):
+  squared correlation between the predicted and the true shocks as a
+  measure of the precision of the prediction. It warns if the covariance
+  on control days is (nearly) singular. The estimators return it as
+  `PredR2` with `details = TRUE`.
+- New functions:
+  [`plotseries()`](https://dankaufmann.github.io/hetiv/reference/plotseries.md)
+  (line plot of several series with a single legend, optional
+  standardisation and correlation label),
+  [`gss_pca()`](https://dankaufmann.github.io/hetiv/reference/gss_pca.md)
+  (target and path factors of Gurkaynak, Sack and Swanson, 2005, with EM
+  principal components for missing values),
+  [`lag_opt()`](https://dankaufmann.github.io/hetiv/reference/lag_opt.md)
+  (lag length of a VAR by information criterion; requires the suggested
+  package `vars`) and
+  [`rescale_to_match()`](https://dankaufmann.github.io/hetiv/reference/rescale_to_match.md).
+- `plotirf(legend = TRUE)` now adds the legend only once per shock (to
+  the first panel) and
+  [`arrangeirf()`](https://dankaufmann.github.io/hetiv/reference/arrangeirf.md)
+  draws it once below the arranged figure. The legend shows the lines
+  only (no separate key for the bands).
+
 ## hetiv 0.1.3
 
 - [`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md)

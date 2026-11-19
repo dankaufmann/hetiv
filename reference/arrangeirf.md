@@ -5,7 +5,10 @@ Arranges a list of IRF panels, as returned by
 or
 [`plot2irf()`](https://dankaufmann.github.io/hetiv/reference/plot2irf.md),
 into a grid with one figure per shock dimension and a common x-axis
-label. Optionally saves each figure as a PDF.
+label. If the panels carry a legend (see `legend` in
+[`plotirf()`](https://dankaufmann.github.io/hetiv/reference/plotirf.md)),
+it is removed from the panels and drawn once below each figure.
+Optionally saves each figure as a PDF.
 
 ## Usage
 
@@ -68,7 +71,8 @@ arrangeirf(
 - figScaleH:
 
   Numeric. Height of one panel row in inches. The saved figure has
-  height `0.9 * nRows * figScaleH`.
+  height `0.9 * nRows * figScaleH`, plus the height of the common legend
+  if there is one.
 
 ## Value
 

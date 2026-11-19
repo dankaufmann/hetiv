@@ -26,7 +26,8 @@ recols(
   cov_type = "HC3",
   hpredict = 0,
   pooled = FALSE,
-  details = FALSE
+  details = FALSE,
+  models = FALSE
 )
 ```
 
@@ -113,7 +114,7 @@ recols(
   forecast errors of all horizons `0, ..., hpredict` are stacked and
   used jointly (pooled prediction), which weights every horizon by its
   signal-to-noise ratio; see
-  [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md).
+  [`predict_shocks()`](https://dankaufmann.github.io/hetiv/reference/predict_shocks.md).
   With `hpredict = 0` both options coincide.
 
 - details:
@@ -121,6 +122,14 @@ recols(
   Logical. If `TRUE`, saves detailed OLS results and extracts shocks,
   which is slightly slower. If `FALSE`, returns only impulse responses
   and standard errors (e.g. for bootstrap).
+
+- models:
+
+  Logical. Only used with `details = TRUE`. If `TRUE`, the fitted
+  regression objects are returned as well (`OLSRes`). These objects are
+  large (several megabytes per regression), and the regressions are then
+  estimated with [`stats::lm()`](https://rdrr.io/r/stats/lm.html) and
+  `sandwich`, which is slower. Default `FALSE`.
 
 ## Value
 
@@ -138,13 +147,13 @@ A named list. If `details = FALSE`, it contains `irf`, `se`, and
 - `Shocks`:
 
   Output of
-  [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md):
+  [`predict_shocks()`](https://dankaufmann.github.io/hetiv/reference/predict_shocks.md):
   predicted structural shocks.
 
 - `OLSRes`:
 
-  List of `lm` model objects, one per horizon, variable, and shock
-  dimension.
+  With `models = TRUE` only. List of `lm` model objects, one per
+  horizon, variable, and shock dimension.
 
 - `Obs`:
 
@@ -154,6 +163,32 @@ A named list. If `details = FALSE`, it contains `irf`, `se`, and
 - `Method`:
 
   Character string `"Recursive-OLS"`.
+
+- `PredR2`:
+
+  Numeric vector of length `E`: squared correlation between the
+  predicted and the true shocks implied by the estimates, a measure of
+  the precision of the prediction; see
+  [`prediction_corr()`](https://dankaufmann.github.io/hetiv/reference/prediction_corr.md).
+
+- `Phi`:
+
+  Array N x M x P with the coefficients on the lags of the information
+  set `O` in the one-step (horizon 0) regressions of each variable in
+  `y`, whose residuals are the one-step forecast errors: `Phi[i, j, p]`
+  is the coefficient of lag `p` of variable `j` in `O` in the equation
+  of variable `i`. With `O = y` these are the autoregressive matrices of
+  a VAR(P).
+
+- `Theta`:
+
+  Matrix N x K with the coefficients on the exogenous variables `X` in
+  the same regressions (`NULL` if `X = NULL`).
+
+- `const`:
+
+  Numeric vector of length N with the intercepts of the same
+  regressions.
 
 - `et`:
 
@@ -224,6 +259,6 @@ Ind[seq(5, nrow(y), by = 5)] <- 1L
 res <- recols(y = y, O = y, Ind = Ind, P = 1, H = 3, E = 2)
 res$irf[1, , ] # impact responses: unit diagonal, zero above it
 #>           [,1]         [,2]
-#> [1,] 1.0000000 -4.26246e-17
-#> [2,] 0.2783758  1.00000e+00
+#> [1,] 1.0000000 5.551115e-17
+#> [2,] 0.2783758 1.000000e+00
 ```

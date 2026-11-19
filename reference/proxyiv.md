@@ -27,7 +27,8 @@ proxyiv(
   recursive = FALSE,
   hpredict = 0,
   pooled = FALSE,
-  details = FALSE
+  details = FALSE,
+  models = FALSE
 )
 ```
 
@@ -137,7 +138,7 @@ proxyiv(
   errors and responses at horizon `hpredict` only. If `TRUE`, the
   forecast errors of all horizons `0, ..., hpredict` are stacked and
   used jointly (pooled prediction); see
-  [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md).
+  [`predict_shocks()`](https://dankaufmann.github.io/hetiv/reference/predict_shocks.md).
   With `hpredict = 0` both options coincide.
 
 - details:
@@ -145,6 +146,15 @@ proxyiv(
   Logical. If `TRUE`, saves detailed IV results, weak instrument tests,
   and shock prediction results, which is slightly slower. If `FALSE`,
   returns only impulse responses and standard errors.
+
+- models:
+
+  Logical. Only used with `details = TRUE`. If `TRUE`, the fitted
+  regression objects are returned as well (`IVRes`, `OLSRes`). These
+  objects are large (several megabytes per regression), and the
+  regressions are then estimated with
+  [`ivreg::ivreg()`](https://zeileis.github.io/ivreg/reference/ivreg.html)
+  and `sandwich`, which is slower. Default `FALSE`.
 
 ## Value
 
@@ -167,19 +177,19 @@ With `details = TRUE`, additionally contains:
 - `Shocks`:
 
   Predicted structural shocks on event days from
-  [`kfpredict()`](https://dankaufmann.github.io/hetiv/reference/kfpredict.md),
+  [`predict_shocks()`](https://dankaufmann.github.io/hetiv/reference/predict_shocks.md),
   based on the responses at horizon `hpredict`.
 
 - `IVRes`:
 
-  List of `ivreg` model objects, one per horizon, variable, and shock
-  dimension.
+  With `models = TRUE` only. List of `ivreg` model objects, one per
+  horizon, variable, and shock dimension.
 
 - `OLSRes`:
 
-  List of the information-set regressions whose residuals enter the
-  shock prediction, named `OLS.n<i>.h<h>` by outcome variable and
-  horizon.
+  With `models = TRUE` only. List of the information-set regressions
+  whose residuals enter the shock prediction, named `OLS.n<i>.h<h>` by
+  outcome variable and horizon.
 
 - `Obs`:
 
@@ -216,6 +226,32 @@ With `details = TRUE`, additionally contains:
   bias criterion (`crit = "rel"`), for comparability with Montiel Olea
   and Pflueger (2013). Rows where the outcome is a policy variable
   (`i <= E`) on impact are omitted. `NULL` for `E = 1`.
+
+- `PredR2`:
+
+  Numeric vector of length `E`: squared correlation between the
+  predicted and the true shocks implied by the estimates, a measure of
+  the precision of the prediction; see
+  [`prediction_corr()`](https://dankaufmann.github.io/hetiv/reference/prediction_corr.md).
+
+- `Phi`:
+
+  Array N x M x P with the coefficients on the lags of the information
+  set `O` in the one-step (horizon 0) regressions of each variable in
+  `y`, whose residuals are the one-step forecast errors: `Phi[i, j, p]`
+  is the coefficient of lag `p` of variable `j` in `O` in the equation
+  of variable `i`. With `O = y` these are the autoregressive matrices of
+  a VAR(P).
+
+- `Theta`:
+
+  Matrix N x K with the coefficients on the exogenous variables `X` in
+  the same regressions (`NULL` if `X = NULL`).
+
+- `const`:
+
+  Numeric vector of length N with the intercepts of the same
+  regressions.
 
 - `et`:
 
@@ -292,6 +328,9 @@ res <- proxyiv(
   y = y, O = y, Z = Z, Ind = Ind, P = 1, H = 3,
   details = TRUE
 )
+#> Warning: 'kfpredict' is deprecated.
+#> Use 'predict_shocks' instead.
+#> See help("Deprecated") and help("hetiv-deprecated").
 dim(res$irf)
 #> [1] 3 2 1
 ```

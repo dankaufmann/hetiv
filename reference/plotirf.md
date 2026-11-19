@@ -85,8 +85,12 @@ plotirf(
 
 - legend:
 
-  Logical. If `TRUE`, a legend with `names` is added to each panel when
-  more than one set of impulse responses is plotted. Default `FALSE`.
+  Logical. If `TRUE` and more than one set of impulse responses is
+  plotted, a legend with `names` is added once per shock, to the first
+  panel.
+  [`arrangeirf()`](https://dankaufmann.github.io/hetiv/reference/arrangeirf.md)
+  moves this legend below the arranged figure, so that all panels keep
+  the same size. Default `FALSE`.
 
 ## Value
 

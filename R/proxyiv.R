@@ -482,8 +482,7 @@ proxyiv <- function(y, O, Z, X = NULL, Ind, P, H, E = 1, norm = 1,
     }else{
       scale <- TRUE
     }
-    Shocks <- kfpredict(Sig, SigR, Psi, et, scale = scale)
-    Shocks <- predict_shocks(Sig, SigR, Psi, et)
+    Shocks <- predict_shocks(Sig, SigR, Psi, et, scale = scale)
 
     # Squared correlation of the predicted with the true shocks (precision
     # measure). predict_shocks() has already warned about negative shock

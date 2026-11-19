@@ -280,9 +280,6 @@ res_proxy <- proxyiv(
   recursive = FALSE,
   details   = TRUE
 )
-#> Warning in kfpredict(Sig, SigR, Psi, et, scale = scale): 'kfpredict' is deprecated.
-#> Use 'predict_shocks' instead.
-#> See help("Deprecated") and help("hetiv-deprecated").
 ```
 
 ### Proxy-IV with recursive zero restriction
@@ -309,9 +306,6 @@ res_proxy_rec <- proxyiv(
   recursive = TRUE,
   details   = TRUE
 )
-#> Warning in kfpredict(Sig, SigR, Psi, et, scale = scale): 'kfpredict' is deprecated.
-#> Use 'predict_shocks' instead.
-#> See help("Deprecated") and help("hetiv-deprecated").
 ```
 
 ## Impact matrices
@@ -1099,9 +1093,6 @@ res_proxy_gss <- proxyiv(
   y = y_data, O = y_data, Z = Z_gss, Ind = Ind,
   P = P, H = H, E = E, details = TRUE
 )
-#> Warning in kfpredict(Sig, SigR, Psi, et, scale = scale): 'kfpredict' is deprecated.
-#> Use 'predict_shocks' instead.
-#> See help("Deprecated") and help("hetiv-deprecated").
 round(res_proxy_gss$PredR2, 2)
 #> [1] 0.85 0.88
 ```

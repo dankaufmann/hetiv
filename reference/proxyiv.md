@@ -328,9 +328,6 @@ res <- proxyiv(
   y = y, O = y, Z = Z, Ind = Ind, P = 1, H = 3,
   details = TRUE
 )
-#> Warning: 'kfpredict' is deprecated.
-#> Use 'predict_shocks' instead.
-#> See help("Deprecated") and help("hetiv-deprecated").
 dim(res$irf)
 #> [1] 3 2 1
 ```

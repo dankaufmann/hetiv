@@ -16,6 +16,7 @@ plotseries(
   show_cor = FALSE,
   show_n = TRUE,
   digits = 2,
+  connect = TRUE,
   legend_position = "bottom",
   linewidth = 0.5,
   xlim = NULL,
@@ -55,6 +56,11 @@ exactly two series. Default \code{FALSE}.}
 observations is added to the correlation label.}
 
 \item{digits}{Integer. Number of digits of the correlation label.}
+
+\item{connect}{Logical. If \code{TRUE} (default), missing values of a series
+are dropped before plotting, so that the line connects the observations
+on both sides of a gap. If \code{FALSE}, the line is interrupted at missing
+values.}
 
 \item{legend_position}{Character such as \code{"bottom"} (default) or \code{"none"},
 or a numeric vector of length 2 with the position inside the panel in

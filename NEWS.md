@@ -22,7 +22,8 @@
   warns if the covariance on control days is (nearly) singular. The
   estimators return it as `PredR2` with `details = TRUE`.
 * New functions: `plotseries()` (line plot of several series with a single
-  legend, optional standardisation and correlation label), `gss_pca()`
+  legend, optional standardisation and correlation label; lines connect
+  across missing values unless `connect = FALSE`), `gss_pca()`
   (target and path factors of Gurkaynak, Sack and Swanson, 2005, with EM
   principal components for missing values), `lag_opt()` (lag length of a VAR
   by information criterion; requires the suggested package `vars`) and

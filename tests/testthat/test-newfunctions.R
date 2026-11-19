@@ -28,6 +28,17 @@ test_that("plotseries plots any number of series with one legend", {
   expect_identical(p$theme$legend.position, "inside")
   expect_true(file.exists(f))
 
+  # Missing values: by default the line connects across gaps (rows with
+  # missing values are dropped); connect = FALSE keeps the gaps
+  dm <- d
+  dm$a[c(5, 6, 20)] <- NA
+  p_con <- plotseries(dm, series = c("a", "b"))
+  expect_equal(sum(p_con$data$series_id == "a"), 27)
+  expect_false(anyNA(p_con$data$value))
+  expect_equal(nrow(ggplot2::layer_data(p_con, 1)), 57)
+  p_gap <- plotseries(dm, series = c("a", "b"), connect = FALSE)
+  expect_equal(sum(is.na(p_gap$data$value)), 3)
+
   expect_error(plotseries(d, show_cor = TRUE), "exactly two")
   expect_error(plotseries(d, series = "zz"), "distinct columns")
   expect_error(plotseries(d, x_var = "zz"), "x_var")

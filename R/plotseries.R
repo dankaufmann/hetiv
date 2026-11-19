@@ -26,6 +26,10 @@
 #' @param show_n Logical. If `TRUE` (default), the number of common
 #'   observations is added to the correlation label.
 #' @param digits Integer. Number of digits of the correlation label.
+#' @param connect Logical. If `TRUE` (default), missing values of a series
+#'   are dropped before plotting, so that the line connects the observations
+#'   on both sides of a gap. If `FALSE`, the line is interrupted at missing
+#'   values.
 #' @param legend_position Character such as `"bottom"` (default) or `"none"`,
 #'   or a numeric vector of length 2 with the position inside the panel in
 #'   relative coordinates.
@@ -60,6 +64,7 @@ plotseries <- function(data, x_var = NULL, series = NULL,
                        linetypes = c("solid", "dashed", "dotted", "dotdash", "longdash", "twodash"),
                        x_lab = NULL, y_lab = NULL,
                        standardize = FALSE, show_cor = FALSE, show_n = TRUE, digits = 2,
+                       connect = TRUE,
                        legend_position = "bottom", linewidth = 0.5,
                        xlim = NULL, ylim = NULL,
                        file = NULL, width = 7, height = 4) {
@@ -115,6 +120,7 @@ plotseries <- function(data, x_var = NULL, series = NULL,
   standardize <- .check_logical_scalar(standardize, "standardize")
   show_cor <- .check_logical_scalar(show_cor, "show_cor")
   show_n <- .check_logical_scalar(show_n, "show_n")
+  connect <- .check_logical_scalar(connect, "connect")
   if (show_cor && nS != 2) {
     stop("show_cor = TRUE requires exactly two series.", call. = FALSE)
   }
@@ -134,7 +140,10 @@ plotseries <- function(data, x_var = NULL, series = NULL,
   plot_data <- dplyr::bind_rows(lapply(ids, function(id) {
     v <- data[[id]]
     if (standardize) v <- (v - mean(v, na.rm = TRUE)) / stats::sd(v, na.rm = TRUE)
-    data.frame(x = data[[x_var]], series_id = id, value = v)
+    d <- data.frame(x = data[[x_var]], series_id = id, value = v)
+    # Drop missing values so that the line runs across gaps
+    if (connect) d <- d[!is.na(d$value) & !is.na(d$x), , drop = FALSE]
+    d
   }))
   plot_data$series_id <- factor(plot_data$series_id, levels = ids)
 

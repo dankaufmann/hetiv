@@ -1061,7 +1061,7 @@ factors <- gss_pca(surprises, n_factors = 2)
 factors
 #> gss_pca: 2 factor(s) [target, path], 50 events x 6 series, 2 missing cells
 #> var explained (PC1..PC2): 77.5%, 19.6%
-#> path loading on 's1' (target restriction, should be 0): 2.90e-17
+#> path loading on 's1' (target restriction, should be 0): -1.55e-18
 #> normalisation: target -> coef 1.000 on 's1'; path -> coef 0.898 on 's2'
 #> loadings:
 #>    target  path

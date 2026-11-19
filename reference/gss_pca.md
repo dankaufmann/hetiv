@@ -159,7 +159,7 @@ res <- gss_pca(X, n_factors = 2)
 res
 #> gss_pca: 2 factor(s) [target, path], 200 events x 5 series, 1 missing cells
 #> var explained (PC1..PC2): 76.5%, 22.7%
-#> path loading on 'r1' (target restriction, should be 0): 2.75e-16
+#> path loading on 'r1' (target restriction, should be 0): -1.30e-17
 #> normalisation: target -> coef 1.000 on 'r1'; path -> coef 0.794 on 'r2'
 #> loadings:
 #>    target  path
